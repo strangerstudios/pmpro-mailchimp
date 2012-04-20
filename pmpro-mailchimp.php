@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .1
+Version: .2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -51,7 +51,7 @@ function pmpromc_init()
 	global $pmpromc_levels;
 	if(!empty($pmpromc_levels))
 	{		
-		add_action("pmpro_change_membership_level", "pmpromc_pmpro_change_membership_level");
+		add_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level", 10, 2);
 	}
 }
 add_action("init", "pmpromc_init");
@@ -72,18 +72,18 @@ function pmpromc_user_register($user_id)
 		foreach($options['users_lists'] as $list)
 		{					
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $user->first_name, "LNAME" => $user->last_name));
+			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name));
 		}
 	}
 }
 
 //subscribe new members (PMPro) when they register
-function pmpromc_pmpro_change_membership_level($level_id, $user_id)
+function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 {
 	global $pmpromc_levels;
 	$options = get_option("pmpromc_options");
-	$all_lists = get_option("pmpromc_all_lists");
-	
+	$all_lists = get_option("pmpromc_all_lists");	
+		
 	//should we add them to any lists?
 	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['api_key']))
 	{
@@ -94,15 +94,17 @@ function pmpromc_pmpro_change_membership_level($level_id, $user_id)
 		$api = new MCAPI( $options['api_key']);
 		foreach($options['level_' . $level_id . '_lists'] as $list)
 		{					
+			echo "<hr />Trying to subscribe to " . $list . "...";
+			
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $user->first_name, "LNAME" => $user->last_name));
+			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name));
 		}
 		
 		//unsubscribe them from lists not selected
 		foreach($all_lists as $list)
 		{
-			if(!in_array($list[id], $options['level_' . $level_id . '_lists']))
-				$api->listUnsubscribe($list[id], $list_user->user_email);
+			if(!in_array($list['id'], $options['level_' . $level_id . '_lists']))
+				$api->listUnsubscribe($list['id'], $list_user->user_email);
 		}
 	}
 	elseif(!empty($options['api_key']) && count($options) > 3)
@@ -118,14 +120,14 @@ function pmpromc_pmpro_change_membership_level($level_id, $user_id)
 			foreach($options['users_lists'] as $list)
 			{					
 				//subscribe them
-				$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $user->first_name, "LNAME" => $user->last_name));
+				$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name));
 			}
 			
 			//unsubscribe from any list not assigned to users
 			foreach($all_lists as $list)
 			{
-				if(!in_array($list[id], $options['users_lists']))
-					$api->listUnsubscribe($list[id], $list_user->user_email);
+				if(!in_array($list['id'], $options['users_lists']))
+					$api->listUnsubscribe($list['id'], $list_user->user_email);
 			}
 		}
 		else
