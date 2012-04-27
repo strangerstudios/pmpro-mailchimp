@@ -142,7 +142,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 				$api = new MCAPI( $options['api_key']);
 				foreach($all_lists as $list)
 				{
-					$api->listUnsubscribe($list[id], $list_user->user_email);
+					$api->listUnsubscribe($list['id'], $list_user->user_email);
 				}
 			}
 		}
