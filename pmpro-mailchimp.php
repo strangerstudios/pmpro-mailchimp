@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .2.1
+Version: .2.2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -72,7 +72,7 @@ function pmpromc_user_register($user_id)
 		foreach($options['users_lists'] as $list)
 		{					
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name));
+			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), "html", $options['double_opt_in']);
 		}
 	}
 }
@@ -97,7 +97,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			//echo "<hr />Trying to subscribe to " . $list . "...";
 			
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name));
+			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), "html", $options['double_opt_in']);
 		}
 		
 		//unsubscribe them from lists not selected
@@ -120,7 +120,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			foreach($options['users_lists'] as $list)
 			{					
 				//subscribe them
-				$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name));
+				$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), "html", $options['double_opt_in']);
 			}
 			
 			//unsubscribe from any list not assigned to users
@@ -157,6 +157,7 @@ function pmpromc_admin_init()
 	add_settings_section('pmpromc_section_general', 'General Settings', 'pmpromc_section_general', 'pmpromc_options');	
 	add_settings_field('pmpromc_option_api_key', 'MailChimp API Key', 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');		
 	add_settings_field('pmpromc_option_users_lists', 'All Users List', 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');	
+	add_settings_field('pmpromc_option_double_opt_in', 'Require Double Opt-in?', 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');	
 	
 	//pmpro-related options	
 	add_settings_section('pmpromc_section_levels', 'Membership Levels and Lists', 'pmpromc_section_levels', 'pmpromc_options');		
@@ -274,6 +275,17 @@ function pmpromc_option_users_lists()
 	}	
 }
 
+function pmpromc_option_double_opt_in()
+{
+	$options = get_option('pmpromc_options');	
+	?>
+	<select name="pmpromc_options[double_opt_in]">
+		<option value="0" <?php selected($options['double_opt_in'], 0);?>>No</option>
+		<option value="1" <?php selected($options['double_opt_in'], 1);?>>Yes</option>		
+	</select>
+	<?php
+}
+
 function pmpromc_option_memberships_lists($level)
 {	
 	global $pmpromc_lists;
@@ -309,6 +321,7 @@ function pmpromc_options_validate($input)
 {					
 	//api key
 	$newinput['api_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key']));		
+	$newinput['double_opt_in'] = intval($input['double_opt_in']);
 	
 	//user lists
 	if(!empty($input['users_lists']) && is_array($input['users_lists']))
