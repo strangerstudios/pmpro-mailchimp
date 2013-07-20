@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .2.2
+Version: .3
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -51,14 +51,38 @@ function pmpromc_init()
 	global $pmpromc_levels;
 	if(!empty($pmpromc_levels))
 	{		
-		add_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level", 10, 2);
+		add_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level", 15, 2);
 	}
 }
-add_action("init", "pmpromc_init");
+add_action("init", "pmpromc_init", 0);
+
+//use a different action if we are on the checkout page
+function pmpromc_wp()
+{
+	if(is_admin())
+		return;
+		
+	global $post;
+	if(!empty($post->post_content) && strpos($post->post_content, "[pmpro_checkout]") !== false)
+	{
+		remove_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level");
+		add_action("pmpro_after_checkout", "pmpromc_pmpro_after_checkout", 15);
+		
+	}
+}
+add_action("wp", "pmpromc_wp", 0);
+
+//for when checking out
+function pmpromc_pmpro_after_checkout($user_id)
+{
+	pmpromc_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
+}
 
 //subscribe users when they register
 function pmpromc_user_register($user_id)
 {
+	clean_user_cache($user_id);
+	
 	$options = get_option("pmpromc_options");
 	
 	//should we add them to any lists?
@@ -72,7 +96,7 @@ function pmpromc_user_register($user_id)
 		foreach($options['users_lists'] as $list)
 		{					
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), "html", $options['double_opt_in']);
+			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name)), "html", $options['double_opt_in']);
 		}
 	}
 }
@@ -80,6 +104,8 @@ function pmpromc_user_register($user_id)
 //subscribe new members (PMPro) when they register
 function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 {
+	clean_user_cache($user_id);
+	
 	global $pmpromc_levels;
 	$options = get_option("pmpromc_options");
 	$all_lists = get_option("pmpromc_all_lists");	
@@ -97,7 +123,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			//echo "<hr />Trying to subscribe to " . $list . "...";
 			
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), "html", $options['double_opt_in']);
+			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name)), "html", $options['double_opt_in']);
 		}
 		
 		//unsubscribe them from lists not selected
@@ -120,7 +146,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			foreach($options['users_lists'] as $list)
 			{					
 				//subscribe them
-				$api->listSubscribe($list, $list_user->user_email, array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), "html", $options['double_opt_in']);
+				$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name)), "html", $options['double_opt_in']);
 			}
 			
 			//unsubscribe from any list not assigned to users

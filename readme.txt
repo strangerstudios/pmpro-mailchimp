@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, mailchimp, email marketing
 Requires at least: 3.1
 Tested up to: 3.5.2
-Stable tag: .2.2
+Stable tag: .3
 
 Sync your WordPress users and members with MailChimp lists.
 
@@ -33,6 +33,10 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
 == Changelog ==
+= .3 =
+* Added pmpro_mailchimp_listsubscribe_fields filters to add fields passed the listSubscribe API call.
+* Changed some things to make sure that the user cache is clean and the listSubscribe call happens late enough so that first and last name are populated.
+
 = .2.2 =
 * First logged release with a readme.
 * Added a "Require Double Opt-in" setting that will determine if an additional opt in email is sent for confirmation before adding users to a list. Defaults to "No".
