@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .3
+Version: .3.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -174,6 +174,35 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 		}
 	}
 }
+
+//change email in MailChimp if a user's email is changed in WordPress
+function pmpromc_profile_update($user_id, $old_user_data)
+{
+	$new_user_data = get_userdata($user_id);
+	if($new_user_data->user_email != $old_user_data->user_email)
+	{			
+		//get all lists
+		$options = get_option("pmpromc_options");
+		$api = new MCAPI( $options['api_key'] );
+		$lists = $api->lists( array(), 0, 100 );
+			
+		if(!empty($lists['data']))
+		{
+			foreach($lists['data'] as $list)
+			{
+				//check for member
+				$member = $api->listMemberInfo($list['id'], array($old_user_data->user_email));
+								
+				//update member's email
+				if(!empty($member['success']))
+				{
+					$api->listUpdateMember($list['id'], $old_user_data->user_email, array("email" => $new_user_data->user_email));					
+				}
+			}
+		}
+	}
+}
+add_action("profile_update", "pmpromc_profile_update", 10, 2);
 
 //admin init. registers settings
 function pmpromc_admin_init()
