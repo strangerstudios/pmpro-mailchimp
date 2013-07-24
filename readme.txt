@@ -1,4 +1,4 @@
-=== PMPro Affiliates ===
+=== PMPro MailChimp ===
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, mailchimp, email marketing
 Requires at least: 3.1
