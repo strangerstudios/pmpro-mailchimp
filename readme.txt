@@ -2,7 +2,7 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, mailchimp, email marketing
 Requires at least: 3.1
-Tested up to: 3.5.2
+Tested up to: 3.6
 Stable tag: .3.2
 
 Sync your WordPress users and members with MailChimp lists.
