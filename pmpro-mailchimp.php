@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .3.1
+Version: .3.2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -96,7 +96,7 @@ function pmpromc_user_register($user_id)
 		foreach($options['users_lists'] as $list)
 		{					
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name)), "html", $options['double_opt_in']);
+			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
 		}
 	}
 }
@@ -123,7 +123,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			//echo "<hr />Trying to subscribe to " . $list . "...";
 			
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name)), "html", $options['double_opt_in']);
+			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
 		}
 		
 		//unsubscribe them from lists not selected
@@ -146,7 +146,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			foreach($options['users_lists'] as $list)
 			{					
 				//subscribe them
-				$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name)), "html", $options['double_opt_in']);
+				$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
 			}
 			
 			//unsubscribe from any list not assigned to users
@@ -436,9 +436,10 @@ function pmpromc_options_page()
 			/** Support up to 100 lists (but most users won't have nearly that many */
 			$lists = $api->lists( array(), 0, 100 );
 			$pmpromc_lists = $lists['data'];								
+			$all_lists = array();
 			
 			//save all lists in an option
-			$i = 0;	
+			$i = 0;			
 			foreach ( $pmpromc_lists as $list ) {
 				$all_lists[$i]['id'] = $list['id'];
 				$all_lists[$i][$i]['web_id'] = $list['web_id'];

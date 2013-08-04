@@ -33,6 +33,9 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
 == Changelog ==
+= .3.2 =
+* Updated pmpro_mailchimp_listsubscribe_fields filter to pass the $list_user object along as well.
+
 = .3.1 =
 * Updating email addresses in MailChimp lists if a user's email address is changed.
 
