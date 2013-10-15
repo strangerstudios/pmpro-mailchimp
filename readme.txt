@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, mailchimp, email marketing
 Requires at least: 3.1
 Tested up to: 3.6
-Stable tag: .3.2
+Stable tag: .3.3
 
 Sync your WordPress users and members with MailChimp lists.
 
@@ -33,6 +33,9 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
 == Changelog ==
+= .3.3 =
+* Added option to turn of unsubscribes entirely. If you manage multiple lists in MailChimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.
+
 = .3.2 =
 * Updated pmpro_mailchimp_listsubscribe_fields filter to pass the $list_user object along as well.
 

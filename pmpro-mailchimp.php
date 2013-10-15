@@ -127,10 +127,13 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 		}
 		
 		//unsubscribe them from lists not selected
-		foreach($all_lists as $list)
+		if($options['unsubscribe'])
 		{
-			if(!in_array($list['id'], $options['level_' . $level_id . '_lists']))
-				$api->listUnsubscribe($list['id'], $list_user->user_email);
+			foreach($all_lists as $list)
+			{
+				if(!in_array($list['id'], $options['level_' . $level_id . '_lists']))
+					$api->listUnsubscribe($list['id'], $list_user->user_email);
+			}
 		}
 	}
 	elseif(!empty($options['api_key']) && count($options) > 3)
@@ -150,25 +153,31 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			}
 			
 			//unsubscribe from any list not assigned to users
-			foreach($all_lists as $list)
+			if($options['unsubscribe'])
 			{
-				if(!in_array($list['id'], $options['users_lists']))
-					$api->listUnsubscribe($list['id'], $list_user->user_email);
+				foreach($all_lists as $list)
+				{
+					if(!in_array($list['id'], $options['users_lists']))
+						$api->listUnsubscribe($list['id'], $list_user->user_email);
+				}
 			}
 		}
 		else
 		{
 			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
-			if(is_array($all_lists))
+			if($options['unsubscribe'])
 			{
-				//get user info
-				$list_user = get_userdata($user_id);
-				
-				//unsubscribe to each list
-				$api = new MCAPI( $options['api_key']);
-				foreach($all_lists as $list)
+				if(is_array($all_lists))
 				{
-					$api->listUnsubscribe($list['id'], $list_user->user_email);
+					//get user info
+					$list_user = get_userdata($user_id);
+					
+					//unsubscribe to each list
+					$api = new MCAPI( $options['api_key']);
+					foreach($all_lists as $list)
+					{
+						$api->listUnsubscribe($list['id'], $list_user->user_email);
+					}
 				}
 			}
 		}
@@ -213,6 +222,7 @@ function pmpromc_admin_init()
 	add_settings_field('pmpromc_option_api_key', 'MailChimp API Key', 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');		
 	add_settings_field('pmpromc_option_users_lists', 'All Users List', 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');	
 	add_settings_field('pmpromc_option_double_opt_in', 'Require Double Opt-in?', 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');	
+	add_settings_field('pmpromc_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');	
 	
 	//pmpro-related options	
 	add_settings_section('pmpromc_section_levels', 'Membership Levels and Lists', 'pmpromc_section_levels', 'pmpromc_options');		
@@ -341,6 +351,19 @@ function pmpromc_option_double_opt_in()
 	<?php
 }
 
+function pmpromc_option_unsubscribe()
+{
+	$options = get_option('pmpromc_options');	
+	?>
+	<select name="pmpromc_options[unsubscribe]">
+		<option value="0" <?php selected($options['unsubscribe'], 0);?>>No</option>
+		<option value="1" <?php selected($options['unsubscribe'], 1);?>>Yes</option>		
+	</select>
+	<small>Recommended: Yes. However, if you manage multiple lists in MailChimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.</small>
+	<?php
+}
+
+
 function pmpromc_option_memberships_lists($level)
 {	
 	global $pmpromc_lists;
@@ -377,6 +400,7 @@ function pmpromc_options_validate($input)
 	//api key
 	$newinput['api_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key']));		
 	$newinput['double_opt_in'] = intval($input['double_opt_in']);
+	$newinput['unsubscribe'] = intval($input['unsubscribe']);
 	
 	//user lists
 	if(!empty($input['users_lists']) && is_array($input['users_lists']))
@@ -416,8 +440,22 @@ function pmpromc_options_page()
 {
 	global $pmpromc_lists;
 	
-	//check for a valid API key and get lists
+	//get options
 	$options = get_option("pmpromc_options");	
+	
+	//defaults
+	if(empty($options))
+	{
+		$options = array("unsubscribe"=>1);
+		update_option("pmpromc_options", $options);
+	}
+	elseif(!isset($options['unsubscribe']))
+	{
+		$options['unsubscribe'] = 1;
+		update_option("pmpromc_options", $options);
+	}	
+	
+	//check for a valid API key and get lists
 	$api_key = $options['api_key'];
 	if(!empty($api_key))
 	{
@@ -442,8 +480,8 @@ function pmpromc_options_page()
 			$i = 0;			
 			foreach ( $pmpromc_lists as $list ) {
 				$all_lists[$i]['id'] = $list['id'];
-				$all_lists[$i][$i]['web_id'] = $list['web_id'];
-				$all_lists[$i][$i]['name'] = $list['name'];
+				$all_lists[$i]['web_id'] = $list['web_id'];
+				$all_lists[$i]['name'] = $list['name'];
 				$i++;
 			}
 			
