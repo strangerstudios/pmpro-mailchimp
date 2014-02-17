@@ -1,26 +1,31 @@
-=== PMPro MailChimp ===
+=== MailChimp Add On for Paid Memberships Pro ===
 Contributors: strangerstudios
-Tags: pmpro, paid memberships pro, mailchimp, email marketing
+Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 3.1
 Tested up to: 3.6
 Stable tag: .3.3
 
-Sync your WordPress users and members with MailChimp lists.
-
-If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more lists.
+Sync WordPress Users and PMPro Members with MailChimp lists.
 
 == Description ==
 
-Sync your WordPress users and members with MailChimp lists.
+Specify the subscripiton list(s) for your site's WordPress Users and PMPro Members. If Paid Memberships Pro is installed you can specify additional list settings by membership level.
 
-If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more lists.
-
+The plugin has a setting to require/not require MailChimp's double opt-in, as well as a setting to unsubscribe members on level change. This allows you to move members from list to list based on membership level. It is important to note that with this setting active the member will be unsubscribed from ALL other lists on membership level change and will only be subscribed to the list(s) set for their active membership level.
 
 == Installation ==
+This plugin works with and without Paid Memberships Pro installed.
 
+= Download, Install and Activate! =
 1. Upload the `pmpro-mailchimp` directory to the `/wp-content/plugins/` directory of your site.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 1. The settings page is at Settings --> PMPro Mailchimp in the WP dashboard.
+
+= Double Opt-in Required? =
+Select Yes or No to require/not require MailChimp's double opt-in.
+
+= Unsubscribe on Level Change? =
+This setting allows you to move members from list to list based on membership level. It is important to note that with this setting active the member will be unsubscribed from ALL other lists on membership level change and will ONLY be subscribed to the list(s) set for their active membership level.
 
 == Frequently Asked Questions ==
 
@@ -31,6 +36,11 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 = I need help installing, configuring, or customizing the plugin. =
 
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
+
+== Screenshots ==
+
+1. General settings for all members/subscribers list, opt-in rules, and unsubscribe rules.
+2. Membership-level specific list subscription settings.
 
 == Changelog ==
 = .3.3 =
