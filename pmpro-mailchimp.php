@@ -61,65 +61,60 @@ add_action("init", "pmpromc_init", 0);
 
 function pmpromc_add_custom_user_profile_fields( $user ) {
 ?>
-	<h3><?php _e('Additional MailChimp Lists', ''); ?></h3>
+	<h3><?php _e('Opt-in MailChimp Lists', ''); ?></h3>
 	
 	<table class="form-table">
 		<tr>
 			<th>
-				<label for="address"><?php _e('Address', 'your_textdomain'); ?>
+				<label for="address"><?php _e('Mailing Lists', 'pmpromc'); ?>
 			</label></th>
 			<td>
-		<?php
-	
-	$options = get_option("pmpromc_options");
-	$all_lists = get_option("pmpromc_all_lists");
-	$additional_lists = $options['additional_lists'];
-		
-	$api = new MCAPI( $options['api_key'] );
-	$lists = $api->lists( array(), 0, 100 );
-	$additional_lists_array = array();
+			<?php	
+			$options = get_option("pmpromc_options");
+			$all_lists = get_option("pmpromc_all_lists");
+			$additional_lists = $options['additional_lists'];
+				
+			$api = new MCAPI( $options['api_key'] );
+			$lists = $api->lists( array(), 0, 100 );
+			$additional_lists_array = array();
 
-	foreach ($lists['data'] as $list)
-	{
-		if(!empty($additional_lists))
-		{
-			foreach($additional_lists as $additional_list)
+			foreach ($lists['data'] as $list)
 			{
-				if($list['id'] == $additional_list)	
-				{	
-					$additional_lists_array[] = $list;
-					break;
+				if(!empty($additional_lists))
+				{
+					foreach($additional_lists as $additional_list)
+					{
+						if($list['id'] == $additional_list)	
+						{	
+							$additional_lists_array[] = $list;
+							break;
+						}
+					}
 				}
 			}
-		}
-	}
-		
+				
 
-		global $profileuser;
-		$user_additional_lists = get_user_meta($profileuser->ID,'pmpromc_additional_lists',true);
-	
-				
-		if(isset($user_additional_lists))
-			$selected_lists = $user_additional_lists;
-		else
-			$selected_lists = array();
-		
-		//get_user_meta($user_id2, 'pmpromc_additional_lists',true);
-		
-		echo "<select multiple='yes' name=\"additional_lists[]\">";
-		foreach($additional_lists_array as $list)
-		{
-			echo "<option value='" . $list['id'] . "' ";
-			if(is_array($selected_lists) && in_array($list['id'], $selected_lists))
-				echo "selected='selected'";
-			echo ">" . $list['name'] . "</option>";
-		}
-		echo "</select>";
+			global $profileuser;
+			$user_additional_lists = get_user_meta($profileuser->ID,'pmpromc_additional_lists',true);
 
-					?>
-				
-				
-				<span class="description"><?php _e('Please enter your address.', 'your_textdomain'); ?></span>
+					
+			if(isset($user_additional_lists))
+				$selected_lists = $user_additional_lists;
+			else
+				$selected_lists = array();
+			
+			//get_user_meta($user_id2, 'pmpromc_additional_lists',true);
+			
+			echo "<select multiple='yes' name=\"additional_lists[]\">";
+			foreach($additional_lists_array as $list)
+			{
+				echo "<option value='" . $list['id'] . "' ";
+				if(is_array($selected_lists) && in_array($list['id'], $selected_lists))
+					echo "selected='selected'";
+				echo ">" . $list['name'] . "</option>";
+			}
+			echo "</select>";
+			?>												
 			</td>
 		</tr>
 	</table>
@@ -265,12 +260,10 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 		{
 
 			/*
-			 * Which level did they have last? (second to alst entry in pmpro_memberships_users)
-			 * If they had a leevl, get the lists for that level
-			 * Remove any list that are for their new level
-			 * Unsubscribe them from the remaining lists
-			 * 
-			 * Caution: Check if they are signing up for the first time.
+			 * Which level did they have last? (second to last entry in pmpro_memberships_users)
+			 * If they had a level, get the lists for that level
+			 * Remove any lists that are for their new level
+			 * Unsubscribe them from the remaining lists			 
 			 */
 			
 			//Get their prior level
@@ -297,8 +290,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 				}
 			}
 		}
-	}
-	
+	}	
 	elseif(!empty($options['api_key']) && count($options) > 3)
 	{
 		//now they are a normal user should we add them to any lists?
@@ -392,6 +384,11 @@ function pmpromc_admin_init()
 	add_settings_section('pmpromc_section_general', 'General Settings', 'pmpromc_section_general', 'pmpromc_options');	
 	add_settings_field('pmpromc_option_api_key', 'MailChimp API Key', 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');		
 	add_settings_field('pmpromc_option_users_lists', 'All Users List', 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');	
+	
+	//only if PMPro is installed
+	if(function_exists("pmpro_hasMembershipLevel"))
+		add_settings_field('pmpromc_option_additional_lists', 'Opt-in Lists', 'pmpromc_option_additional_lists', 'pmpromc_options', 'pmpromc_section_general');
+	
 	add_settings_field('pmpromc_option_double_opt_in', 'Require Double Opt-in?', 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');	
 	add_settings_field('pmpromc_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');	
 	
@@ -407,10 +404,7 @@ function pmpromc_admin_init()
 		foreach($pmpromc_levels as $level)
 		{
 			add_settings_field('pmpromc_option_memberships_lists_' . $level->id, $level->name, 'pmpromc_option_memberships_lists', 'pmpromc_options', 'pmpromc_section_levels', array($level));
-		}
-	
-		add_settings_field('pmpromc_option_additional_lists', 'Additional Lists', 'pmpromc_option_additional_lists', 'pmpromc_options', 'pmpromc_section_levels');
-		
+		}		
 	}
 	
 	
@@ -471,14 +465,46 @@ function pmpromc_additional_lists_on_checkout()
 			}
 		}
 	}
-	
-	foreach($additional_lists_array as $key=> $additional_list)
-	{?>
-		<input type="checkbox" name="additional_lists[]" value="<?php echo $additional_list['id'];?>" /><?php echo $additional_list['name'];?><br />
+
+	//no lists? do nothing
+	if(empty($additional_lists_array))
+		return;
+		
+	?>
+	<table id="pmpro_mailing_lists" class="pmpro_checkout top1em" width="100%" cellpadding="0" cellspacing="0" border="0">
+		<thead>
+		<tr>
+			<th>
+				<?php 
+					if(count($additional_lists_array) > 1)
+						_e('Join one or more of our mailing lists?', 'pmpro');
+					else
+						_e('Join our mailing list?', 'pmpro');
+				?>
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+			<tr class="odd">
+				<td>					
+				<?php	
+					$count = 0;
+					foreach($additional_lists_array as $key=> $additional_list)					
+					{
+						$count++;
+					?>
+						<input type="checkbox" id="additional_lists_<?php echo $count;?>" name="additional_lists[]" value="<?php echo $additional_list['id'];?>" />
+						<label for="additional_lists_<?php echo $count;?>" class="pmpro_normal pmpro_clickable"><?php echo $additional_list['name'];?></label><br />
+					<?php
+					}	
+				?>
+				</td>
+			</tr>
+		</tbody>
+	</table>
 	<?php
-	}
 }
-add_action('pmpro_checkout_after_password', 'pmpromc_additional_lists_on_checkout');
+add_action('pmpro_checkout_after_tos_fields', 'pmpromc_additional_lists_on_checkout');
 
 //set the pmpromc_levels array if PMPro is installed
 function pmpromc_getPMProLevels()
@@ -519,8 +545,7 @@ function pmpromc_section_levels()
 		else
 		{
 		?>
-		<p>For each level below, choose the lists which should be subscribed to when a new user registers.</p>
-		<p>You can also specify Additional Lists available at checkout that a member can subscribe to.</p>
+		<p>For each level below, choose the lists which should be subscribed to when a new user registers.</p>		
 		<?php
 		}
 	}
@@ -751,8 +776,8 @@ function pmpromc_options_page()
 	
 	<form action="options.php" method="post">
 		
-		<p>This plugin will integrate your site with MailChimp. You can choose one or more MailChimp lists to have users subscribed to when they signup for your site.</p>
-		<p>If you have <a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can also choose one or more MailChimp lists to have members subscribed to for each membership level.</p>
+		<p>This plugin will integrate your site with MailChimp. You can choose one or more MailChimp lists for the "All Users" option to have users subscribed to when they signup for your site.</p>
+		<p>If you have <a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can choose one or more MailChimp lists to have members subscribed to for each membership level. You can also specify "Opt-in Lists" that members can opt into at checkout.</p>
 		<p>Don't have a MailChimp account? <a href="http://eepurl.com/k4aAH" target="_blank">Get one here</a>. It's free.</p>
 		
 		<?php settings_fields('pmpromc_options'); ?>
