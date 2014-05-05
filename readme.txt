@@ -1,9 +1,9 @@
 === MailChimp Add On for Paid Memberships Pro ===
 Contributors: strangerstudios
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
-Requires at least: 3.1
-Tested up to: 3.6
-Stable tag: .3.4
+Requires at least: 3.5
+Tested up to: 3.9
+Stable tag: .3.5
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
