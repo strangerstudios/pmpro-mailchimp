@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .3.5
+Version: .3.6
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -50,11 +50,9 @@ function pmpromc_init()
 	pmpromc_getPMProLevels();
 	global $pmpromc_levels;
 	if(!empty($pmpromc_levels))
-	{		
+	{
 		add_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level", 15, 2);
-	}
-	
-	
+	}	
 }
 add_action("init", "pmpromc_init", 0);
 
@@ -92,19 +90,15 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 					}
 				}
 			}
-				
 
 			global $profileuser;
 			$user_additional_lists = get_user_meta($profileuser->ID,'pmpromc_additional_lists',true);
-
 					
 			if(isset($user_additional_lists))
 				$selected_lists = $user_additional_lists;
 			else
 				$selected_lists = array();
-			
-			//get_user_meta($user_id2, 'pmpromc_additional_lists',true);
-			
+						
 			echo "<select multiple='yes' name=\"additional_lists[]\">";
 			foreach($additional_lists_array as $list)
 			{
@@ -120,13 +114,18 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 	</table>
 <?php }
 
+//saving additional lists on profile save
 function pmpromc_save_custom_user_profile_fields( $user_id )
 {
+	//only if additional lists is set
+	if(!isset($_REQUEST['additional_lists']))
+		return;
+	
 	$options = get_option("pmpromc_options");
 	$all_additional_lists = $options['additional_lists'];
-
-	update_user_meta($user_id, 'pmpromc_additional_lists',$_REQUEST['additional_lists']); 
-	$additional_user_lists = get_user_meta($user_id,'pmpromc_additional_lists',true);
+	
+	$additional_user_lists = $_REQUEST['additional_lists'];
+	update_user_meta($user_id, 'pmpromc_additional_lists', $additional_user_lists); 	
 	
 	//get all pmpro additional lists
 	//if they aren't in $additional_user_lists Unsubscribe them from those
@@ -180,12 +179,12 @@ add_action("wp", "pmpromc_wp", 0);
 
 //for when checking out
 function pmpromc_pmpro_after_checkout($user_id)
-{
-	pmpromc_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
-	subscribe_to_additional_lists($user_id);
+{	
+	pmpromc_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);	
+	pmpromc_subscribeToAdditionalLists($user_id);
 }
 
-function subscribe_to_additional_lists($user_id)
+function pmpromc_subscribeToAdditionalLists($user_id)
 {
 	$options = get_option("pmpromc_options");
 	$additional_lists = $_REQUEST['additional_lists'];
@@ -229,19 +228,79 @@ function pmpromc_user_register($user_id)
 	}
 }
 
+function pmpromc_unsubscribeFromLists($user_id, $level_id)
+{
+	global $pmpromc_levels;
+	$options = get_option("pmpromc_options");
+	$all_lists = get_option("pmpromc_all_lists");	
+	
+	//don't unsubscribe if unsubscribe option is no
+	if(!$options['unsubscribe'])
+		return;
+	
+	//unsubscribing from all lists or just old level lists?
+	if($options['unsubscribe'] == "all")
+		$unsubscribe_lists = wp_list_pluck($all_lists, "id");
+	else
+	{
+		//Get their last level, last entry or second to last if they are changing levels
+		global $wpdb;
+		if($level_id)
+			$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1,1");
+		else
+			$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1");
+		
+		if($last_level)
+		{			
+			$last_level_id = $last_level[0]->membership_id;
+			$unsubscribe_lists = $options['level_'.$last_level_id.'_lists'];
+		}
+		else
+			$unsubscribe_lists = array();
+	}	
+		
+	//still lists to unsubscribe from?
+	if(empty($unsubscribe_lists))
+		return;
+	
+	//we don't want to unsubscribe from lists for the new level or any additional lists the user is subscribed to
+	$user_additional_lists = get_user_meta($user_id,'pmpromc_additional_lists',true);	
+	if(!is_array($user_additional_lists))
+		$user_additional_lists = array();
+	if(!empty($level_id))
+		$level_lists = $options['level_' . $level_id . '_lists'];
+	else
+		$level_lists = $options['users_lists'];
+		
+	//NOTE: make sure these are both arrays, see if keys matter
+	$dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
+		
+	//load API	
+	$api = new MCAPI( $options['api_key'] );
+	$list_user = get_userdata($user_id);
+	
+	//unsubscribe	
+	foreach($unsubscribe_lists as $list)
+	{		
+		if(!in_array($list, $dont_unsubscribe_lists))
+		{		
+			$api->listUnsubscribe($list, $list_user->user_email);		
+		}
+	}	
+}
+
 //subscribe new members (PMPro) when they register
 function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 {
 	clean_user_cache($user_id);
-	
+		
 	global $pmpromc_levels;
 	$options = get_option("pmpromc_options");
 	$all_lists = get_option("pmpromc_all_lists");	
-
+	
 	//should we add them to any lists?
 	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['api_key']))
 	{
-
 		//get user info
 		$list_user = get_userdata($user_id);		
 		
@@ -255,41 +314,8 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
 		}
 		
-		//unsubscribe them from lists not selected
-		if($options['unsubscribe'])
-		{
-
-			/*
-			 * Which level did they have last? (second to last entry in pmpro_memberships_users)
-			 * If they had a level, get the lists for that level
-			 * Remove any lists that are for their new level
-			 * Unsubscribe them from the remaining lists			 
-			 */
-			
-			//Get their prior level
-			global $wpdb;
-			$second_to_last_entry = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1,1");
-			
-			if($second_to_last_entry)
-			{			
-				$previous_level = $second_to_last_entry[0]->membership_id;
-				$prev_level_lists = $options['level_'.$previous_level.'_lists'];
-			
-				//get the lists for thier current level.
-				$curr_level_lists = $options['level_' . $level_id . '_lists'];
-				
-				//unique merge with additional lists.
-
-				foreach($prev_level_lists as $list)
-				{					
-					if(!in_array($list, $curr_level_lists))
-					{
-						//the list was not found in our current level lists so unsubscribe
-						$api->listUnsubscribe($list, $list_user->user_email);		
-					}
-				}
-			}
-		}
+		//unsubscribe them from lists not selected, or all lists from their old level
+		pmpromc_unsubscribeFromLists($user_id, $level_id);
 	}	
 	elseif(!empty($options['api_key']) && count($options) > 3)
 	{
@@ -309,42 +335,14 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			}
 			
 			//unsubscribe from any list not assigned to users
-			if($options['unsubscribe'])
-			{
-				foreach($all_lists as $list)
-				{
-					$additional_lists = $options['additional_lists'];
-					if(!in_array($list['id'], $additional_lists))
-					{
-						if(!in_array($list['id'], $options['users_lists']))
-							$api->listUnsubscribe($list['id'], $list_user->user_email);
-					}
-				
-				}
-			}
+			pmpromc_unsubscribeFromLists($user_id, $level_id);
 		}
 		else
 		{
 			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
-			if($options['unsubscribe'])
-			{
-				if(is_array($all_lists))
-				{
-					//get user info
-					$list_user = get_userdata($user_id);
-					
-					//unsubscribe to each list
-					$api = new MCAPI( $options['api_key']);
-
-					foreach($all_lists as $list)
-					{
-						$api->listUnsubscribe($list['id'], $list_user->user_email);
-
-					}
-				}
-			}
+			pmpromc_unsubscribeFromLists($user_id, $level_id);
 		}
-	}	
+	}
 }
 
 //change email in MailChimp if a user's email is changed in WordPress
@@ -477,9 +475,9 @@ function pmpromc_additional_lists_on_checkout()
 			<th>
 				<?php 
 					if(count($additional_lists_array) > 1)
-						_e('Join one or more of our mailing lists?', 'pmpro');
+						_e('Join one or more of our mailing lists.', 'pmpro');
 					else
-						_e('Join our mailing list?', 'pmpro');
+						_e('Join our mailing list.', 'pmpro');
 				?>
 			</th>
 		</tr>
@@ -487,13 +485,23 @@ function pmpromc_additional_lists_on_checkout()
 		<tbody>
 			<tr class="odd">
 				<td>					
-				<?php	
+				<?php
+					global $current_user;
+					if(isset($_REQUEST['additional_lists']))
+						$additional_lists_selected = $_REQUEST['additional_lists'];
+					elseif(isset($_SESSION['additional_lists']))
+						$additional_lists_selected = $_SESSION['additional_lists'];
+					elseif(!empty($current_user->ID))
+						$additional_lists_selected = get_user_meta($current_user->ID, "pmpromc_additional_lists", true);
+					else
+						$additional_lists_selected = array();
+									
 					$count = 0;
 					foreach($additional_lists_array as $key=> $additional_list)					
 					{
-						$count++;
+						$count++;						
 					?>
-						<input type="checkbox" id="additional_lists_<?php echo $count;?>" name="additional_lists[]" value="<?php echo $additional_list['id'];?>" />
+						<input type="checkbox" id="additional_lists_<?php echo $count;?>" name="additional_lists[]" value="<?php echo $additional_list['id'];?>" <?php if(is_array($additional_lists_selected) && !empty($additional_lists_selected[$count-1])) checked($additional_lists_selected[$count-1], $additional_list['id']);?> />
 						<label for="additional_lists_<?php echo $count;?>" class="pmpro_normal pmpro_clickable"><?php echo $additional_list['name'];?></label><br />
 					<?php
 					}	
@@ -626,7 +634,8 @@ function pmpromc_option_unsubscribe()
 	?>
 	<select name="pmpromc_options[unsubscribe]">
 		<option value="0" <?php selected($options['unsubscribe'], 0);?>>No</option>
-		<option value="1" <?php selected($options['unsubscribe'], 1);?>>Yes</option>		
+		<option value="1" <?php selected($options['unsubscribe'], 1);?>>Yes (Only old level lists.)</option>
+		<option value="all" <?php selected($options['unsubscribe'], "all");?>>Yes (All other lists.)</option>
 	</select>
 	<small>Recommended: Yes. However, if you manage multiple lists in MailChimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.</small>
 	<?php
@@ -669,7 +678,7 @@ function pmpromc_options_validate($input)
 	//api key
 	$newinput['api_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key']));		
 	$newinput['double_opt_in'] = intval($input['double_opt_in']);
-	$newinput['unsubscribe'] = intval($input['unsubscribe']);
+	$newinput['unsubscribe'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']);
 	
 	//user lists
 	if(!empty($input['users_lists']) && is_array($input['users_lists']))
