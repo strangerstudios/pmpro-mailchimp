@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .3.6
+Version: .3.6.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -74,40 +74,49 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 				
 			$api = new MCAPI( $options['api_key'] );
 			$lists = $api->lists( array(), 0, 100 );
-			$additional_lists_array = array();
+			
+			//no lists?
+			if(!empty($lists))
+			{			
+				$additional_lists_array = array();
 
-			foreach ($lists['data'] as $list)
-			{
-				if(!empty($additional_lists))
+				foreach ($lists['data'] as $list)
 				{
-					foreach($additional_lists as $additional_list)
+					if(!empty($additional_lists))
 					{
-						if($list['id'] == $additional_list)	
-						{	
-							$additional_lists_array[] = $list;
-							break;
+						foreach($additional_lists as $additional_list)
+						{
+							if($list['id'] == $additional_list)	
+							{	
+								$additional_lists_array[] = $list;
+								break;
+							}
 						}
 					}
 				}
 			}
 
-			global $profileuser;
-			$user_additional_lists = get_user_meta($profileuser->ID,'pmpromc_additional_lists',true);
-					
-			if(isset($user_additional_lists))
-				$selected_lists = $user_additional_lists;
-			else
-				$selected_lists = array();
+			//no lists?
+			if(!empty($additional_lists_array))
+			{			
+				global $profileuser;
+				$user_additional_lists = get_user_meta($profileuser->ID,'pmpromc_additional_lists',true);
 						
-			echo "<select multiple='yes' name=\"additional_lists[]\">";
-			foreach($additional_lists_array as $list)
-			{
-				echo "<option value='" . $list['id'] . "' ";
-				if(is_array($selected_lists) && in_array($list['id'], $selected_lists))
-					echo "selected='selected'";
-				echo ">" . $list['name'] . "</option>";
+				if(isset($user_additional_lists))
+					$selected_lists = $user_additional_lists;
+				else
+					$selected_lists = array();
+							
+				echo "<select multiple='yes' name=\"additional_lists[]\">";
+				foreach($additional_lists_array as $list)
+				{
+					echo "<option value='" . $list['id'] . "' ";
+					if(is_array($selected_lists) && in_array($list['id'], $selected_lists))
+						echo "selected='selected'";
+					echo ">" . $list['name'] . "</option>";
+				}
+				echo "</select>";
 			}
-			echo "</select>";
 			?>												
 			</td>
 		</tr>
@@ -447,6 +456,10 @@ function pmpromc_additional_lists_on_checkout()
 		
 	$api = new MCAPI( $options['api_key'] );
 	$lists = $api->lists( array(), 0, 100 );
+	
+	//no lists?
+	if(empty($lists))
+		return;
 	
 	$additional_lists_array = array();
 	foreach ($lists['data'] as $list)
