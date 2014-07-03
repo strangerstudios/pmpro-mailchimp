@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .3.6.1
+Version: .3.6.2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -45,14 +45,19 @@ function pmpromc_init()
 	//setup hooks for new users	
 	if(!empty($options['users_lists']))
 		add_action("user_register", "pmpromc_user_register");
-	
+			
 	//setup hooks for PMPro levels
 	pmpromc_getPMProLevels();
 	global $pmpromc_levels;
-	if(!empty($pmpromc_levels))
-	{
+	$is_checkout_page = (isset($_REQUEST['submit-checkout']) || (isset($_REQUEST['confirm']) && isset($_REQUEST['gateway'])));
+	if(!empty($pmpromc_levels) && !$is_checkout_page)
+	{		
 		add_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level", 15, 2);
-	}	
+	}
+	elseif(!empty($pmpromc_levels))
+	{	
+		add_action("pmpro_after_checkout", "pmpromc_pmpro_after_checkout", 15);	
+	}
 }
 add_action("init", "pmpromc_init", 0);
 
@@ -169,34 +174,18 @@ add_action( 'edit_user_profile', 'pmpromc_add_custom_user_profile_fields',12 );
 add_action( 'personal_options_update',  'pmpromc_save_custom_user_profile_fields' );
 add_action( 'edit_user_profile_update', 'pmpromc_save_custom_user_profile_fields' );
 
-
-
-//use a different action if we are on the checkout page
-function pmpromc_wp()
-{
-	if(is_admin())
-		return;
-		
-	global $post;
-	if(!empty($post->post_content) && strpos($post->post_content, "[pmpro_checkout]") !== false)
-	{
-		remove_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level");
-		add_action("pmpro_after_checkout", "pmpromc_pmpro_after_checkout", 15);		
-	}
-}
-add_action("wp", "pmpromc_wp", 0);
-
 //for when checking out
 function pmpromc_pmpro_after_checkout($user_id)
-{	
+{
 	pmpromc_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);	
 	pmpromc_subscribeToAdditionalLists($user_id);
 }
 
 function pmpromc_subscribeToAdditionalLists($user_id)
-{
+{	
 	$options = get_option("pmpromc_options");
-	$additional_lists = $_REQUEST['additional_lists'];
+	if(!empty($_REQUEST['additional_lists']))
+		$additional_lists = $_REQUEST['additional_lists'];
 	
 	if(!empty($additional_lists))
 	{
@@ -207,7 +196,7 @@ function pmpromc_subscribeToAdditionalLists($user_id)
 		$list_user = get_userdata($user_id);		
 		
 		foreach($additional_lists as $list)
-		{					
+		{			
 			//subscribe them
 			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);			
 		}
@@ -300,7 +289,7 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 
 //subscribe new members (PMPro) when they register
 function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
-{
+{	
 	clean_user_cache($user_id);
 		
 	global $pmpromc_levels;
@@ -316,9 +305,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 		//subscribe to each list
 		$api = new MCAPI( $options['api_key']);
 		foreach($options['level_' . $level_id . '_lists'] as $list)
-		{					
-			//echo "<hr />Trying to subscribe to " . $list . "...";
-			
+		{			
 			//subscribe them
 			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
 		}
@@ -838,3 +825,13 @@ function pmpromc_activation()
 	}
 }
 register_activation_hook(__FILE__, "pmpromc_activation");
+
+/*
+	Sessions vars for PayPal Express/etc
+*/
+function pmpromc_pmpro_paypalexpress_session_vars()
+{
+	if(isset($_REQUEST['additional_lists']))
+		$_SESSION['additional_lists'] = $_REQUEST['additional_lists'];
+}
+add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_session_vars");
