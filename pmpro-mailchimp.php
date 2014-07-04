@@ -40,18 +40,20 @@ function pmpromc_init()
 	}
 	
 	//get options for below
-	$options = get_option("pmpromc_options");
-	
-	//setup hooks for new users	
-	if(!empty($options['users_lists']))
-		add_action("user_register", "pmpromc_user_register");
+	$options = get_option("pmpromc_options");		
 			
+	//are we on the checkout page?
+	$is_checkout_page = (isset($_REQUEST['submit-checkout']) || (isset($_REQUEST['confirm']) && isset($_REQUEST['gateway'])));
+	
+	//setup hooks for user_register
+	if(!empty($options['users_lists']) && !$is_checkout_page)
+		add_action("user_register", "pmpromc_user_register");
+	
 	//setup hooks for PMPro levels
 	pmpromc_getPMProLevels();
-	global $pmpromc_levels;
-	$is_checkout_page = (isset($_REQUEST['submit-checkout']) || (isset($_REQUEST['confirm']) && isset($_REQUEST['gateway'])));
+	global $pmpromc_levels;	
 	if(!empty($pmpromc_levels) && !$is_checkout_page)
-	{		
+	{
 		add_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level", 15, 2);
 	}
 	elseif(!empty($pmpromc_levels))
@@ -834,7 +836,7 @@ add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_sess
 */
 //subscribe
 function pmpromc_subscribe($list, $user)
-{
+{	
 	$options = get_option("pmpromc_options");
 	$api = new Mailchimp( $options['api_key']);
 	
