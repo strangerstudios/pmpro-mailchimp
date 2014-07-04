@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: .3.6.2
+Version: 1.0
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -34,9 +34,9 @@ Author URI: http://www.strangerstudios.com
 function pmpromc_init()
 {
 	//include MCAPI Class if we don't have it already
-	if(!class_exists("MCAPI"))
+	if(!class_exists("Mailchimp"))
 	{
-		require_once(dirname(__FILE__) . "/includes/MCAPI.class.php");
+		require_once(dirname(__FILE__) . "/includes/Mailchimp.php");
 	}
 	
 	//get options for below
@@ -77,8 +77,8 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 			$all_lists = get_option("pmpromc_all_lists");
 			$additional_lists = $options['additional_lists'];
 				
-			$api = new MCAPI( $options['api_key'] );
-			$lists = $api->lists( array(), 0, 100 );
+			$api = new Mailchimp( $options['api_key'] );
+			$lists = $api->lists->getList( array(), 0, 100 );
 			
 			//no lists?
 			if(!empty($lists))
@@ -145,7 +145,6 @@ function pmpromc_save_custom_user_profile_fields( $user_id )
 	//if they aren't in $additional_user_lists Unsubscribe them from those
 	
 	$list_user = get_userdata($user_id);
-	$api = new MCAPI( $options['api_key']);
 	
 	if(!empty($all_additional_lists))
 	{
@@ -155,14 +154,14 @@ function pmpromc_save_custom_user_profile_fields( $user_id )
 			if(in_array($list, $additional_user_lists))
 			{
 				//Subscribe them
-				$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
+				pmpromc_subscribe($list, $list_user);
 			}
 		
 			//If we do not find them in the user selected lists, then unsubscribe them.
 			else
 			{
 				//Unsubscribe them
-				$api->listUnsubscribe($list, $list_user->user_email);
+				pmpromc_unsubscribe($list, $list_user);				
 			}
 		}
 	}
@@ -190,15 +189,13 @@ function pmpromc_subscribeToAdditionalLists($user_id)
 	if(!empty($additional_lists))
 	{
 		update_user_meta($user_id, 'pmpromc_additional_lists', $additional_lists);
-		
-		$api = new MCAPI( $options['api_key']);
-		
+				
 		$list_user = get_userdata($user_id);		
 		
 		foreach($additional_lists as $list)
 		{			
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);			
+			pmpromc_subscribe($list, $list_user);			
 		}
 	}
 }
@@ -216,12 +213,11 @@ function pmpromc_user_register($user_id)
 		//get user info
 		$list_user = get_userdata($user_id);
 		
-		//subscribe to each list
-		$api = new MCAPI( $options['api_key']);
+		//subscribe to each list		
 		foreach($options['users_lists'] as $list)
 		{					
 			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
+			pmpromc_subscribe($list, $list_user);			
 		}
 	}
 }
@@ -274,7 +270,7 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 	$dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
 		
 	//load API	
-	$api = new MCAPI( $options['api_key'] );
+	$api = new Mailchimp( $options['api_key'] );
 	$list_user = get_userdata($user_id);
 	
 	//unsubscribe	
@@ -282,7 +278,7 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 	{		
 		if(!in_array($list, $dont_unsubscribe_lists))
 		{		
-			$api->listUnsubscribe($list, $list_user->user_email);		
+			pmpromc_unsubscribe($list, $list_user);			
 		}
 	}	
 }
@@ -302,12 +298,11 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 		//get user info
 		$list_user = get_userdata($user_id);		
 		
-		//subscribe to each list
-		$api = new MCAPI( $options['api_key']);
+		//subscribe to each list		
 		foreach($options['level_' . $level_id . '_lists'] as $list)
 		{			
-			//subscribe them
-			$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
+			//subscribe them			
+			pmpromc_subscribe($list, $list_user);			
 		}
 		
 		//unsubscribe them from lists not selected, or all lists from their old level
@@ -322,12 +317,11 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 			//get user info
 			$list_user = get_userdata($user_id);
 			
-			//subscribe to each list
-			$api = new MCAPI( $options['api_key']);
+			//subscribe to each list			
 			foreach($options['users_lists'] as $list)
 			{					
 				//subscribe them
-				$api->listSubscribe($list, $list_user->user_email, apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $list_user->first_name, "LNAME" => $list_user->last_name), $list_user), "html", $options['double_opt_in']);
+				pmpromc_subscribe($list, $list_user);				
 			}
 			
 			//unsubscribe from any list not assigned to users
@@ -349,20 +343,20 @@ function pmpromc_profile_update($user_id, $old_user_data)
 	{			
 		//get all lists
 		$options = get_option("pmpromc_options");
-		$api = new MCAPI( $options['api_key'] );
-		$lists = $api->lists( array(), 0, 100 );
-			
+		$api = new Mailchimp( $options['api_key'] );
+		$lists = $api->lists->getList( array(), 0, 100 );
+				
 		if(!empty($lists['data']))
 		{
 			foreach($lists['data'] as $list)
 			{
 				//check for member
-				$member = $api->listMemberInfo($list['id'], array($old_user_data->user_email));
+				$member = $api->lists->memberInfo($list['id'], array(array("email"=>$old_user_data->user_email)));
 								
-				//update member's email
-				if(!empty($member['success']))
-				{
-					$api->listUpdateMember($list['id'], $old_user_data->user_email, array("email" => $new_user_data->user_email));					
+				//update member's email and other values
+				if(!empty($member['success_count']))
+				{					
+					$api->lists->updateMember($list['id'], array("email"=>$old_user_data->user_email), array("email"=>$new_user_data->user_email));					
 				}
 			}
 		}
@@ -441,8 +435,8 @@ function pmpromc_additional_lists_on_checkout()
 	$options = get_option("pmpromc_options");
 	$additional_lists = $options['additional_lists'];
 		
-	$api = new MCAPI( $options['api_key'] );
-	$lists = $api->lists( array(), 0, 100 );
+	$api = new Mailchimp( $options['api_key'] );
+	$lists = $api->lists->getList( array(), 0, 100 );
 	
 	//no lists?
 	if(empty($lists))
@@ -576,7 +570,6 @@ function pmpromc_section_levels()
 		}
 	}
 }
-
 
 //options code
 function pmpromc_option_api_key()
@@ -745,8 +738,8 @@ function pmpromc_options_page()
 	if(!empty($api_key))
 	{
 		/** Ping the MailChimp API to make sure this API Key is valid */
-		$api = new MCAPI( $api_key );
-		$api->ping();		
+		$api = new Mailchimp( $api_key );
+		$api->helper->ping();		
 		
 		/** Get necessary data and store it into our options field */
 		if ( ! empty( $api->errorCode ) ) {
@@ -757,7 +750,7 @@ function pmpromc_options_page()
 		}
 		else {						
 			/** Support up to 100 lists (but most users won't have nearly that many */
-			$lists = $api->lists( array(), 0, 100 );
+			$lists = $api->lists->getList( array(), 0, 100 );
 			$pmpromc_lists = $lists['data'];								
 			$all_lists = array();
 			
@@ -835,3 +828,42 @@ function pmpromc_pmpro_paypalexpress_session_vars()
 		$_SESSION['additional_lists'] = $_REQUEST['additional_lists'];
 }
 add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_session_vars");
+
+/*
+	Helper functions for Mailchimp v2.0
+*/
+//subscribe
+function pmpromc_subscribe($list, $user)
+{
+	$options = get_option("pmpromc_options");
+	$api = new Mailchimp( $options['api_key']);
+	
+	try{
+		$api->lists->subscribe($list, array("email"=>$user->user_email), apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user), "html", $options['double_opt_in']);
+	}
+	catch(Exception $e)
+	{
+		//we're okay with 200 class exceptions. throw others
+		$code = $e->getCode();
+		if($code < 200 || $code > 299)
+			wp_die($e->getMessage());
+	}
+}
+
+//unsubscribe
+function pmpromc_unsubscribe($list, $user)
+{	
+	$options = get_option("pmpromc_options");
+	$api = new Mailchimp( $options['api_key']);	
+
+	try{
+		$api->lists->unsubscribe($list, array("email"=>$user->user_email));
+	}
+	catch(Exception $e)
+	{
+		//we're okay with 200 class exceptions. throw others
+		$code = $e->getCode();
+		if($code < 200 || $code > 299)
+			wp_die($e->getMessage());
+	}
+}
