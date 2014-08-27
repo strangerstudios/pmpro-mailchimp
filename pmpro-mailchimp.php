@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 1.0.1
+Version: 1.0.2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -63,6 +63,24 @@ function pmpromc_init()
 }
 add_action("init", "pmpromc_init", 0);
 
+function pmpromc_getAPI()
+{
+	$options = get_option("pmpromc_options");
+	
+	$api = new Mailchimp($options['api_key']);
+	
+	try {
+		$api->helper->ping();		
+	} catch (Exception $e) {		
+		global $msg, $msgt;
+		$api = false;
+		$msg = sprintf( __( 'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp' ), $e->getMessage() );
+		$msgt = "error";		
+		add_settings_error( 'pmpro-mailchimp', 'apikey-fail', $msg, 'error' );
+	}
+	
+	return $api;
+}
 
 function pmpromc_add_custom_user_profile_fields( $user ) {
 ?>
@@ -79,8 +97,10 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 			$all_lists = get_option("pmpromc_all_lists");
 			$additional_lists = $options['additional_lists'];
 				
-			$api = new Mailchimp( $options['api_key'] );
-			$lists = $api->lists->getList( array(), 0, 100 );
+			$api = pmpromc_getAPI();
+			
+			if(!empty($api))
+				$lists = $api->lists->getList( array(), 0, 100 );
 			
 			//no lists?
 			if(!empty($lists))
@@ -272,7 +292,7 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 	$dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
 		
 	//load API	
-	$api = new Mailchimp( $options['api_key'] );
+	$api = pmpromc_getAPI();
 	$list_user = get_userdata($user_id);
 	
 	//unsubscribe	
@@ -345,8 +365,9 @@ function pmpromc_profile_update($user_id, $old_user_data)
 	{			
 		//get all lists
 		$options = get_option("pmpromc_options");
-		$api = new Mailchimp( $options['api_key'] );
-		$lists = $api->lists->getList( array(), 0, 100 );
+		$api = pmpromc_getAPI();		
+		if($api)
+			$lists = $api->lists->getList( array(), 0, 100 );
 				
 		if(!empty($lists['data']))
 		{
@@ -438,7 +459,7 @@ function pmpromc_additional_lists_on_checkout()
 	
 	//even have access?
 	if(!empty($options['api_key']))
-		$api = new Mailchimp( $options['api_key'] );
+		$api = pmpromc_getAPI();
 	else
 		return;
 	
@@ -647,7 +668,6 @@ function pmpromc_option_unsubscribe()
 	<?php
 }
 
-
 function pmpromc_option_memberships_lists($level)
 {	
 	global $pmpromc_lists;
@@ -729,7 +749,7 @@ add_action('admin_menu', 'pmpromc_admin_add_page');
 //html for options page
 function pmpromc_options_page()
 {
-	global $pmpromc_lists;
+	global $pmpromc_lists, $msg, $msgt;
 	
 	//get options
 	$options = get_option("pmpromc_options");
@@ -751,38 +771,27 @@ function pmpromc_options_page()
 		$api_key = $options['api_key'];
 	else
 		$api_key = false;
-		
-	if(!empty($api_key))
+	
+	$api = pmpromc_getAPI();
+	
+	if(!empty($api))
 	{
-		/** Ping the MailChimp API to make sure this API Key is valid */
-		$api = new Mailchimp( $api_key );
-		$api->helper->ping();		
+		/** Support up to 100 lists (but most users won't have nearly that many */
+		$lists = $api->lists->getList( array(), 0, 100 );
+		$pmpromc_lists = $lists['data'];								
+		$all_lists = array();
 		
-		/** Get necessary data and store it into our options field */
-		if ( ! empty( $api->errorCode ) ) {
-			/** Looks like there was an error */
-			$msg = sprintf( __( 'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp' ), $api->errorMessage );
-			$msgt = "error";
-			add_settings_error( 'pmpro-mailchimp', 'apikey-fail', $message, 'error' );
+		//save all lists in an option
+		$i = 0;			
+		foreach ( $pmpromc_lists as $list ) {
+			$all_lists[$i]['id'] = $list['id'];
+			$all_lists[$i]['web_id'] = $list['web_id'];
+			$all_lists[$i]['name'] = $list['name'];
+			$i++;
 		}
-		else {						
-			/** Support up to 100 lists (but most users won't have nearly that many */
-			$lists = $api->lists->getList( array(), 0, 100 );
-			$pmpromc_lists = $lists['data'];								
-			$all_lists = array();
-			
-			//save all lists in an option
-			$i = 0;			
-			foreach ( $pmpromc_lists as $list ) {
-				$all_lists[$i]['id'] = $list['id'];
-				$all_lists[$i]['web_id'] = $list['web_id'];
-				$all_lists[$i]['name'] = $list['name'];
-				$i++;
-			}
-			
-			/** Save all of our new data */
-			update_option( "pmpromc_all_lists", $all_lists);		
-		}
+		
+		/** Save all of our new data */
+		update_option( "pmpromc_all_lists", $all_lists);		
 	}
 ?>
 <div class="wrap">
@@ -853,7 +862,7 @@ add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_sess
 function pmpromc_subscribe($list, $user)
 {	
 	$options = get_option("pmpromc_options");
-	$api = new Mailchimp( $options['api_key']);
+	$api = pmpromc_getAPI();
 	
 	try{
 		$api->lists->subscribe($list, array("email"=>$user->user_email), apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user), "html", $options['double_opt_in']);
@@ -871,7 +880,7 @@ function pmpromc_subscribe($list, $user)
 function pmpromc_unsubscribe($list, $user)
 {	
 	$options = get_option("pmpromc_options");
-	$api = new Mailchimp( $options['api_key']);	
+	$api = pmpromc_getAPI();
 
 	try{
 		$api->lists->unsubscribe($list, array("email"=>$user->user_email));
