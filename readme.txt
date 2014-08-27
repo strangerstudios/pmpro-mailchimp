@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 3.5
 Tested up to: 3.9.1
-Stable tag: 1.0
+Stable tag: 1.0.1
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -43,6 +43,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.0.1 =
+* Fixed some warnings and fatal errors if site is run with an empty or invalid API key.
+
 = 1.0 =
 * Admitting that we're officially released with a 1.0 version. :)
 * Now using Mailchimp v2.0 API.

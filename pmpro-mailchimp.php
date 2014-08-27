@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 1.0
+Version: 1.0.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -435,9 +435,20 @@ function pmpromc_option_additional_lists(){
 function pmpromc_additional_lists_on_checkout()
 {
 	$options = get_option("pmpromc_options");
-	$additional_lists = $options['additional_lists'];
-		
-	$api = new Mailchimp( $options['api_key'] );
+	
+	//even have access?
+	if(!empty($options['api_key']))
+		$api = new Mailchimp( $options['api_key'] );
+	else
+		return;
+	
+	//are there additional lists?
+	if(!empty($options['additional_lists']))
+		$additional_lists = $options['additional_lists'];
+	else
+		return;
+			
+	//okay get through API
 	$lists = $api->lists->getList( array(), 0, 100 );
 	
 	//no lists?
@@ -736,7 +747,11 @@ function pmpromc_options_page()
 	}	
 	
 	//check for a valid API key and get lists
-	$api_key = $options['api_key'];
+	if(!empty($options['api_key']))
+		$api_key = $options['api_key'];
+	else
+		$api_key = false;
+		
 	if(!empty($api_key))
 	{
 		/** Ping the MailChimp API to make sure this API Key is valid */
