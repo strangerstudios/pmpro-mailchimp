@@ -64,8 +64,11 @@ function pmpromc_init()
 add_action("init", "pmpromc_init", 0);
 
 function pmpromc_getAPI()
-{
+{		
 	$options = get_option("pmpromc_options");
+	
+	if(empty($options) || empty($options['api_key']))
+		return false;
 	
 	$api = new Mailchimp($options['api_key']);
 	
