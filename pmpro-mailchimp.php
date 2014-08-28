@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 1.0.2
+Version: 1.0.3
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -78,8 +78,7 @@ function pmpromc_getAPI()
 		global $msg, $msgt;
 		$api = false;
 		$msg = sprintf( __( 'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp' ), $e->getMessage() );
-		$msgt = "error";		
-		add_settings_error( 'pmpro-mailchimp', 'apikey-fail', $msg, 'error' );
+		$msgt = "error";
 	}
 	
 	return $api;
