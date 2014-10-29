@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 3.5
-Tested up to: 3.9.1
-Stable tag: 1.0.3
+Tested up to: 4.0
+Stable tag: 1.0.6
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -43,6 +43,15 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.0.6 =
+* BUG: Fixed bug where if users unchecked all optional lists options, the plugin would not remove them from the lists. (Thanks, Darlene)
+
+= 1.0.5 =
+* ENHANCEMENT: Won't try to subscribe/unsubscribe if the user doesn't have an email address. Doesn't come up often in WP, but can.
+
+= 1.0.4 =
+* BUG: Avoiding warnings in some cases where levels have been deleted.
+
 = 1.0.3 =
 * BUG: Removed add_settings_error call to avoid fatal error on front end. Wasn't using it.
 

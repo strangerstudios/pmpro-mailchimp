@@ -3,7 +3,7 @@
 Plugin Name: PMPro MailChimp Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 1.0.3
+Version: 1.0.6
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -136,6 +136,7 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 				else
 					$selected_lists = array();
 							
+				echo '<input type="hidden" name="additional_lists_profile" value="1" />';
 				echo "<select multiple='yes' name=\"additional_lists[]\">";
 				foreach($additional_lists_array as $list)
 				{
@@ -154,15 +155,18 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 
 //saving additional lists on profile save
 function pmpromc_save_custom_user_profile_fields( $user_id )
-{
+{	
 	//only if additional lists is set
-	if(!isset($_REQUEST['additional_lists']))
+	if(!isset($_REQUEST['additional_lists_profile']))
 		return;
 	
 	$options = get_option("pmpromc_options");
 	$all_additional_lists = $options['additional_lists'];
 	
-	$additional_user_lists = $_REQUEST['additional_lists'];
+	if(isset($_REQUEST['additional_lists']))
+		$additional_user_lists = $_REQUEST['additional_lists'];
+	else
+		$additional_user_lists = array();
 	update_user_meta($user_id, 'pmpromc_additional_lists', $additional_user_lists); 	
 	
 	//get all pmpro additional lists
@@ -271,7 +275,10 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 		if($last_level)
 		{			
 			$last_level_id = $last_level[0]->membership_id;
-			$unsubscribe_lists = $options['level_'.$last_level_id.'_lists'];
+			if(!empty($options['level_'.$last_level_id.'_lists']))
+				$unsubscribe_lists = $options['level_'.$last_level_id.'_lists'];
+			else
+				$unsubscribe_lists = array();
 		}
 		else
 			$unsubscribe_lists = array();
@@ -535,7 +542,7 @@ function pmpromc_additional_lists_on_checkout()
 						<label for="additional_lists_<?php echo $count;?>" class="pmpro_normal pmpro_clickable"><?php echo $additional_list['name'];?></label><br />
 					<?php
 					}	
-				?>
+				?>				
 				</td>
 			</tr>
 		</tbody>
@@ -863,6 +870,10 @@ add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_sess
 //subscribe
 function pmpromc_subscribe($list, $user)
 {	
+	//make sure user has an email address
+	if(empty($user->user_email))
+		return;
+	
 	$options = get_option("pmpromc_options");
 	$api = pmpromc_getAPI();
 	
@@ -881,6 +892,10 @@ function pmpromc_subscribe($list, $user)
 //unsubscribe
 function pmpromc_unsubscribe($list, $user)
 {	
+	//make sure user has an email address
+	if(empty($user->user_email))
+		return;
+	
 	$options = get_option("pmpromc_options");
 	$api = pmpromc_getAPI();
 
