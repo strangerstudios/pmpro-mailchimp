@@ -296,8 +296,12 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 		$level_lists = $options['level_' . $level_id . '_lists'];
 	else
 		$level_lists = $options['users_lists'];
-		
-	//NOTE: make sure these are both arrays, see if keys matter
+	
+	//make sure this is an array	
+	if(!is_array($level_lists))
+		$level_lists = array();
+
+	//merge
 	$dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
 		
 	//load API	
