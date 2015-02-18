@@ -43,6 +43,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.0.7 =
+* ENHANCEMENT: Mailing Lists section of edit profile page doesn't show up if there are no lists set for "opt-in lists".
+
 = 1.0.6 =
 * BUG: Avoiding warnings when unsubscribing. (Thanks, Adam Shaw)
 
