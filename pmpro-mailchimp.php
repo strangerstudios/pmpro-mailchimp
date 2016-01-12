@@ -298,7 +298,7 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 	if(!empty($level_id))
 		$level_lists = $options['level_' . $level_id . '_lists'];
 	else
-		$level_lists = $options['users_lists'];
+		$level_lists = isset($options['users_lists']) ? $options['users_lists'] : array();
 	
 	//make sure this is an array	
 	if(!is_array($level_lists))
