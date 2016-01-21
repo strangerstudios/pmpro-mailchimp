@@ -3,17 +3,16 @@
 Plugin Name: Paid Memberships Pro - MailChimp Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 1.0.7
+Version: 2.0.0
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
 /*
-	Copyright 2011	Stranger Studios	(email : jason@strangerstudios.com)
+	Copyright 2011-2016	Stranger Studios	(email : jason@strangerstudios.com)
 	GPLv2 Full license details in license.txt
 */
 
 /*
-	* MCAPI class
 	* options
 	- MailChimp API Key
 	
@@ -33,15 +32,23 @@ Author URI: http://www.strangerstudios.com
 //init
 function pmpromc_init()
 {
-	//include MCAPI Class if we don't have it already
-	if(!class_exists("Mailchimp"))
-	{
-		require_once(dirname(__FILE__) . "/includes/Mailchimp.php");
-	}
-	
 	//get options for below
-	$options = get_option("pmpromc_options");		
-			
+	$options = get_option("pmpromc_options");
+
+	//include MCAPI Class if we don't have it already
+	if (!class_exists('PMPro\\Addon\\MailChimp\\API')) {
+		require_once( dirname(__FILE__) . '/includes/class-mailchimp-api.php');
+	}
+
+	$GLOBALS['pmpromc_api'] = apply_filters('get_mailchimpapi_class_instance', null);
+
+	if (is_null($GLOBALS['pmpromc_api']))
+	{
+		$GLOBALS['pmpromc_api'] = new PMPro\Addon\MailChimp\API();
+	}
+
+	$GLOBALS['pmpromc_api']->set_key();
+
 	//are we on the checkout page?
 	$is_checkout_page = (isset($_REQUEST['submit-checkout']) || (isset($_REQUEST['confirm']) && isset($_REQUEST['gateway'])));
 	
@@ -51,7 +58,8 @@ function pmpromc_init()
 	
 	//setup hooks for PMPro levels
 	pmpromc_getPMProLevels();
-	global $pmpromc_levels;	
+	global $pmpromc_levels;
+
 	if(!empty($pmpromc_levels) && !$is_checkout_page)
 	{
 		add_action("pmpro_after_change_membership_level", "pmpromc_pmpro_after_change_membership_level", 15, 2);
@@ -69,47 +77,56 @@ function pmpromc_getAPI()
 	
 	if(empty($options) || empty($options['api_key']))
 		return false;
-	
-	$api = new Mailchimp($options['api_key']);
-	
-	try {
-		$api->helper->ping();		
-	} catch (Exception $e) {		
-		global $msg, $msgt;
-		$api = false;
-		$msg = sprintf( __( 'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp' ), $e->getMessage() );
-		$msgt = "error";
+
+	if (isset( $options['api_key']))
+	{
+		$api = apply_filters('get_mailchimpapi_class_instance', null);
+		$api->set_key();
+	}
+	else {
+		return false;
 	}
 	
-	return $api;
+	if (false !== $api->connect() )
+	{
+		return $api;
+	}
+
+	return false;
 }
 
 function pmpromc_add_custom_user_profile_fields( $user ) 
 {
 	$options = get_option("pmpromc_options");
-	$all_lists = get_option("pmpromc_all_lists");	
+	$all_lists = get_option("pmpromc_all_lists");
+	$lists = array();
+
 	if(!empty($options['additional_lists']))
 		$additional_lists = $options['additional_lists'];
 	else
 		$additional_lists = array();
 		
-	$api = pmpromc_getAPI();
-	
+	// $api = pmpromc_getAPI();
+	$api = apply_filters('get_mailchimpapi_class_instance', null);
+	$api->set_key();
+
 	if(!empty($api))
-		$lists = $api->lists->getList( array(), 0, 100 );
-	
+	{
+		$lists = $api->get_all_lists();
+	}
+
 	//no lists?
 	if(!empty($lists))
 	{			
 		$additional_lists_array = array();
 
-		foreach ($lists['data'] as $list)
+		foreach ($lists as $list)
 		{
 			if(!empty($additional_lists))
 			{
 				foreach($additional_lists as $additional_list)
 				{
-					if($list['id'] == $additional_list)	
+					if($list->id == $additional_list)
 					{	
 						$additional_lists_array[] = $list;
 						break;
@@ -143,10 +160,10 @@ function pmpromc_add_custom_user_profile_fields( $user )
 				echo "<select multiple='yes' name=\"additional_lists[]\">";
 				foreach($additional_lists_array as $list)
 				{
-					echo "<option value='" . $list['id'] . "' ";
-					if(is_array($selected_lists) && in_array($list['id'], $selected_lists))
+					echo "<option value='" . $list->id . "' ";
+					if(is_array($selected_lists) && in_array($list->id, $selected_lists))
 						echo "selected='selected'";
-					echo ">" . $list['name'] . "</option>";
+					echo ">" . $list->name . "</option>";
 				}
 				echo "</select>";			
 			?>												
@@ -253,156 +270,6 @@ function pmpromc_user_register($user_id)
 	}
 }
 
-function pmpromc_unsubscribeFromLists($user_id, $level_id)
-{
-	global $pmpromc_levels;
-	$options = get_option("pmpromc_options");
-	$all_lists = get_option("pmpromc_all_lists");	
-	
-	//don't unsubscribe if unsubscribe option is no
-	if(!$options['unsubscribe'])
-		return;
-	
-	//unsubscribing from all lists or just old level lists?
-	if($options['unsubscribe'] == "all")
-		$unsubscribe_lists = wp_list_pluck($all_lists, "id");
-	else
-	{
-		//Get their last level, last entry or second to last if they are changing levels
-		global $wpdb;
-		if($level_id)
-			$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1,1");
-		else
-			$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1");
-		
-		if($last_level)
-		{			
-			$last_level_id = $last_level[0]->membership_id;
-			if(!empty($options['level_'.$last_level_id.'_lists']))
-				$unsubscribe_lists = $options['level_'.$last_level_id.'_lists'];
-			else
-				$unsubscribe_lists = array();
-		}
-		else
-			$unsubscribe_lists = array();
-	}	
-		
-	//still lists to unsubscribe from?
-	if(empty($unsubscribe_lists))
-		return;
-	
-	//we don't want to unsubscribe from lists for the new level or any additional lists the user is subscribed to
-	$user_additional_lists = get_user_meta($user_id,'pmpromc_additional_lists',true);	
-	if(!is_array($user_additional_lists))
-		$user_additional_lists = array();
-	if(!empty($level_id))
-		$level_lists = $options['level_' . $level_id . '_lists'];
-	else
-		$level_lists = $options['users_lists'];
-	
-	//make sure this is an array	
-	if(!is_array($level_lists))
-		$level_lists = array();
-
-	//merge
-	$dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
-		
-	//load API	
-	$api = pmpromc_getAPI();
-	$list_user = get_userdata($user_id);
-	
-	//unsubscribe	
-	foreach($unsubscribe_lists as $list)
-	{		
-		if(!in_array($list, $dont_unsubscribe_lists))
-		{		
-			pmpromc_unsubscribe($list, $list_user);			
-		}
-	}	
-}
-
-//subscribe new members (PMPro) when they register
-function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
-{	
-	clean_user_cache($user_id);
-		
-	global $pmpromc_levels;
-	$options = get_option("pmpromc_options");
-	$all_lists = get_option("pmpromc_all_lists");	
-	
-	//should we add them to any lists?
-	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['api_key']))
-	{
-		//get user info
-		$list_user = get_userdata($user_id);		
-		
-		//subscribe to each list		
-		foreach($options['level_' . $level_id . '_lists'] as $list)
-		{			
-			//subscribe them			
-			pmpromc_subscribe($list, $list_user);			
-		}
-		
-		//unsubscribe them from lists not selected, or all lists from their old level
-		pmpromc_unsubscribeFromLists($user_id, $level_id);
-	}	
-	elseif(!empty($options['api_key']) && count($options) > 3)
-	{
-		//now they are a normal user should we add them to any lists?
-		//Case where PMPro is not installed?
-		if(!empty($options['users_lists']) && !empty($options['api_key']))
-		{
-			//get user info
-			$list_user = get_userdata($user_id);
-			
-			//subscribe to each list			
-			foreach($options['users_lists'] as $list)
-			{					
-				//subscribe them
-				pmpromc_subscribe($list, $list_user);				
-			}
-			
-			//unsubscribe from any list not assigned to users
-			pmpromc_unsubscribeFromLists($user_id, $level_id);
-		}
-		else
-		{
-			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
-			pmpromc_unsubscribeFromLists($user_id, $level_id);
-		}
-	}
-}
-
-//change email in MailChimp if a user's email is changed in WordPress
-function pmpromc_profile_update($user_id, $old_user_data)
-{
-	$new_user_data = get_userdata($user_id);
-	if($new_user_data->user_email != $old_user_data->user_email)
-	{			
-		//get all lists
-		$options = get_option("pmpromc_options");
-		$api = pmpromc_getAPI();		
-		if($api)
-			$lists = $api->lists->getList( array(), 0, 100 );
-				
-		if(!empty($lists['data']))
-		{
-			foreach($lists['data'] as $list)
-			{
-				//check for member
-				$member = $api->lists->memberInfo($list['id'], array(array("email"=>$old_user_data->user_email)));
-								
-				//update member's email and other values
-				if(!empty($member['success_count']))
-				{					
-					$api->lists->updateMember($list['id'], array("email"=>$old_user_data->user_email), array("email"=>$new_user_data->user_email));					
-				}
-			}
-		}
-	}
-}
-add_action("profile_update", "pmpromc_profile_update", 10, 2);
-
 //admin init. registers settings
 function pmpromc_admin_init()
 {
@@ -454,10 +321,10 @@ function pmpromc_option_additional_lists(){
 		echo "<select multiple='yes' name=\"pmpromc_options[additional_lists][]\">";
 		foreach($pmpromc_lists as $list)
 		{
-			echo "<option value='" . $list['id'] . "' ";
-			if(in_array($list['id'], $selected_lists))
+			echo "<option value='" . $list->id . "' ";
+			if(in_array($list->id, $selected_lists))
 				echo "selected='selected'";
-			echo ">" . $list['name'] . "</option>";
+			echo ">" . $list->name . "</option>";
 		}
 		echo "</select>";
 	}
@@ -475,9 +342,11 @@ function pmpromc_additional_lists_on_checkout()
 	
 	$options = get_option("pmpromc_options");
 	
-	//even have access?
-	if(!empty($options['api_key']))
-		$api = pmpromc_getAPI();
+	//have access?
+	if(!empty($options['api_key'])) {
+		$api = apply_filters('get_mailchimpapi_class_instance', null);
+		$api->set_key();
+	}
 	else
 		return;
 	
@@ -488,7 +357,7 @@ function pmpromc_additional_lists_on_checkout()
 		return;
 			
 	//okay get through API
-	$lists = $api->lists->getList( array(), 0, 100 );
+	$lists = $api->get_all_lists();
 	
 	//no lists?
 	if(empty($lists))
@@ -649,10 +518,10 @@ function pmpromc_option_users_lists()
 		echo "<select multiple='yes' name=\"pmpromc_options[users_lists][]\">";
 		foreach($pmpromc_lists as $list)
 		{
-			echo "<option value='" . $list['id'] . "' ";
-			if(in_array($list['id'], $selected_lists))
+			echo "<option value='" . $list->id . "' ";
+			if(in_array($list->id, $selected_lists))
 				echo "selected='selected'";
-			echo ">" . $list['name'] . "</option>";
+			echo ">" . $list->name . "</option>";
 		}
 		echo "</select>";
 	}
@@ -703,10 +572,10 @@ function pmpromc_option_memberships_lists($level)
 		echo "<select multiple='yes' name=\"pmpromc_options[level_" . $level->id . "_lists][]\">";
 		foreach($pmpromc_lists as $list)
 		{
-			echo "<option value='" . $list['id'] . "' ";
-			if(in_array($list['id'], $selected_lists))
+			echo "<option value='" . $list->id . "' ";
+			if(in_array($list->id, $selected_lists))
 				echo "selected='selected'";
-			echo ">" . $list['name'] . "</option>";
+			echo ">" . $list->name . "</option>";
 		}
 		echo "</select>";
 	}
@@ -790,24 +659,26 @@ function pmpromc_options_page()
 	else
 		$api_key = false;
 	
-	$api = pmpromc_getAPI();
-	
+	// $api = pmpromc_getAPI();
+	$api = apply_filters('get_mailchimpapi_class_instance', null);
+	$api->set_key();
+
 	if(!empty($api))
 	{
-		/** Support up to 100 lists (but most users won't have nearly that many */
-		$lists = $api->lists->getList( array(), 0, 100 );
-		$pmpromc_lists = $lists['data'];								
+		$pmpromc_lists = $api->get_all_lists();
 		$all_lists = array();
 		
 		//save all lists in an option
 		$i = 0;			
 		foreach ( $pmpromc_lists as $list ) {
-			$all_lists[$i]['id'] = $list['id'];
-			$all_lists[$i]['web_id'] = $list['web_id'];
-			$all_lists[$i]['name'] = $list['name'];
+
+			$all_lists[$i] = array();
+			$all_lists[$i]['id'] = $list->id;
+			$all_lists[$i]['web_id'] = $list->id;
+			$all_lists[$i]['name'] = $list->name;
 			$i++;
 		}
-		
+
 		/** Save all of our new data */
 		update_option( "pmpromc_all_lists", $all_lists);		
 	}
@@ -891,17 +762,9 @@ function pmpromc_subscribe($list, $user)
 	
 	$options = get_option("pmpromc_options");
 	$api = pmpromc_getAPI();
-	
-	try{
-		$api->lists->subscribe($list, array("email"=>$user->user_email), apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user), "html", $options['double_opt_in']);
-	}
-	catch(Exception $e)
-	{
-		//we're okay with 200 class exceptions. throw others
-		$code = $e->getCode();
-		if($code < 200 || $code > 299)
-			wp_die($e->getMessage());
-	}
+	$merge_fields = apply_filters("pmpro_mailchimp_listsubscribe_fields", array( "FNAME" => $user->first_name, "LNAME" => $user->last_name), $user);
+
+	$api->subscribe($list, $user, $merge_fields, "html", $options['double_opt_in']);
 }
 
 //unsubscribe
@@ -914,17 +777,166 @@ function pmpromc_unsubscribe($list, $user)
 	$options = get_option("pmpromc_options");
 	$api = pmpromc_getAPI();
 
-	try{
-		$api->lists->unsubscribe($list, array("email"=>$user->user_email));
+	if ($api) {
+		$api->unsubscribe($list, $user);
 	}
-	catch(Exception $e)
+	else
 	{
-		//we're okay with 200 class exceptions. throw others
-		$code = $e->getCode();
-		if($code < 200 || $code > 299)
-			wp_die($e->getMessage());
+		wp_die(__('Error during unsubscribe operation. Please report this error to the administrator', 'pmpromc'));
 	}
 }
+
+function pmpromc_unsubscribeFromLists($user_id, $level_id)
+{
+	global $pmpromc_levels;
+	$options = get_option("pmpromc_options");
+	$all_lists = get_option("pmpromc_all_lists");
+
+	//don't unsubscribe if unsubscribe option is no
+	if(!$options['unsubscribe'])
+		return;
+
+	//unsubscribing from all lists or just old level lists?
+	if($options['unsubscribe'] == "all")
+		$unsubscribe_lists = wp_list_pluck($all_lists, "id");
+	else
+	{
+		//Get their last level, last entry or second to last if they are changing levels
+		global $wpdb;
+		if($level_id)
+			$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1,1");
+		else
+			$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1");
+
+		if($last_level)
+		{
+			$last_level_id = $last_level[0]->membership_id;
+			if(!empty($options['level_'.$last_level_id.'_lists']))
+				$unsubscribe_lists = $options['level_'.$last_level_id.'_lists'];
+			else
+				$unsubscribe_lists = array();
+		}
+		else
+			$unsubscribe_lists = array();
+	}
+
+	//still lists to unsubscribe from?
+	if(empty($unsubscribe_lists))
+		return;
+
+	//we don't want to unsubscribe from lists for the new level or any additional lists the user is subscribed to
+	$user_additional_lists = get_user_meta($user_id,'pmpromc_additional_lists',true);
+	if(!is_array($user_additional_lists))
+		$user_additional_lists = array();
+	if(!empty($level_id))
+		$level_lists = $options['level_' . $level_id . '_lists'];
+	else
+		$level_lists = $options['users_lists'];
+
+	//make sure this is an array
+	if(!is_array($level_lists))
+		$level_lists = array();
+
+	//merge
+	$dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
+
+	//load API
+	$api = pmpromc_getAPI();
+	$list_user = get_userdata($user_id);
+
+	//unsubscribe
+	foreach($unsubscribe_lists as $list)
+	{
+		if(!in_array($list, $dont_unsubscribe_lists))
+		{
+			pmpromc_unsubscribe($list, $list_user);
+		}
+	}
+}
+
+//subscribe new members (PMPro) when they register
+function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
+{
+	clean_user_cache($user_id);
+
+	global $pmpromc_levels;
+	$options = get_option("pmpromc_options");
+	$all_lists = get_option("pmpromc_all_lists");
+
+	//should we add them to any lists?
+	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['api_key']))
+	{
+		//get user info
+		$list_user = get_userdata($user_id);
+
+		//subscribe to each list
+		foreach($options['level_' . $level_id . '_lists'] as $list)
+		{
+			//subscribe them
+			pmpromc_subscribe($list, $list_user);
+		}
+
+		//unsubscribe them from lists not selected, or all lists from their old level
+		pmpromc_unsubscribeFromLists($user_id, $level_id);
+	}
+	elseif(!empty($options['api_key']) && count($options) > 3)
+	{
+		//now they are a normal user should we add them to any lists?
+		//Case where PMPro is not installed?
+		if(!empty($options['users_lists']) && !empty($options['api_key']))
+		{
+			//get user info
+			$list_user = get_userdata($user_id);
+
+			//subscribe to each list
+			foreach($options['users_lists'] as $list)
+			{
+				//subscribe them
+				pmpromc_subscribe($list, $list_user);
+			}
+
+			//unsubscribe from any list not assigned to users
+			pmpromc_unsubscribeFromLists($user_id, $level_id);
+		}
+		else
+		{
+			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
+			pmpromc_unsubscribeFromLists($user_id, $level_id);
+		}
+	}
+}
+
+//change email in MailChimp if a user's email is changed in WordPress
+function pmpromc_profile_update($user_id, $old_user_data)
+{
+	$new_user_data = get_userdata($user_id);
+	if($new_user_data->user_email != $old_user_data->user_email)
+	{
+		//get all lists
+		$api = apply_filters('get_mailchimpapi_class_instance', null);
+		$api->set_key();
+
+		if($api) {
+			$lists = $api->get_all_lists();
+		}
+
+		if(!empty($lists) ) {
+
+			foreach($lists as $list) {
+
+				//check for member
+				$member = $api->get_listinfo_for_member($list->id, $old_user_data);
+
+				//update member's email and other values (only if user is already subscribed - not pending!)
+				if( 'subscribed' == $member->status ) {
+
+					$api->update_list_member($list->id, $old_user_data, $new_user_data);
+				}
+			}
+		}
+	}
+}
+add_action("profile_update", "pmpromc_profile_update", 10, 2);
 
 /*
 Function to add links to the plugin action links
