@@ -960,26 +960,26 @@ function pmpromc_profile_update($user_id, $old_user_data)
 add_action("profile_update", "pmpromc_profile_update", 10, 2);
 
 /*
-	Pass along merge values set in PMPro MailChimp settings.
+	Pass along membership level as merge values.
 */
 function pmpromc_pmpro_mailchimp_listsubscribe_fields($fields, $user)
 {
-	$options = get_option("pmpromc_options");
+	//make sure PMPro is active
+	if(!function_exists('pmpro_getMembershipLevelForUser'))
+		return $fields;
 		
-	if(!empty($options['level_field']) && function_exists('pmpro_getMembershipLevelForUser'))
-	{
-		//get user's membership level
-		if(is_admin() && isset($_REQUEST['membership_level']))
-			$level = pmpro_getLevel(intval($_REQUEST['membership_level']));
-		else
-			$level = pmpro_getMembershipLevelForUser($user->ID);
-				
-		if(!empty($level))
-			$fields[$options['level_field']] = $level->name;
-		else
-			$fields[$options['level_field']] = '';
-	}
-
+	$level = pmpro_getMembershipLevelForUser($user->ID);
+		
+	if(!empty($level) && !empty($level->id))
+		$fields['PMPLEVELID'] = $level->id;
+	else
+		$fields['PMPLEVELID'] = '';
+		
+	if(!empty($level) && !empty($level->name))
+		$fields['PMPLEVEL'] = $level->name;
+	else
+		$fields['PMPLEVEL'] = '';
+	
 	return $fields;
 }
 add_filter('pmpro_mailchimp_listsubscribe_fields', 'pmpromc_pmpro_mailchimp_listsubscribe_fields', 10, 2);

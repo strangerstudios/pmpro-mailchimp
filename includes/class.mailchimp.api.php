@@ -10,7 +10,7 @@ class PMProMailChimp
 
     private $url_args;
     private $all_lists;
-
+	private $merge_fields;
 
     private $subscriber_id;
 
@@ -185,6 +185,11 @@ class PMProMailChimp
             return false;
         }
 
+		//make sure merge fields are setup if PMPro is active
+		if(function_exists('pmpro_getMembershipLevelForUser'))
+			$this->add_pmpro_merge_fields($list);
+		
+		//build request
         $request = array(
             'email_type' => $email_type,
             'email_address' => $user_obj->user_email,
@@ -201,10 +206,11 @@ class PMProMailChimp
             'body' => $this->encode($request),
         );
 
+		//hit api
         $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
-
         $resp = wp_remote_request($url, $args);
 
+		//handle response
         if (is_wp_error($resp))
         {
 
@@ -360,6 +366,164 @@ class PMProMailChimp
 
         return true;
     }
+
+	/**
+	 * Check if a merge field is in an array of merge fields
+	 */
+	public function in_merge_fields($field_name, $fields)
+	{		
+		if(empty($fields))
+			return false;
+			
+		foreach($fields as $field)
+			if($field->tag == $field_name)
+				return true;
+				
+		return false;
+	}
+	
+	/**
+	 * Make sure a list has the PMPLEVELID and PMPLEVEL merge fields.
+	 *
+	 * @param string $list_id - The MC list ID
+	 *
+	 * @since 2.0.0
+	 */
+	public function add_pmpro_merge_fields($list_id)
+	{
+		/**
+		 * Filter the list of merge fields for PMPro to generate.
+		 *
+		 * @param string $list_id - The MC list ID
+		 * 
+		 * @since 2.0.0
+		 */
+		$pmpro_merge_fields = apply_filters('pmpro_mailchimp_merge_fields', 
+											array(
+												array('name'=>'PMPLEVELID', 'type'=>'number'), 
+												array('name'=>'PMPLEVEL', 'type'=>'text'), 
+											),
+											$list_id);
+		
+		//get merge fields for this list
+		$list_merge_fields = $this->get_merge_fields($list_id);
+				
+		if(!empty($list_merge_fields))
+		{
+			foreach($pmpro_merge_fields as $merge_field)
+			{
+				if(is_array($merge_field))
+				{
+					//pull from array
+					$field_name = $merge_field['name'];
+					$field_type = $merge_field['type'];
+					if(!empty($merge_field['public']))
+						$field_public = $merge_field['public'];
+					else
+						$field_public = false;
+				}
+				else
+				{
+					//defaults
+					$field_name = $merge_field;
+					$field_type = 'text';
+					$field_public = false;
+				}
+				
+				//add field if missing
+				if(!$this->in_merge_fields($field_name, $list_merge_fields))
+				{
+					$new_merge_field = $this->add_merge_field($field_name, $field_type, $field_public, $list_id);
+					
+					//and add to cache
+					$this->merge_fields[$list_id][] = $new_merge_field;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Get merge fields for a list
+	 *
+	 * @param string $list_id - The MC list ID
+	 * 
+	 * @since 2.0.0
+	 */
+	public function get_merge_fields($list_id, $force = false)
+	{
+		//get from cache
+		if(isset($this->merge_fields[$list_id]) && !$force)
+			return $this->merge_fields[$list_id];
+		
+		//hit the API
+        $url = self::$api_url . "/lists/" . $list_id . "/merge-fields";
+        $response = wp_remote_get($url, $this->url_args);
+		
+		//check response
+        if (is_wp_error($response))
+        {
+            $this->set_error_msg($response);
+            return false;
+        }
+        else {
+            $body = $this->decode_response($response['body']);
+			$this->merge_fields[$list_id] = isset($body->merge_fields) ? $body->merge_fields : array();
+			
+			return $this->merge_fields[$list_id];
+        }
+	}
+	
+	/**
+	 * Add a merge field to a list
+	 *
+	 * @param string $merge_field - The Merge Field Name
+	 * @param string $type - The Merge Field Type (text, number, date, birthday, address, zip code, phone, website)
+	 * @param string $public - Whether the field should show on the subscribers MailChimp profile. Defaults to false.
+	 * @param string $list_id - The MC list ID
+	 * 
+	 * @since 2.0.0
+	 */
+	public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id)
+	{
+		//default type to text
+		if(empty($type))
+			$type = 'text';
+		
+		//prepare request
+		$request = array(
+            'tag' => $merge_field,
+			'name' => $merge_field,
+            'type' => $type,
+			'public' => $public,
+        );
+
+        $args = array(
+            'method' => 'POST', // Allows us to add or update a user ID
+            'user-agent' => self::$user_agent,
+            'timeout' => $this->url_args['timeout'],
+            'headers' => $this->url_args['headers'],
+            'body' => $this->encode($request),
+        );
+		
+		//hit the API
+        $url = self::$api_url . "/lists/" . $list_id . "/merge-fields";
+        $response = wp_remote_request($url, $args);
+		
+		//check response
+        if (is_wp_error($response))
+        {
+            $this->set_error_msg($response);
+            return false;
+        }
+        else {
+            $body = $this->decode_response($response['body']);
+            $merge_field = isset($body->merge_field) ? $body->merge_field : array();
+			
+			return $merge_field;
+        }
+		
+		exit;
+	}
 
     /**
      * Returns an array of all lists created for the the API key owner
