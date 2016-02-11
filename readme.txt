@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 3.5
-Tested up to: 4.2.2
-Stable tag: 1.2
+Tested up to: 4.4.2
+Stable tag: 2.0
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -43,6 +43,10 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 2.0.0 =
+* ENHANCEMENT: Create v3 based Mailchimp API interface
+* FIX/ENHANCEMENT: Use v3 based Mailchimp API for subscribe/unsubscribe/update user
+
 = 1.2 =
 * Updated the MailChimp API used to have a $verify_ssl property that controls the CURLOPT_SSL_VERIFYPEER option of the CURL connection. This is set to false by default, avoiding some issues people have had connecting to the MailChimp API.
 
