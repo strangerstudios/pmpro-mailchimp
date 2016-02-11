@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - MailChimp Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 1.0.7
+Version: 1.2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -418,6 +418,7 @@ function pmpromc_admin_init()
 	
 	add_settings_field('pmpromc_option_double_opt_in', 'Require Double Opt-in?', 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');	
 	add_settings_field('pmpromc_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');	
+	add_settings_field('pmpromc_option_level_field', 'Custom Field for Level', 'pmpromc_option_level_field', 'pmpromc_options', 'pmpromc_section_general');	
 	
 	//pmpro-related options	
 	add_settings_section('pmpromc_section_levels', 'Membership Levels and Lists', 'pmpromc_section_levels', 'pmpromc_options');		
@@ -686,6 +687,20 @@ function pmpromc_option_unsubscribe()
 	<?php
 }
 
+function pmpromc_option_level_field()
+{
+	$options = get_option('pmpromc_options');		
+	if(isset($options['level_field']))
+		$level_field = $options['level_field'];
+	else
+		$level_field = "";
+	
+	?>
+	<input id='pmpromc_level_field' name='pmpromc_options[level_field]' size='20' type='text' value='<?php echo esc_attr($level_field);?>' />
+	<small>To segment your list subscribers by membership level, create a custom field in MailChimp and enter the merge tag here.</small>
+	<?php
+}
+
 function pmpromc_option_memberships_lists($level)
 {	
 	global $pmpromc_lists;
@@ -719,10 +734,13 @@ function pmpromc_option_memberships_lists($level)
 // validate our options
 function pmpromc_options_validate($input) 
 {					
+	$newinput = array();
+	
 	//api key
 	$newinput['api_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key']));		
 	$newinput['double_opt_in'] = intval($input['double_opt_in']);
 	$newinput['unsubscribe'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']);
+	$newinput['level_field'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['level_field']);
 	
 	//user lists
 	if(!empty($input['users_lists']) && is_array($input['users_lists']))
@@ -832,7 +850,7 @@ function pmpromc_options_page()
 		<p><br /></p>
 						
 		<div class="bottom-buttons">
-			<input type="hidden" name="pmprot_options[set]" value="1" />
+			<input type="hidden" name="pmpromc_options[set]" value="1" />
 			<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e('Save Settings'); ?>">				
 		</div>
 		
@@ -858,6 +876,7 @@ function pmpromc_activation()
 			"unsubscribe"=>1,
 			"users_lists" => array(),
 			"additional_lists"=>array(),
+			"level_field" => "",
 			);
 		update_option("pmpromc_options", $options);
 	}
@@ -925,6 +944,31 @@ function pmpromc_unsubscribe($list, $user)
 			wp_die($e->getMessage());
 	}
 }
+
+/*
+	Pass along merge values set in PMPro MailChimp settings.
+*/
+function pmpromc_pmpro_mailchimp_listsubscribe_fields($fields, $user)
+{
+	$options = get_option("pmpromc_options");
+		
+	if(!empty($options['level_field']) && function_exists('pmpro_getMembershipLevelForUser'))
+	{
+		//get user's membership level
+		if(is_admin() && isset($_REQUEST['membership_level']))
+			$level = pmpro_getLevel(intval($_REQUEST['membership_level']));
+		else
+			$level = pmpro_getMembershipLevelForUser($user->ID);
+				
+		if(!empty($level))
+			$fields[$options['level_field']] = $level->name;
+		else
+			$fields[$options['level_field']] = '';
+	}
+
+	return $fields;
+}
+add_filter('pmpro_mailchimp_listsubscribe_fields', 'pmpromc_pmpro_mailchimp_listsubscribe_fields', 10, 2);
 
 /*
 Function to add links to the plugin action links

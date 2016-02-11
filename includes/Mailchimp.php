@@ -22,6 +22,8 @@ class Mailchimp {
     public $ch;
     public $root  = 'https://api.mailchimp.com/2.0';
     public $debug = false;
+    public $verify_ssl = false;
+
 
     public static $error_map = array(
         "ValidationError" => "Mailchimp_ValidationError",
@@ -195,6 +197,7 @@ class Mailchimp {
 
         curl_setopt($ch, CURLOPT_URL, $this->root . $url . '.json');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->verify_ssl);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         curl_setopt($ch, CURLOPT_VERBOSE, $this->debug);
 
