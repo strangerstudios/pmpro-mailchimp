@@ -367,7 +367,7 @@ function pmpromc_additional_lists_on_checkout()
 		return;
 	
 	$additional_lists_array = array();
-	foreach ($lists['data'] as $list)
+	foreach ($lists as $list)
 	{
 		if(!empty($additional_lists))
 		{
