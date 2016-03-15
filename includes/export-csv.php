@@ -67,7 +67,11 @@
 	$headers[] = "Cache-Control: max-age=0, no-cache, no-store";
 	$headers[] = "Pragma: no-cache";
 	$headers[] = "Connection: close";
-	$headers[] = 'Content-Disposition: attachment; filename="pmpro_mailchimp_export_.csv"';
+	
+	if(!empty($l))
+		$headers[] = 'Content-Disposition: attachment; filename="pmpro_mailchimp_export_level_' . $l . '.csv"';
+	else
+		$headers[] = 'Content-Disposition: attachment; filename="pmpro_mailchimp_export.csv"';
 		
 	//set default CSV file headers, using comma as delimiter
 	$csv_file_header = "email,PMPLEVEL,PMPLEVELID";	
