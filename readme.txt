@@ -44,8 +44,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 
 == Changelog ==
 = 2.0.0 =
-* ENHANCEMENT: Create v3 based Mailchimp API interface
-* FIX/ENHANCEMENT: Use v3 based Mailchimp API for subscribe/unsubscribe/update user
+* FIX/ENHANCEMENT: Removed the v2 MailChimp API class and now using our own API class based on MailChimps v3 API.
+* FEATURE: Now adding PMPLEVEL and PMPLEVELID merge fields for users added to lists. These can be used to create segments and groups in MailChimp.
+* FEATURE: Added a link on the settings page to export a CSV file formatted specifically for importing into MailChimp. This can be used to import existing members into MailChimp as new subscribers or just to update the merge fields for existing subscribers.
 
 = 1.2 =
 * Updated the MailChimp API used to have a $verify_ssl property that controls the CURLOPT_SSL_VERIFYPEER option of the CURL connection. This is set to false by default, avoiding some issues people have had connecting to the MailChimp API.
