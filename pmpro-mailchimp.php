@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - MailChimp Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 2.0.0
+Version: 2.0
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -858,25 +858,25 @@ function pmpromc_options_page()
 ?>
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"><br></div>
-	<h2>PMPro MailChimp Integration Options</h2>		
+	<h2>MailChimp Integration Options and Settings</h2>		
 	
 	<?php if(!empty($msg)) { ?>
 		<div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
 	<?php } ?>
 	
 	<form action="options.php" method="post">
-		
-		<p>This plugin will integrate your site with MailChimp. You can choose one or more MailChimp lists for the "All Users" option to have users subscribed to when they signup for your site.</p>
-		<p>If you have <a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can choose one or more MailChimp lists to have members subscribed to for each membership level. You can also specify "Opt-in Lists" that members can opt into at checkout.</p>
-		<p>Don't have a MailChimp account? <a href="http://eepurl.com/k4aAH" target="_blank">Get one here</a>. It's free.</p>
-		
+		<h3>Subscribe users to one or more MailChimp lists when they sign up for your site.</h3>
+		<p>If you have <a href="http://www.paidmembershipspro.com" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more MailChimp lists based on their membership level or specify "Opt-in Lists" that members can select at membership checkout. <a href="http://eepurl.com/k4aAH" target="_blank">Get a Free MailChimp account</a>.</p>	
 		<?php if(function_exists('pmpro_getAllLevels')) { ?>
-		<p>Since v2.0 of PMPro MailChimp, this plugin will create and synchronize a PMPLEVEL and PMPLEVELID merge field in MailChimp to use for segmenting your lists. This will only affect new or updated members. To set these fields for existing members, you should <a href="javascript:jQuery('#pmpromc_export_instructions').show();">click here to export your members list for each level and import them into MailChimp</a>.</p>
+		<hr />
+		<h3>Synchronize a Member's Level Name and ID</h3>
+		<p>Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members. <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank">Read the documentation on importing existing members into MailChimp</a>.</p>
+		<p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();">Click here to export your members list for a MailChimp Import</a></p>
+		<hr />
 		
-		<div id="pmpromc_export_instructions" style="display: none;">
-			<hr />			
-			<p>1.
-			Choose a membership level to export:
+		<div id="pmpromc_export_instructions" class="postbox" style="display: none;"><div class="inside">
+			<h3>Export a CSV for your MailChimp Import</h3>
+			<p>Membership Level:
 			<select id="pmpromc_export_level" name="l">
 				<?php
 					$levels = pmpro_getAllLevels(true, true);
@@ -887,15 +887,20 @@ function pmpromc_options_page()
 				<?php
 					}
 				?>
-			</select>
-			</p>
-			<p>2. <a id="pmpromc_export_link" href="" target="_blank">Click here to export member emails to CSV</a></p>
-			<p>3. Log into MailChimp and import the CSV into the lists associated with this level. Go to Lists -> Choose the List -> Add Members -> Import Members -> CSV or tab-delimited text file.</p>
-			
-			<p>For more detailed instructions and screenshots, <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/">click here to view our documentation on importing existing members into MailChimp</a>.</p>
-			
+			</select> <a class="button-primary" id="pmpromc_export_link" href="" target="_blank">Download List (.CSV)</a></p>
 			<hr />
-		</div>
+			<p><strong>MailChimp Import Steps</strong></p>
+			<ol>
+				<li>Download a CSV of member data for each membership level.</li>
+				<li>Log in to MailChimp.</li>
+				<li>Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-delimited text file.</li>
+				<li>Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have those exact names in all uppercase letters.</li>
+				<li>Check “auto update my existing list”. Click "Import".</li>
+			</ol>
+			
+			<p>For more detailed instructions and screenshots, <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank">click here to read our documentation on importing existing members into MailChimp</a>.</p>
+			
+		</div></div>
 		<script>
 			jQuery(document).ready(function() {
 				var exporturl = '<?php echo admin_url('admin-ajax.php?action=pmpro_mailchimp_export_csv');?>';
