@@ -874,9 +874,8 @@ function pmpromc_options_page()
 		<p>Since v2.0 of PMPro MailChimp, this plugin will create and synchronize a PMPLEVEL and PMPLEVELID merge field in MailChimp to use for segmenting your lists. This will only affect new or updated members. To set these fields for existing members, you should <a href="javascript:jQuery('#pmpromc_export_instructions').show();">click here to export your members list for each level and import them into MailChimp</a>.</p>
 		
 		<div id="pmpromc_export_instructions" style="display: none;">
-			<hr />
-			<ol>
-			<li>
+			<hr />			
+			<p>1.
 			Choose a membership level to export:
 			<select id="pmpromc_export_level" name="l">
 				<?php
@@ -889,9 +888,12 @@ function pmpromc_options_page()
 					}
 				?>
 			</select>
-			</li>
-			<li><a id="pmpromc_export_link" href="" target="_blank">Click here to export member emails to CSV</a></li>
-			<li>Log into MailChimp and import the CSV into the lists associated with this level. Go to Lists -> Choose the List -> Add Members -> Import Members -> CSV or tab-delimited text file.</li>
+			</p>
+			<p>2. <a id="pmpromc_export_link" href="" target="_blank">Click here to export member emails to CSV</a></p>
+			<p>3. Log into MailChimp and import the CSV into the lists associated with this level. Go to Lists -> Choose the List -> Add Members -> Import Members -> CSV or tab-delimited text file.</p>
+			
+			<p>For more detailed instructions and screenshots, <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/">click here to view our documentation on importing existing members into MailChimp</a>.</p>
+			
 			<hr />
 		</div>
 		<script>
