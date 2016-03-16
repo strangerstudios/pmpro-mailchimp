@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - MailChimp Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 2.0
+Version: 2.0.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -563,7 +563,7 @@ function pmpromc_additional_lists_on_checkout()
 						$count++;						
 					?>
 						<input type="checkbox" id="additional_lists_<?php echo $count;?>" name="additional_lists[]" value="<?php echo $additional_list->id;?>" <?php if(is_array($additional_lists_selected) && !empty($additional_lists_selected[$count-1])) checked($additional_lists_selected[$count-1]->id, $additional_list->id);?> />
-						<label for="additional_lists_<?php echo $count;?>" class="pmpro_normal pmpro_clickable"><?php echo $additional_list['name'];?></label><br />
+						<label for="additional_lists_<?php echo $count;?>" class="pmpro_normal pmpro_clickable"><?php echo $additional_list->name;?></label><br />
 					<?php
 					}	
 				?>				
