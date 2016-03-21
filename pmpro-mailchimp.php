@@ -759,10 +759,10 @@ function pmpromc_options_validate($input)
 	$newinput = array();
 	
 	//api key
-	$newinput['api_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key']));		
-	$newinput['double_opt_in'] = intval($input['double_opt_in']);
-	$newinput['unsubscribe'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']);
-	$newinput['level_field'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['level_field']);
+	$newinput['api_key'] = isset($input['api_key']) ? trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key'])) : null;
+	$newinput['double_opt_in'] = isset($input['double_opt_in']) ? intval($input['double_opt_in']) : null;
+	$newinput['unsubscribe'] = isset($input['unsubscribe']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']) : null;
+	$newinput['level_field'] = isset($input['level_field']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['level_field']) : null;
 	
 	//user lists
 	if(!empty($input['users_lists']) && is_array($input['users_lists']))
@@ -840,20 +840,23 @@ function pmpromc_options_page()
 	{
 		$pmpromc_lists = $api->get_all_lists();
 		$all_lists = array();
-		
-		//save all lists in an option
-		$i = 0;			
-		foreach ( $pmpromc_lists as $list ) {
 
-			$all_lists[$i] = array();
-			$all_lists[$i]['id'] = $list->id;
-			$all_lists[$i]['web_id'] = $list->id;
-			$all_lists[$i]['name'] = $list->name;
-			$i++;
+		if (!empty($pmpromc_lists)) {
+
+			//save all lists in an option
+			$i = 0;
+			foreach ( $pmpromc_lists as $list ) {
+
+				$all_lists[$i] = array();
+				$all_lists[$i]['id'] = $list->id;
+				$all_lists[$i]['web_id'] = $list->id;
+				$all_lists[$i]['name'] = $list->name;
+				$i++;
+			}
+
+			/** Save all of our new data */
+			update_option( "pmpromc_all_lists", $all_lists);
 		}
-
-		/** Save all of our new data */
-		update_option( "pmpromc_all_lists", $all_lists);		
 	}
 ?>
 <div class="wrap">
