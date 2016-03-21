@@ -620,7 +620,7 @@ function pmpromc_section_levels()
 		else
 		{
 		?>
-		<p>For each level below, choose the lists which should be subscribed to when a new user registers.</p>		
+		<p>For each level below, choose the list(s) that a new user should be subscribed to when they register.</p>
 		<?php
 		}
 	}
