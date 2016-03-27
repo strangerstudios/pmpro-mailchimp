@@ -1,4 +1,5 @@
 <?php
+
 class PMProMailChimp
 {
     private static $api_key;
@@ -10,7 +11,7 @@ class PMProMailChimp
 
     private $url_args;
     private $all_lists;
-	private $merge_fields;
+    private $merge_fields;
 
     private $subscriber_id;
 
@@ -22,15 +23,13 @@ class PMProMailChimp
      */
     public function __construct($api_key = null)
     {
-        if (isset(self::$class))
-        {
+        if (isset(self::$class)) {
             return self::$class;
         }
 
         self::$class = $this;
 
-        if (!is_null($api_key))
-        {
+        if (!is_null($api_key)) {
             // Save the API key
             self::$api_key = $api_key;
 
@@ -49,7 +48,7 @@ class PMProMailChimp
             self::$user_agent = 'WordPress/pmpro_addon_mc;http://paidmembershipspro.com';
         }
 
-        add_filter('get_mailchimpapi_class_instance', array($this, 'get_instance') );
+        add_filter('get_mailchimpapi_class_instance', array($this, 'get_instance'));
 
         return self::$class;
     }
@@ -60,7 +59,8 @@ class PMProMailChimp
      * @return MailChimp\API object (active)
      * @since 2.0.0
      */
-    public function get_instance() {
+    public function get_instance()
+    {
 
         return self::$class;
     }
@@ -74,15 +74,14 @@ class PMProMailChimp
         self::$options = get_option("pmpromc_options");
 
         // Save the API key
-        if (!isset(self::$options['api_key']) || empty(self::$options['api_key']))
-        {
+        if (!isset(self::$options['api_key']) || empty(self::$options['api_key'])) {
             return;
         }
 
         self::$api_key = self::$options['api_key'];
 
         $this->url_args = array(
-            'timeout' => 10,
+            'timeout' => apply_filters('pmpromc_api_timeout', 10),
             'headers' => array(
                 'Authorization' => 'Basic ' . self::$api_key
             ),
@@ -108,38 +107,35 @@ class PMProMailChimp
         $url = self::$api_url . "/lists";
         $response = wp_remote_get($url, $this->url_args);
 
-        if (is_wp_error($response))
-        {
+        if (is_wp_error($response)) {
 
-            switch (wp_remote_retrieve_response_code($response))
-            {
+            switch (wp_remote_retrieve_response_code($response)) {
                 case 401:
                     $this->set_error_msg(
-                            sprintf(
-                                __(
-                                    'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.',
-                                    'pmpro-mailchimp'
-                                ),
-                                $response->get_error_message()
-                            )
+                        sprintf(
+                            __(
+                                'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.',
+                                'pmpro-mailchimp'
+                            ),
+                            $response->get_error_message()
+                        )
                     );
                     return false;
                     break;
 
                 default:
                     $this->set_error_msg(
-                            sprintf(
-                                __(
-                                    'Error while communicating with the Mailchimp servers: <p><em>%s</em></p>',
-                                    'pmpro-mailchimp'
-                                ),
-                                $response->get_error_message()
-                            )
+                        sprintf(
+                            __(
+                                'Error while communicating with the Mailchimp servers: <p><em>%s</em></p>',
+                                'pmpro-mailchimp'
+                            ),
+                            $response->get_error_message()
+                        )
                     );
                     return false;
             }
-        }
-        else {
+        } else {
 
             $body = $this->decode_response($response['body']);
             $this->all_lists = isset($body->lists) ? $body->lists : array();
@@ -172,24 +168,23 @@ class PMProMailChimp
 
             $msgt = "error";
 
-            if (empty($list))
-            {
+            if (empty($list)) {
                 $msg = __("No list ID specified for subscribe operation", "pmpromc");
             }
 
-            if (empty($test))
-            {
+            if (empty($test)) {
                 $msg = __("No user specified for subscribe operation", "pmpromc");
             }
 
             return false;
         }
 
-		//make sure merge fields are setup if PMPro is active
-		if(function_exists('pmpro_getMembershipLevelForUser'))
-			$this->add_pmpro_merge_fields($list);
-		
-		//build request
+        //make sure merge fields are setup if PMPro is active
+        if (function_exists('pmpro_getMembershipLevelForUser')) {
+            $this->add_pmpro_merge_fields($list);
+        }
+
+        //build request
         $request = array(
             'email_type' => $email_type,
             'email_address' => $user_obj->user_email,
@@ -206,13 +201,12 @@ class PMProMailChimp
             'body' => $this->encode($request),
         );
 
-		//hit api
+        //hit api
         $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
         $resp = wp_remote_request($url, $args);
 
-		//handle response
-        if (is_wp_error($resp))
-        {
+        //handle response
+        if (is_wp_error($resp)) {
 
             $this->set_error_msg($resp);
             return false;
@@ -230,39 +224,35 @@ class PMProMailChimp
      *
      * @since 2.0.0
      */
-    public function unsubscribe($list = '', WP_User $user_objs = null )
+    public function unsubscribe($list = '', WP_User $user_objs = null)
     {
         // Can't be empty
-        if (empty($list) || empty($user_objs))
-        {
+        if (empty($list) || empty($user_objs)) {
             return false;
         }
 
         // Force the emails into an array
-        if (!is_array($user_objs))
-        {
+        if (!is_array($user_objs)) {
             $user_objs = array($user_objs);
         }
 
         $url = self::$api_url . "/lists/{$list}/members";
 
         $args = array(
-            'method' => 'DELETE', // Allows us to add or update a user ID
+            'method' => 'DELETE', // Allows us remove a user ID
             'user-agent' => self::$user_agent,
             'timeout' => $this->url_args['timeout'],
             'headers' => $this->url_args['headers'],
             'body' => null,
         );
 
-        foreach ($user_objs as $user)
-        {
+        foreach ($user_objs as $user) {
             $user_id = $this->subscriber_id($user->user_email);
             $user_url = $url . "/{$user_id}";
 
             $resp = wp_remote_request($user_url, $args);
 
-            if (is_wp_error($resp))
-            {
+            if (is_wp_error($resp)) {
                 $this->set_error_msg($resp);
                 return false;
             }
@@ -278,10 +268,9 @@ class PMProMailChimp
      *
      * @since 2.0.0
      */
-    public function get_listinfo_for_member( $list_id = null, WP_User $user_data = null )
+    public function get_listinfo_for_member($list_id = null, WP_User $user_data = null)
     {
-        if (empty($list_id))
-        {
+        if (empty($list_id)) {
             $this->set_error_msg(__("Error: Need to specify the list ID to receive member info", "pmpromc"));
             return false;
         }
@@ -290,8 +279,7 @@ class PMProMailChimp
 
         $resp = wp_remote_get($url, $this->url_args);
 
-        if (is_wp_error($resp))
-        {
+        if (is_wp_error($resp)) {
             $this->set_error_msg($resp);
             return false;
         }
@@ -317,23 +305,21 @@ class PMProMailChimp
         $url = self::$api_url . "/lists/{$list_id}/members/" . $this->subscriber_id($old_user->user_email);
 
         $merge_fields = apply_filters(
-                            "pmpro_mailchimp_listsubscribe_fields",
-                            array(
-                                "FNAME" => $new_user->first_name,
-                                "LNAME" => $new_user->last_name
-                            ),
-                            $new_user
-                        );
+            "pmpro_mailchimp_listsubscribe_fields",
+            array(
+                "FNAME" => $new_user->first_name,
+                "LNAME" => $new_user->last_name
+            ),
+            $new_user
+        );
 
-        if ( $old_user->user_email != $new_user->user_email )
-        {
+        if ($old_user->user_email != $new_user->user_email) {
             $retval = $this->unsubscribe($list_id, $old_user);
 
             // Don't use double opt-in since the user is already subscribed.
             $retval = $retval && $this->subscribe($list_id, $new_user, $merge_fields, 'html', false);
 
-            if (false === $retval )
-            {
+            if (false === $retval) {
                 $this->set_error_msg(__("Error while updating email address for user!", "pmpromc"));
             }
 
@@ -356,8 +342,7 @@ class PMProMailChimp
 
         $resp = wp_remote_request($url, $args);
 
-        if ( is_wp_error($resp))
-        {
+        if (is_wp_error($resp)) {
             $this->set_error_msg($resp);
             return false;
         }
@@ -365,137 +350,140 @@ class PMProMailChimp
         return true;
     }
 
-	/**
-	 * Check if a merge field is in an array of merge fields
-	 */
-	public function in_merge_fields($field_name, $fields)
-	{		
-		if(empty($fields))
-			return false;
-			
-		foreach($fields as $field)
-			if($field->tag == $field_name)
-				return true;
-				
-		return false;
-	}
-	
-	/**
-	 * Make sure a list has the PMPLEVELID and PMPLEVEL merge fields.
-	 *
-	 * @param string $list_id - The MC list ID
-	 *
-	 * @since 2.0.0
-	 */
-	public function add_pmpro_merge_fields($list_id)
-	{
-		/**
-		 * Filter the list of merge fields for PMPro to generate.
-		 *
-		 * @param string $list_id - The MC list ID
-		 * 
-		 * @since 2.0.0
-		 */
-		$pmpro_merge_fields = apply_filters('pmpro_mailchimp_merge_fields', 
-											array(
-												array('name'=>'PMPLEVELID', 'type'=>'number'), 
-												array('name'=>'PMPLEVEL', 'type'=>'text'), 
-											),
-											$list_id);
-		
-		//get merge fields for this list
-		$list_merge_fields = $this->get_merge_fields($list_id);
-				
-		if(!empty($list_merge_fields))
-		{
-			foreach($pmpro_merge_fields as $merge_field)
-			{
-				if(is_array($merge_field))
-				{
-					//pull from array
-					$field_name = $merge_field['name'];
-					$field_type = $merge_field['type'];
-					if(!empty($merge_field['public']))
-						$field_public = $merge_field['public'];
-					else
-						$field_public = false;
-				}
-				else
-				{
-					//defaults
-					$field_name = $merge_field;
-					$field_type = 'text';
-					$field_public = false;
-				}
-				
-				//add field if missing
-				if(!$this->in_merge_fields($field_name, $list_merge_fields))
-				{
-					$new_merge_field = $this->add_merge_field($field_name, $field_type, $field_public, $list_id);
-					
-					//and add to cache
-					$this->merge_fields[$list_id][] = $new_merge_field;
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Get merge fields for a list
-	 *
-	 * @param string $list_id - The MC list ID
-	 * @param bool $force - Whether to force a read/write
-	 *
-	 * @return mixed - False if error or the merge fields for the list_id
-	 * @since 2.0.0
-	 */
-	public function get_merge_fields($list_id, $force = false)
-	{
-		//get from cache
-		if(isset($this->merge_fields[$list_id]) && !$force)
-			return $this->merge_fields[$list_id];
-		
-		//hit the API
+    /**
+     * Check if a merge field is in an array of merge fields
+     */
+    public function in_merge_fields($field_name, $fields)
+    {
+        if (empty($fields))
+            return false;
+
+        foreach ($fields as $field)
+            if ($field->tag == $field_name)
+                return true;
+
+        return false;
+    }
+
+    /**
+     * Make sure a list has the PMPLEVELID and PMPLEVEL merge fields.
+     *
+     * @param string $list_id - The MC list ID
+     *
+     * @since 2.0.0
+     */
+    public function add_pmpro_merge_fields($list_id)
+    {
+        /**
+         * Filter the list of merge fields for PMPro to generate.
+         *
+         * @param string $list_id - The MC list ID
+         *
+         * @since 2.0.0
+         */
+        $pmpro_merge_fields = apply_filters('pmpro_mailchimp_merge_fields',
+            array(
+                array('name' => 'PMPLEVELID', 'type' => 'number'),
+                array('name' => 'PMPLEVEL', 'type' => 'text'),
+            ),
+            $list_id);
+
+        //get merge fields for this list
+        $list_merge_fields = $this->get_merge_fields($list_id);
+
+        if ( ! empty($list_merge_fields) ) {
+
+            foreach ($pmpro_merge_fields as $merge_field) {
+
+                if (is_array($merge_field)) {
+
+                    //pull from array
+                    $field_name = $merge_field['name'];
+                    $field_type = $merge_field['type'];
+
+                    if (!empty($merge_field['public'])) {
+                        $field_public = $merge_field['public'];
+                    } else {
+                        $field_public = false;
+                    }
+                } else {
+
+                    //defaults
+                    $field_name = $merge_field;
+                    $field_type = 'text';
+                    $field_public = false;
+                }
+
+                //add field if missing
+                if (false === $this->in_merge_fields($field_name, $list_merge_fields)) {
+
+                    $new_merge_field = $this->add_merge_field($field_name, $field_type, $field_public, $list_id);
+
+                    //and add to cache
+                    $this->merge_fields[$list_id][] = $new_merge_field;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get merge fields for a list
+     *
+     * @param string $list_id - The MC list ID
+     * @param bool $force - Whether to force a read/write
+     *
+     * @return mixed - False if error or the merge fields for the list_id
+     * @since 2.0.0
+     */
+    public function get_merge_fields($list_id, $force = false)
+    {
+        //get from cache
+        if (isset($this->merge_fields[$list_id]) && !$force) {
+            return $this->merge_fields[$list_id];
+        }
+
+        //hit the API
         $url = self::$api_url . "/lists/" . $list_id . "/merge-fields";
         $response = wp_remote_get($url, $this->url_args);
-		
-		//check response
-        if (is_wp_error($response))
-        {
+
+        //check response
+        if (is_wp_error($response)) {
+
             $this->set_error_msg($response);
             return false;
-        }
-        else {
+        } else {
+
             $body = $this->decode_response($response['body']);
-			$this->merge_fields[$list_id] = isset($body->merge_fields) ? $body->merge_fields : array();
-			
-			return $this->merge_fields[$list_id];
+            $this->merge_fields[$list_id] = isset($body->merge_fields) ? $body->merge_fields : array();
+
+            return $this->merge_fields[$list_id];
         }
-	}
-	
-	/**
-	 * Add a merge field to a list
-	 *
-	 * @param string $merge_field - The Merge Field Name
-	 * @param string $type - The Merge Field Type (text, number, date, birthday, address, zip code, phone, website)
-	 * @param string $public - Whether the field should show on the subscribers MailChimp profile. Defaults to false.
-	 * @param string $list_id - The MC list ID
-	 *
-	 * @return mixed - Merge field or false
-	 * @since 2.0.0
-	 */
-	public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id)
-	{
-		//default type to text
-		if(empty($type))
-			$type = 'text';
-		
-		//prepare request
-		$request = array(
+    }
+
+    /**
+     * Add a merge field to a list
+     *
+     * @param string $merge_field - The Merge Field Name
+     * @param string $type - The Merge Field Type (text, number, date, birthday, address, zip code, phone, website)
+     * @param mixed $public - Whether the field should show on the subscribers MailChimp profile. Defaults to false.
+     * @param string $list_id - The MC list ID
+     *
+     * @return mixed - Merge field or false
+     * @since 2.0.0
+     */
+    public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id)
+    {
+        //default type to text
+        if (empty($type)) {
+            $type = 'text';
+        }
+
+        //prepare request
+        $request = array(
             'tag' => $merge_field,
-			'name' => $merge_field,
+            'name' => $merge_field,
             'type' => $type,
-			'public' => $public,
+            'public' => $public,
         );
 
         $args = array(
@@ -505,26 +493,22 @@ class PMProMailChimp
             'headers' => $this->url_args['headers'],
             'body' => $this->encode($request),
         );
-		
-		//hit the API
+
+        //hit the API
         $url = self::$api_url . "/lists/" . $list_id . "/merge-fields";
         $response = wp_remote_request($url, $args);
-		
-		//check response
-        if (is_wp_error($response))
-        {
+
+        //check response
+        if (is_wp_error($response)) {
             $this->set_error_msg($response);
-            return false;
-        }
-        else {
+            $merge_field = false;
+        } else {
             $body = $this->decode_response($response['body']);
             $merge_field = isset($body->merge_field) ? $body->merge_field : array();
-			
-			return $merge_field;
         }
-		
-		exit;
-	}
+
+        return $merge_field;
+    }
 
     /**
      * Returns an array of all lists created for the the API key owner
@@ -535,8 +519,7 @@ class PMProMailChimp
      */
     public function get_all_lists()
     {
-        if (empty($this->all_lists))
-        {
+        if (empty($this->all_lists)) {
             $this->connect();
         }
 
@@ -552,8 +535,7 @@ class PMProMailChimp
      */
     private function decode_response($response)
     {
-        if ( null !== $obj = json_decode($response) )
-        {
+        if (null !== $obj = json_decode($response)) {
             return $obj;
         }
 
@@ -568,8 +550,7 @@ class PMProMailChimp
      */
     private function encode($data)
     {
-        if ( false !== ($json = json_encode($data)) )
-        {
+        if (false !== ($json = json_encode($data))) {
             return $json;
         }
 
@@ -585,8 +566,7 @@ class PMProMailChimp
     private function subscriber_id($user_email)
     {
 
-        if (empty($this->subscriber_id))
-        {
+        if (empty($this->subscriber_id)) {
             $this->subscriber_id = md5(strtolower($user_email));
         }
 
@@ -600,7 +580,7 @@ class PMProMailChimp
      *
      * @since 2.0.0
      */
-    private function set_user_interests($user)
+    private function set_user_interest($user, $list_id)
     {
         $level = pmpro_getMembershipLevelForUser($user->ID);
         $interests = new stdClass();
@@ -622,11 +602,9 @@ class PMProMailChimp
 
         $msgt = 'error';
 
-        if (is_wp_error($obj))
-        {
+        if (is_wp_error($obj)) {
             $msg = $obj->get_error_message();
-        }
-        else {
+        } else {
             $msg = $obj;
         }
     }
