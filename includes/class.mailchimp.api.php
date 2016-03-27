@@ -282,7 +282,7 @@ class PMProMailChimp
     {
         if (empty($list_id))
         {
-            $this->set_error_msg(__("Error: Need to specify the list ID to receive member info"), "pmpromc");
+            $this->set_error_msg(__("Error: Need to specify the list ID to receive member info", "pmpromc"));
             return false;
         }
 
@@ -327,8 +327,6 @@ class PMProMailChimp
 
         if ( $old_user->user_email != $new_user->user_email )
         {
-            $retval = true;
-
             $retval = $this->unsubscribe($list_id, $old_user);
 
             // Don't use double opt-in since the user is already subscribed.
@@ -446,7 +444,9 @@ class PMProMailChimp
 	 * Get merge fields for a list
 	 *
 	 * @param string $list_id - The MC list ID
-	 * 
+	 * @param bool $force - Whether to force a read/write
+	 *
+	 * @return mixed - False if error or the merge fields for the list_id
 	 * @since 2.0.0
 	 */
 	public function get_merge_fields($list_id, $force = false)
@@ -480,7 +480,8 @@ class PMProMailChimp
 	 * @param string $type - The Merge Field Type (text, number, date, birthday, address, zip code, phone, website)
 	 * @param string $public - Whether the field should show on the subscribers MailChimp profile. Defaults to false.
 	 * @param string $list_id - The MC list ID
-	 * 
+	 *
+	 * @return mixed - Merge field or false
 	 * @since 2.0.0
 	 */
 	public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id)
