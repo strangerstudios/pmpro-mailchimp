@@ -34,7 +34,7 @@ class PMProMailChimp
             self::$api_key = $api_key;
 
             $this->url_args = array(
-                'timeout' => 10,
+                'timeout' => apply_filters('pmpro_addon_mc_api_timeout', 10),
                 'headers' => array(
                     'Authorization' => 'Basic ' . self::$api_key
                 ),
@@ -104,7 +104,9 @@ class PMProMailChimp
     public function connect()
     {
         // test connectivity by fetching all lists
-        $url = self::$api_url . "/lists";
+        $max_lists = apply_filters('pmpro_addon_mc_api_fetch_list_limit', 15);
+
+        $url = self::$api_url . "/lists/?count={$max_lists}";
         $response = wp_remote_get($url, $this->url_args);
 
         if (is_wp_error($response)) {
