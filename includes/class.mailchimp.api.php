@@ -567,11 +567,8 @@ class PMProMailChimp
      */
     private function subscriber_id($user_email)
     {
-
-        if (empty($this->subscriber_id)) {
-            $this->subscriber_id = md5(strtolower($user_email));
-        }
-
+        $this->subscriber_id = md5(strtolower($user_email));
+        
         return $this->subscriber_id;
     }
 
