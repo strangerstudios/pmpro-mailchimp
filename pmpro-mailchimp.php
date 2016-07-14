@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - MailChimp Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
 Description: Sync your WordPress users and members with MailChimp lists.
-Version: 2.0.2
+Version: 2.0.3
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -1164,7 +1164,7 @@ function pmpromc_profile_update($user_id, $old_user_data)
         $api = apply_filters('get_mailchimpapi_class_instance', null);
         $api->set_key();
 
-        if (empty($api)) {
+        if (!empty($api)) {
 
             $lists = $api->get_all_lists();
         }
