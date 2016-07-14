@@ -1158,7 +1158,21 @@ function pmpromc_profile_update($user_id, $old_user_data)
 {
     $new_user_data = get_userdata($user_id);
 
-    if ($new_user_data->user_email != $old_user_data->user_email) {
+    //by default only update users if their email has changed
+    $update_user = ($new_user_data->user_email != $old_user_data->user_email);
+    
+    /**
+     * Filter in case they want to update the user on all updates
+	 *
+	 * @param bool $update_user true or false if user should be updated at Mailchimp
+	 * @param int $user_id ID of user in question
+	 * @param object $old_user_data old data from before this profile update
+	 * 
+	 * @since 2.0.3
+     */
+    $update_user = apply_filters('pmpromc_profile_update', $update_user, $user_id, $old_user_data);
+
+    if ($update_user) {
 
         //get all lists
         $api = apply_filters('get_mailchimpapi_class_instance', null);
@@ -1185,7 +1199,7 @@ function pmpromc_profile_update($user_id, $old_user_data)
         }
     }
 }
-add_action("profile_update", "pmpromc_profile_update", 10, 2);
+add_action("profile_update", "pmpromc_profile_update", 20, 2);
 
 /**
  * Membership level as merge values.

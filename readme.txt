@@ -45,6 +45,7 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 == Changelog ==
 = 2.0.3 =
 * BUG: Fixed issue with updating email addresses in MailChimp when email addresses are updated in WordPress.
+* ENHANCEMENT: Added a filter pmpromc_profile_update that you can set to __return_true to tell the addon to synchronize user data on every profile update. By default, PMPro MailChimp will only synchronize data if the email address has changed. Filter passes $update_user, $user_id, and $old_user_data and is documented in the code.
 
 = 2.0.2 =
 * BUG: Fixed issue where the wrong subscriber id was being used for subsequent API calls when calls were made for more than one subscriber (e.g. when importing, bulk updating, or members are expiring).
