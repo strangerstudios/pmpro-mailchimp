@@ -589,8 +589,52 @@ class PMProMailChimp
 		    $mcapi_list_settings[$list_id]->merge_fields = array();
 	    }
 
+	    $filtered_mf_config = apply_filters('pmpro_mailchimp_merge_fields',
+		    array(
+			    array('name' => 'PMPLEVELID', 'type' => 'number'),
+			    array('name' => 'PMPLEVEL', 'type' => 'text'),
+		    ),
+		    $list_id
+	    );
+
+	    $v2_category_def = array();
+
+	    // look for categories
+	    foreach( $filtered_mf_config as $key => $settings ) {
+
+		    // do we have an old-style interest group definition?
+		    if ( 'groupings' == strtolower($key)) {
+
+			    if (WP_DEBUG) {
+				    error_log("MCAPI: Found v2 style interest category definition");
+			    }
+
+			    $v2_category_def = $settings;
+			    break;
+		    }
+	    }
+
 	    $category_type = apply_filters('pmpro_mailchimp_list_interest_category_type', 'checkboxes', $list_id );
 	    $server_ic = $this->get_interest_categories( $list_id );
+
+	    // process & convert any MCAPI-v2-style interest groups (groupings) aka interest categories.
+	    if (!empty($v2_category_def)) {
+
+		    foreach($v2_category_def as $key => $grouping_def ) {
+
+			    if ( empty( $mcapi_list_settings[$list_id]->interest_categories[$grouping_def['name']] ) ) {
+
+				    $mcapi_list_settings[$list_id]->interest_categories[$grouping_def['name']] = new stdClass();
+				    $mcapi_list_settings[$list_id]->interest_categories[$grouping_def['name']]->id = null;
+				    $mcapi_list_settings[$list_id]->interest_categories[$grouping_def['name']]->interests = array();
+
+				    foreach( $grouping_def['groups'] as $key => $group_name ) {
+
+					    $mcapi_list_settings[$list_id]->interest_categories[$grouping_def['name']]->interests["add_new_{$key}"] = $group_name;
+				    }
+			    }
+		    }
+	    }
 
 	    // Update server if more interest categories found locally
 	    if ( count($server_ic) < count( $mcapi_list_settings[$list_id]->interest_categories ) ) {
@@ -599,7 +643,6 @@ class PMProMailChimp
 		    $url = self::$api_url . "/lists/{$list_id}/interest-categories";
 
 		    $args = array(
-			    'method' => 'PATCH', // Allows us to add or update
 			    'user-agent' => self::$user_agent,
 			    'timeout' => $this->url_args['timeout'],
 			    'headers' => $this->url_args['headers'],
@@ -608,19 +651,29 @@ class PMProMailChimp
 		    /**
 		     * Update the on-server (MailChimp server) interest category definition(s) for the system
 		     */
-		    foreach( $mcapi_list_settings[$list_id]->interest_categories as $cat_id => $category ) {
+		    foreach( $mcapi_list_settings[$list_id]->interest_categories as $key => $category ) {
 
-		    	$ic_url = "{$url}/{$cat_id}";
+		    	// Do we have a new or (likely) existing category
+		    	if ( !empty( $category->id ) ) {
+
+				    $ic_url = "{$url}/{$category->id}";
+		    		$args['method'] = 'PATCH'; // Allows us to add or update
+
+			    } else {
+
+			    	$ic_url = $url;
+				    $args['method'] = 'POST'; // Allows us to add
+			    }
 
 			    $request = array(
 				    'title' => $category->title,
 			        'type'  => ($category->type != $category_type ? $category_type : $category->type),
 			    );
 
-			    $args['body'] = $request;
+			    $args['body'] = $this->encode($request);
 
 			    if (WP_DEBUG) {
-				    error_log("MCAPI: Updating interest category {$cat_id} on the MailChimp servers");
+				    error_log("MCAPI: Updating interest category {$category->id} on the MailChimp servers");
 			    }
 
 			    $resp = wp_remote_request($ic_url, $args);
@@ -628,15 +681,15 @@ class PMProMailChimp
 			    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 
 				    if (WP_DEBUG) {
-					    error_log("MCAPI: Error updating interest category {$cat_id}: " . print_r($resp, true));
+					    error_log("MCAPI: Error updating interest category {$category->id}: " . print_r($resp, true));
 				    }
 
 				    $this->set_error_msg($resp);
 				    return false;
 			    }
 
-			    $upstream = array_diff_key($server_ic[$cat_id]->interests, $category->interests);
-			    $local = array_diff_key($category->interests, $server_ic[$cat_id]->interests);
+			    $upstream = array_diff_key($server_ic[$category->id]->interests, $category->interests);
+			    $local = array_diff_key($category->interests, $server_ic[$category->id]->interests);
 
 			    if (WP_DEBUG) {
 				    error_log("MCAPI: Local interests not available upstream: " . print_r($local, true));
@@ -648,7 +701,7 @@ class PMProMailChimp
 			     * Update any interests belonging to the interest category
 			     */
 			    $local_icount = count($category->interests);
-			    $upstream_icount = count($server_ic[$cat_id]->interests);
+			    $upstream_icount = count($server_ic[$category->id]->interests);
 
 			    if (WP_DEBUG) {
 				    error_log("MCAPI: Comparing local vs upstream interest counts. Local ({$local_icount}) vs remote ({$upstream_icount})");
@@ -657,10 +710,10 @@ class PMProMailChimp
 			    // push interests for interest category to MailChimp server?
 			    if ( $local_icount > $upstream_icount || !empty( $local )) {
 
-			    	if ( false == $this->edit_interests_on_server( $list_id, $cat_id, $category->interests) )
+			    	if ( false == $this->edit_interests_on_server( $list_id, $category->id, $category->interests) )
 				    {
 					    if (WP_DEBUG) {
-						    error_log("MCAPI: Updating interests for {$cat_id} on the MailChimp servers");
+						    error_log("MCAPI: Updating interests for {$category->id} on the MailChimp servers");
 					    }
 
 					    $this->set_error_msg(
@@ -674,10 +727,10 @@ class PMProMailChimp
 			    if ( $local_icount < $upstream_icount || ! empty( $upstream ) ) {
 
 			    	if (WP_DEBUG) {
-					    error_log("MCAPI: Setting local interest for {$cat_id} so they can be saved");
+					    error_log("MCAPI: Setting local interest for {$category->id} so they can be saved");
 				    }
 
-				    $mcapi_list_settings[$list_id]->interest_categories[$cat_id]->interests = $server_ic[$cat_id]->interests;
+				    $mcapi_list_settings[$list_id]->interest_categories[$cat_id]->interests = $server_ic[$category->id]->interests;
 			    }
 		    }
 
@@ -689,6 +742,7 @@ class PMProMailChimp
 	    	// update the local interest group settings to match upstream server
 		    $mcapi_list_settings[$list_id]->interest_categories = $server_ic;
 	    }
+
 
 	    if (WP_DEBUG) {
 		    error_log("MCAPI: Updating local list settings for {$list_id}");
@@ -740,12 +794,18 @@ class PMProMailChimp
 	    foreach( $interests as $id => $name ) {
 
 		    $args['body'] = $this->encode( array(
-				    'list_id' => $list_id,
 				    'name'    => $name,
 		        )
 		    );
 
-		    $i_url = "{$url}/{$id}";
+		    // handle v2 conversion
+		    if ( false !== stripos( $id, 'add_new_') ) {
+		    	$args['method'] = "POST";
+			    $i_url = "{$url}";
+		    } else {
+			    $args['method'] = "PATCH";
+			    $i_url = "{$url}/{$id}";
+		    }
 
 		    if (WP_DEBUG) {
 			    error_log("MCAPI: Updating interest '{$name}' (id: {$id}) for category {$cat_id} in list {$list_id} on the MailChimp server");
