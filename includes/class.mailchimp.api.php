@@ -730,7 +730,7 @@ class PMProMailChimp
 					    error_log("MCAPI: Setting local interest for {$category->id} so they can be saved");
 				    }
 
-				    $mcapi_list_settings[$list_id]->interest_categories[$cat_id]->interests = $server_ic[$category->id]->interests;
+				    $mcapi_list_settings[$list_id]->interest_categories[$category->id]->interests = $server_ic[$category->id]->interests;
 			    }
 		    }
 
