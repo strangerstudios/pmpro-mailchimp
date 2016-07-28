@@ -56,7 +56,7 @@ class PMProMailChimp
     /**
      * Returns the instance of the current class.
      *
-     * @return MailChimp\API object (active)
+     * @return PMProMailChimp object (active)
      * @since 2.0.0
      */
     public function get_instance()
@@ -104,12 +104,20 @@ class PMProMailChimp
     public function connect()
     {
         // test connectivity by fetching all lists
+	    /**
+	     * Set the number of lists to return from the MailChimp server.
+	     *
+	     * @since 2.0.0
+	     *
+	     * @param   int     $max_lists      - Max number of lists to return
+	     */
         $max_lists = apply_filters('pmpro_addon_mc_api_fetch_list_limit', 15);
 
         $url = self::$api_url . "/lists/?count={$max_lists}";
         $response = wp_remote_get($url, $this->url_args);
 
-        if (is_wp_error($response)) {
+	    // Fix: is_wp_error() appears to be unreliable since WordPress v4.5
+        if (200 != wp_remote_retrieve_response_code($response)) {
 
             switch (wp_remote_retrieve_response_code($response)) {
                 case 401:
@@ -181,19 +189,25 @@ class PMProMailChimp
             return false;
         }
 
-        //make sure merge fields are setup if PMPro is active
-        if (function_exists('pmpro_getMembershipLevelForUser')) {
-            $this->add_pmpro_merge_fields($list);
-        }
+	    $interests = $this->populate_interest_groups( $list, $user_obj );
+	    $merge_fields = $this->populate_merge_fields( $list, $user_obj );
 
-        //build request
+	    //build request
         $request = array(
             'email_type' => $email_type,
             'email_address' => $user_obj->user_email,
-            'merge_fields' => $merge_fields,
             'status' => (1 == $dbl_opt_in ? 'pending' : 'subscribed'),
-            // 'interests' => $this->set_interests($user_obj), /** TODO: Incorporate segmentation using membership level */
         );
+
+	    // add populated merge fields (if applicable)
+	    if (!empty( $merge_fields )) {
+		    $request['merge_fields'] = $merge_fields;
+	    }
+
+	    // add populated interests, (if applicable)
+	    if ( !empty( $interests ) ) {
+	    	$request['interests'] = $interests;
+	    }
 
         $args = array(
             'method' => 'PUT', // Allows us to add or update a user ID
@@ -213,11 +227,49 @@ class PMProMailChimp
 
         //handle response
         if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
-	        $this->set_error_msg($resp);
-	        return false;
+
+        	// try updating the Merge Fields & Interest Groups on the MailChimp Server(s).
+        	if ( true === $this->update_server_settings( $list ) ) {
+
+        		// retry the update with updated interest & merge groups
+		        $resp = wp_remote_request($url, $args);
+
+		        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+			        $this->set_error_msg( $resp );
+
+			        return false;
+		        }
+
+	        } else {
+
+		        $this->set_error_msg( $resp );
+
+		        return false;
+	        }
         }
 
         return true;
+    }
+
+
+	/**
+	 * Update interest groups & merge fields on the remote MailChimp server (if possible)
+	 *
+	 * @param   string      $list_id        ID of MailChimp list to attempt to update
+	 *
+	 * @return  bool
+	 */
+    private function update_server_settings( $list_id ) {
+
+    	$retVal = true;
+
+    	// configure & update interest groups both locally & on MC server
+    	$retVal = $retVal && $this->update_interest_groups( $list_id );
+
+	    // configure & update merge fields bot locally and on MC server
+		$retVal = $retVal && $this->update_merge_fields( $list_id );
+
+    	return $retVal;
     }
 
     /**
@@ -309,22 +361,19 @@ class PMProMailChimp
     {
         $url = self::$api_url . "/lists/{$list_id}/members/" . $this->subscriber_id($old_user->user_email);
 
-        $merge_fields = apply_filters(
-            "pmpro_mailchimp_listsubscribe_fields",
-            array(
-                "FNAME" => $new_user->first_name,
-                "LNAME" => $new_user->last_name
-            ),
-            $new_user
-        );
+	    // configure merge fields & interests
+        $merge_fields = $this->populate_merge_fields( $list_id, $new_user );
+	    $interest_groups = $this->populate_interest_groups( $list_id, $new_user );
 
         if ($old_user->user_email != $new_user->user_email) {
+
             $retval = $this->unsubscribe($list_id, $old_user);
 
             // Don't use double opt-in since the user is already subscribed.
             $retval = $retval && $this->subscribe($list_id, $new_user, $merge_fields, 'html', false);
 
             if (false === $retval) {
+
                 $this->set_error_msg(__("Error while updating email address for user!", "pmpromc"));
             }
 
@@ -336,6 +385,11 @@ class PMProMailChimp
             'email_type' => 'html',
             'merge_fields' => $merge_fields,
         );
+
+	    // Add any configured interest groups/groupings.
+	    if ( !empty( $interest_groups ) ) {
+	    	$request['interests'] = $interest_groups;
+	    }
 
         $args = array(
             'method' => 'PATCH', // Allows us to add or update a user ID
@@ -355,92 +409,563 @@ class PMProMailChimp
         return true;
     }
 
+	/**
+	 * Add/configure merge fields for the specified list ID (and the user object)
+	 *
+	 * @param   string      $list_id        -- The ID of the MC mailing list
+	 * @param   WP_User     $user           - User object
+	 *
+	 * @return array  {
+	 *      Merge field array w/field name & data value.
+	 *      @type    string      $name       Merge Field name
+	 *      @type    string      $value      Merge Field value
+	 * }
+	 */
+    public function populate_merge_fields( $list_id, $user ) {
+
+    	// get local configuration for merge fields
+    	$mc_list_settings = get_option('pmcapi_list_settings', null);
+
+	    /**
+	     * Populate merge fields for specified distribution list
+	     *
+	     * @since   2.1     Added $list_id (ID of MC list) to allow list specific merge fields
+	     */
+	    $this->merge_fields = apply_filters(
+		    "pmpro_mailchimp_listsubscribe_fields",
+		    array(
+			    "FNAME" => $user->first_name,
+			    "LNAME" => $user->last_name
+		    ),
+		    $user, $list_id
+	    );
+
+	    if (WP_DEBUG) {
+	    	error_log("MCAPI: Defined merge fields for {$list_id} and user {$user->ID}: " . print_r($this->merge_fields));
+	    }
+
+	    $configured_fields = array();
+
+	    // identify any configured merge fields that are stored locally
+	    foreach( $mc_list_settings[$list_id]->mf_config as $k => $settings ) {
+	    	$configured_fields[$settings['name']] = null;
+	    }
+
+	    // check if there's a difference between what we have stored & what the user has specified in filters, etc.
+	    if ( empty( $mc_list_settings[$list_id]->mf_config) ) {
+
+	    	$config_changed = $this->merge_fields;
+
+	    } else {
+
+		    $config_changed = array_diff_key( $configured_fields, $this->merge_fields );
+	    }
+
+	    // update the server configuration for the merge fields
+	    if ( ! empty( $config_changed ) ) {
+
+	    	$this->configure_merge_fields( $list_id, $config_changed );
+	    }
+
+	    // need to convert groupings (v2 feature) to interest categories?
+	    foreach( $this->merge_fields as $key => $value ) {
+
+	    	if ( 'groupings' === strtolower($key) ) {
+
+                // clear from merge field list
+			    unset($this->merge_fields[$key]);
+		    }
+	    }
+
+	    return $this->merge_fields;
+    }
+
+	/**
+	 * Configure interests for the user in MailChimp list
+	 *
+	 * @param   string      $list_id        ID of MC list
+	 * @param   WP_User     $user           User object
+	 *
+	 * @return  array       $interests {
+	 *      Array of interests to assign the user to
+	 *
+	 *      @type   string      $interest_id        ID of the interest for the list ($list_id)
+	 *      @type   boolean     $assign_to_user     Whether to assign the interest to the user for the $list_id
+	 * }
+	 */
+    public function populate_interest_groups( $list_id, $user ) {
+
+    	$pmpro_active = false;
+
+    	if ( function_exists('pmpro_getAllLevels') ) {
+		    global $pmpro_level;
+		    $pmpro_active = false;
+	    }
+
+    	$mc_list_settings = get_option( 'pmcapi_list_settings', null);
+
+	    $interests = array();
+
+	    foreach( $mc_list_settings[$list_id]->interest_categories as $category ) {
+
+	    	foreach( $category as $interest_id => $name ) {
+
+	    		// assign the interest to this user Id(filtered, but set to true by default).
+
+			    if ( true === $pmpro_active ) {
+				    $interests[ $interest_id ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $list_id, $interest_id, $name, $pmpro_level );
+			    } else {
+				    $interests[ $interest_id ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $list_id, $interest_id, $name, null );
+			    }
+		    }
+	    }
+
+	    return $interests;
+    }
+
+	/**
+	 * Returns the interest groups for the specified MailChimp distribution list
+	 *
+	 * @since 2.1
+	 *
+	 * @param       string      $list_id
+	 *
+	 * @return      array       List of Interest Groups
+	 *
+	 */
+    public function get_local_interest_categories( $list_id ) {
+
+    	$mc_list_settings = get_option('pmcapi_list_settings');
+
+	    return empty( $mc_list_settings[$list_id]->interest_categories ) ? false : $mc_list_settings[$list_id]->interest_categories;
+    }
+
+	/**
+	 * Updates server side interest categories for a mailing list (id)
+	 *
+	 * @since 2.1
+	 *
+	 * @param   string      $list_id          - ID for the MC mailing list
+	 *
+	 * @return  boolean
+	 */
+    public function update_interest_groups( $list_id ) {
+
+	    /**
+	     * Local definition for list settings (merge fields & interest categories)
+	     * @since 2.1
+	     *
+	     * 	{@internal Format of $mcapi_list_settings configuration:
+	     *  array(
+	     *      $list_id => stdClass(),
+	     *                  ->name = string
+	     *                  ->merge_fields = array()
+	     *                  ->mf_config = array()
+	     *                  ->add_interests = array( $interest_id => boolean, $interest_id => boolean ),
+	     *                  ->interest_categories = array(
+	     *                          $category_name =>   stdClass(),
+	     *                                              ->id
+	     *                                              ->interests = array(
+	     *                                                      $interest_id => $interest_name,
+	     *                                                      $interest_id => $interest_name,
+	     *                                              )
+	     *                          $category_name =>   [...],
+	     *                 )
+	     *      $list_id => [...],
+	     *  )}}
+	     */
+	    $mcapi_list_settings = get_option( "pmcapi_list_settings", null );
+
+	    if (WP_DEBUG) {
+	    	error_log("MCAPI: Local settings for {$list_id}: ", print_r( $mcapi_list_settings[$list_id], true) );
+	    }
+
+	    // if there are no stored list settings
+	    if (empty( $mcapi_list_settings ) ) {
+
+		    $mcapi_list_settings = array();
+		    $mcapi_list_settings[$list_id] = new stdClass();
+		    $mcapi_list_settings[$list_id]->interest_categories = array();
+		    $mcapi_list_settings[$list_id]->merge_fields = array();
+	    }
+
+	    $category_type = apply_filters('pmpro_mailchimp_list_interest_category_type', 'checkboxes', $list_id );
+	    $server_ic = $this->get_interest_categories( $list_id );
+
+	    // Update server if more interest categories found locally
+	    if ( count($server_ic) < count( $mcapi_list_settings[$list_id]->interest_categories ) ) {
+
+		    // patch all existing interest categories to MC servers
+		    $url = self::$api_url . "/lists/{$list_id}/interest-categories";
+
+		    $args = array(
+			    'method' => 'PATCH', // Allows us to add or update
+			    'user-agent' => self::$user_agent,
+			    'timeout' => $this->url_args['timeout'],
+			    'headers' => $this->url_args['headers'],
+		    );
+
+		    /**
+		     * Update the on-server (MailChimp server) interest category definition(s) for the system
+		     */
+		    foreach( $mcapi_list_settings[$list_id]->interest_categories as $cat_id => $category ) {
+
+		    	$ic_url = "{$url}/{$cat_id}";
+
+			    $request = array(
+				    'title' => $category->title,
+			        'type'  => ($category->type != $category_type ? $category_type : $category->type),
+			    );
+
+			    $args['body'] = $request;
+
+			    if (WP_DEBUG) {
+				    error_log("MCAPI: Updating interest category {$cat_id} on the MailChimp servers");
+			    }
+
+			    $resp = wp_remote_request($ic_url, $args);
+
+			    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+
+				    if (WP_DEBUG) {
+					    error_log("MCAPI: Error updating interest category {$cat_id}: " . print_r($resp, true));
+				    }
+
+				    $this->set_error_msg($resp);
+				    return false;
+			    }
+
+			    $upstream = array_diff_key($server_ic[$cat_id]->interests, $category->interests);
+			    $local = array_diff_key($category->interests, $server_ic[$cat_id]->interests);
+
+			    if (WP_DEBUG) {
+				    error_log("MCAPI: Local interests not available upstream: " . print_r($local, true));
+				    error_log("--------");
+				    error_log("MCAPI: Upstream interests not available in local config: " . print_r($upstream, true));
+			    }
+
+			    /**
+			     * Update any interests belonging to the interest category
+			     */
+			    $local_icount = count($category->interests);
+			    $upstream_icount = count($server_ic[$cat_id]->interests);
+
+			    if (WP_DEBUG) {
+				    error_log("MCAPI: Comparing local vs upstream interest counts. Local ({$local_icount}) vs remote ({$upstream_icount})");
+			    }
+
+			    // push interests for interest category to MailChimp server?
+			    if ( $local_icount > $upstream_icount || !empty( $local )) {
+
+			    	if ( false == $this->edit_interests_on_server( $list_id, $cat_id, $category->interests) )
+				    {
+					    if (WP_DEBUG) {
+						    error_log("MCAPI: Updating interests for {$cat_id} on the MailChimp servers");
+					    }
+
+					    $this->set_error_msg(
+				    		sprintf( __("Error: Unable to update interests for the %s interest category", "pmpromc"),
+							    $category->title)
+					    );
+				    }
+			    }
+
+			    // merge upstream interests from MailChimp server
+			    if ( $local_icount < $upstream_icount || ! empty( $upstream ) ) {
+
+			    	if (WP_DEBUG) {
+					    error_log("MCAPI: Setting local interest for {$cat_id} so they can be saved");
+				    }
+
+				    $mcapi_list_settings[$list_id]->interest_categories[$cat_id]->interests = $server_ic[$cat_id]->interests;
+			    }
+		    }
+
+	    } else {
+
+		    if (WP_DEBUG) {
+			    error_log("MCAPI: Only updating local interest category settings for {$list_id}");
+		    }
+	    	// update the local interest group settings to match upstream server
+		    $mcapi_list_settings[$list_id]->interest_categories = $server_ic;
+	    }
+
+	    if (WP_DEBUG) {
+		    error_log("MCAPI: Updating local list settings for {$list_id}");
+	    }
+
+	    // update the PMPro MailChimp API settings for all lists (no autoload)
+	    if ( true !== update_option('pmcapi_list_settings', $mcapi_list_settings, false ) ) {
+
+		    if (WP_DEBUG) {
+			    error_log("MCAPI: Error updating pmcapi_list_settings option");
+		    }
+
+		    // configure the option update error message
+		    $this->set_error_msg(
+		    	sprintf(
+		    		__("Error: Unable to update the list specific settings for the '%s' MailChimp list", "pmpromc"),
+				    $mcapi_list_settings[$list_id]->name
+			    )
+		    );
+	    }
+
+	    return true;
+    }
+
+	/**
+	 * Update the list of interests belonging to the $list_id mailing list for the $cat_id interest category on the
+	 * MailChimp server.
+	 *
+	 * @since       2.1
+	 *
+	 * @param       string      $list_id        - ID of the MailChimp distribution list
+	 * @param       string      $cat_id         - ID of the Interest Cateogry belonging to $list_id
+	 * @param       array       $interests      - array( $interest_id => $interest_name )
+	 *
+	 * @return      bool
+	 */
+    private function edit_interests_on_server( $list_id, $cat_id, $interests ) {
+
+	    // patch all existing interest categories to MC servers
+	    $url = self::$api_url . "/lists/{$list_id}/interest-categories/{$cat_id}/interests";
+
+	    $args = array(
+		    'method' => 'PATCH', // Allows us to add or update
+		    'user-agent' => self::$user_agent,
+		    'timeout' => $this->url_args['timeout'],
+		    'headers' => $this->url_args['headers'],
+	    );
+
+	    foreach( $interests as $id => $name ) {
+
+		    $args['body'] = $this->encode( array(
+				    'list_id' => $list_id,
+				    'name'    => $name,
+		        )
+		    );
+
+		    $i_url = "{$url}/{$id}";
+
+		    if (WP_DEBUG) {
+			    error_log("MCAPI: Updating interest '{$name}' (id: {$id}) for category {$cat_id} in list {$list_id} on the MailChimp server");
+		    }
+
+		    $resp = wp_remote_request($i_url, $args);
+
+		    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+			    $this->set_error_msg($resp);
+			    return false;
+		    }
+	    }
+
+	    return true;
+    }
+
+	/**
+	 * Return all interest categories for the specified list ID
+	 *
+	 * @since 2.1
+	 *
+	 * @param       string      $list_id        MailChimp List ID
+	 *
+	 * @return      mixed           False = error | array( interest-category-id => object[1], )
+	 *
+	 * @see http://developer.mailchimp.com/documentation/mailchimp/reference/lists/interest-categories/ - Docs for Interest Categories on MailChimp
+	 */
+    public function get_interest_categories( $list_id ) {
+
+	    // get all existing interest categories from MC servers
+	    $url = self::$api_url . "/lists/{$list_id}/interest-categories/";
+
+	    $args = array(
+		    'method' => 'GET', // Fetch data (read)
+		    'user-agent' => self::$user_agent,
+		    'timeout' => $this->url_args['timeout'],
+		    'headers' => $this->url_args['headers'],
+		    'body' => null
+	    );
+
+	    if (WP_DEBUG) {
+		    error_log("MCAPI: Fetching interest categories for {$list_id} from the MailChimp servers");
+	    }
+
+	    $resp = wp_remote_request($url, $args);
+
+	    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		    $this->set_error_msg($resp);
+		    return false;
+	    }
+
+	    $ic = array();
+
+	    // Save the interest category information we (may) need
+	    foreach( $resp->categories as $cat ) {
+
+	    	$ic[$cat->id] = new stdClass();
+		    $ic[$cat->id]->type = $cat->type;
+		    $ic[$cat->id]->name = $cat->title;
+		    $ic[$cat->id]->interests = $this->get_interests_for_category( $list_id, $cat->id );
+	    }
+
+	    return $ic;
+    }
+
+	/**
+	 * Read all interests for an interest category from the MailChimp server
+	 *
+	 * @since 2.1
+	 *
+	 * @param   string      $list_id    ID of the Distribution List on MailChimp server
+	 * @param   string      $cat_id     ID of the Interest Category on MailChimp server
+	 *
+	 * @return  array|bool      Array of interest names & IDs
+	 */
+	public function get_interests_for_category(  $list_id, $cat_id ) {
+
+	    $url = self::$api_url . "/lists/{$list_id}/interest-categories/{$cat_id}/interests";
+
+	    $args = array(
+		    'method' => 'GET', // Allows us to add or update a user ID
+		    'user-agent' => self::$user_agent,
+		    'timeout' => $this->url_args['timeout'],
+		    'headers' => $this->url_args['headers'],
+		    'body' => null
+	    );
+
+	    if (WP_DEBUG) {
+		    error_log("MCAPI: Fetching interests for category {$cat_id} in list {$list_id} from the MailChimp servers");
+	    }
+
+	    $resp = wp_remote_request($url, $args);
+
+	    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		    $this->set_error_msg($resp);
+		    return false;
+	    }
+
+	    $interests = array();
+
+	    foreach( $resp->interests as $interest ) {
+	    	$interests[$interest->id] = $interest->name;
+	    }
+
+	    return $interests;
+    }
+
     /**
      * Check if a merge field is in an array of merge fields
+     *
+     * @param   string      $field_name
+     * @param   array      $fields
+     *
+     * @return  boolean
      */
     public function in_merge_fields($field_name, $fields)
     {
-        if (empty($fields))
-            return false;
+        if (empty($fields)) {
+	        return false;
+        }
 
-        foreach ($fields as $field)
-            if ($field->tag == $field_name)
-                return true;
+        foreach ($fields as $field) {
+	        if ( $field->tag == $field_name ) {
+		        return true;
+	        }
+        }
 
         return false;
     }
 
-    /**
-     * Make sure a list has the PMPLEVELID and PMPLEVEL merge fields.
-     *
-     * @param string $list_id - The MC list ID
-     *
-     * @since 2.0.0
-     */
-    public function add_pmpro_merge_fields($list_id)
-    {
-        /**
-         * Filter the list of merge fields for PMPro to generate.
-         *
-         * @param string $list_id - The MC list ID
-         *
-         * @since 2.0.0
-         */
-        $pmpro_merge_fields = apply_filters('pmpro_mailchimp_merge_fields',
-            array(
-                array('name' => 'PMPLEVELID', 'type' => 'number'),
-                array('name' => 'PMPLEVEL', 'type' => 'text'),
-            ),
-            $list_id);
+	/**
+	 * Configure merge fields for Mailchimp (uses filter)
+	 *
+	 * @param       string      $list_id    - The MC list ID
+	 * @param       array       $delta  {
+	 * Optional. Array of merge fields we don't think are defined on the MailChimp server
+	 *      @type    array      $field_definition  {
+	 *
+	 *          Optional. Field definition for the merge field (name, type)
+	 *          @type   string      $key        name | type
+	 *          @type   string      $value      string or field type
+	 *          @type   boolean     $public     Whether the field is to be hidden (false)
+	 *      }
+	 * }
+	 *
+	 * @return      array                  - Merge field list
+	 *
+	 * @since 2.1
+	 */
+	public function configure_merge_fields( $list_id, $delta = array() ) {
 
-        //get merge fields for this list
-        $list_merge_fields = $this->get_merge_fields($list_id);
+		// nothing to be done.
+		if ( empty( $delta ) ) {
+			return;
+		}
 
-        if ( ! empty($list_merge_fields) ) {
+		$mcapi_list_settings = get_option('pmcapi_list_settings', null );
 
-            foreach ($pmpro_merge_fields as $merge_field) {
+		$mf_config = apply_filters('pmpro_mailchimp_merge_fields',
+			array(
+				array('name' => 'PMPLEVELID', 'type' => 'number'),
+				array('name' => 'PMPLEVEL', 'type' => 'text'),
+			),
+			$list_id
+		);
 
-                if (is_array($merge_field)) {
+		// check if the local settings are roughly the same as the filtered values
+		if (count($mf_config[0]) == count($mcapi_list_settings[$list_id]->mf_config[])) {
 
-                    //pull from array
-                    $field_name = $merge_field['name'];
-                    $field_type = $merge_field['type'];
+			if (WP_DEBUG) {
+				error_log("MCAPI: No difference in count between locally stored option & supplied filter value");
+			}
 
-                    if (!empty($merge_field['public'])) {
-                        $field_public = $merge_field['public'];
-                    } else {
-                        $field_public = false;
-                    }
-                } else {
+			return;
+		}
 
-                    //defaults
-                    $field_name = $merge_field;
-                    $field_type = 'text';
-                    $field_public = false;
-                }
+		foreach( $mf_config as $key => $settings ) {
 
-                //add field if missing
-                if (false === $this->in_merge_fields($field_name, $list_merge_fields)) {
+			// new field that needs to be configured on server
+			if ( !empty( $delta[$settings['name']] ) ) {
 
-                    $new_merge_field = $this->add_merge_field($field_name, $field_type, $field_public, $list_id);
+				if (WP_DEBUG) {
+					error_log("MCAPI Processing merge field: {$delta[$settings['name']]}");
+				}
 
-                    //and add to cache
-                    $this->merge_fields[$list_id][] = $new_merge_field;
-                }
-            }
-        }
+				// include field in MailChimp profile for user (on MailChimp server)
+				$visibility = isset($settings['visible']) ? $settings['visible'] : false;
+
+				// Add the field to the
+				$mcapi_list_settings[$list_id]->mf_config[] = $this->add_merge_field( $settings['name'], $settings['type'], $visibility , $list_id );
+			}
+		}
+
+		// update the PMPro MailChimp API settings for all lists (no autoload)
+		if ( true !== update_option('pmcapi_list_settings', $mcapi_list_settings, false ) ) {
+
+			if (WP_DEBUG) {
+				error_log("MCAPI: Error updating pmcapi_list_settings option");
+			}
+
+			// configure the option update error message
+			$this->set_error_msg(
+				sprintf(
+					__("Error: Unable to update the list specific settings for the '%s' MailChimp list", "pmpromc"),
+					$mcapi_list_settings[$list_id]->name
+				)
+			);
+		}
     }
 
     /**
-     * Get merge fields for a list
+     * Get previously defined merge fields for a list (via MC API)
      *
      * @param string $list_id - The MC list ID
      * @param bool $force - Whether to force a read/write
      *
-     * @return mixed - False if error or the merge fields for the list_id
+     * @return mixed - False if error | Merge fields for the list_id
      * @since 2.0.0
      */
-    public function get_merge_fields($list_id, $force = false)
+    public function get_existing_remote_merge_fields($list_id, $force = false)
     {
         //get from cache
         if (isset($this->merge_fields[$list_id]) && !$force) {
@@ -465,7 +990,7 @@ class PMProMailChimp
     }
 
     /**
-     * Add a merge field to a list
+     * Add a merge field to a list (very basic)
      *
      * @param string $merge_field - The Merge Field Name
      * @param string $type - The Merge Field Type (text, number, date, birthday, address, zip code, phone, website)
@@ -491,7 +1016,7 @@ class PMProMailChimp
         );
 
         $args = array(
-            'method' => 'POST', // Allows us to add or update a user ID
+            'method' => 'PATCH', // PATCH method lets us add/edit merge field definition
             'user-agent' => self::$user_agent,
             'timeout' => $this->url_args['timeout'],
             'headers' => $this->url_args['headers'],
@@ -575,31 +1100,17 @@ class PMProMailChimp
     }
 
     /**
-     * Build an interest object to use for MailChimp API
-     * @param \WP_User $user - User object
-     * @return \stdClass() $interestes - Object containing the required Interests settings for MC-API v3.0
+     * Set visible error message (WordPress dashboard and/or PMPro error field).
+     *
+     * @param   WP_Http|string      HTML object with error status, or text message to display
      *
      * @since 2.0.0
-     */
-    private function set_user_interest($user, $list_id)
-    {
-        $level = pmpro_getMembershipLevelForUser($user->ID);
-        $interests = new stdClass();
-        $interests->id = $level->id;
-        $interests->label = $level->name;
-
-        return $interests;
-    }
-
-    /**
-     * @param $obj
-     *
-     * @since 2.0.0
+     * @since 2.1   Added to the pmpro_msg[t] error messaging system
      */
     private function set_error_msg($obj)
     {
-        global $msgt;
-        global $msg;
+        global $msgt, $pmpro_msgt;
+        global $msg, $pmpro_msg;
 
         $msgt = 'error';
 
@@ -610,5 +1121,8 @@ class PMProMailChimp
         } else {
         	$msg = __("Unable to identify error message", "pmpromc");
 	    }
+
+	    $pmpro_msg = $msg;
+	    $pmpro_msgt = $msgt;
     }
 }
