@@ -973,7 +973,7 @@ class PMProMailChimp
 		);
 
 		// check if the local settings are roughly the same as the filtered values
-		if (count($mf_config[0]) == count($mcapi_list_settings[$list_id]->mf_config[])) {
+		if (count($mf_config[0]) == count($mcapi_list_settings[$list_id]->mf_config)) {
 
 			if (WP_DEBUG) {
 				error_log("MCAPI: No difference in count between locally stored option & supplied filter value");
