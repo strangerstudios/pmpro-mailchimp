@@ -310,7 +310,12 @@ class PMProMailChimp
             $resp = wp_remote_request($user_url, $args);
 
 	        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
-		        $this->set_error_msg($resp);
+		        if ( is_wp_error( $resp ) ) {
+			        $this->set_error_msg( $resp->get_error_message() );
+		        } else {
+			        $this->set_error_msg( "Unsubscribe Error: " . wp_remote_retrieve_response_message( $resp ) );
+		        }
+
 		        return false;
 	        }
         }
@@ -447,8 +452,11 @@ class PMProMailChimp
 	    $configured_fields = array();
 
 	    // identify any configured merge fields that are stored locally
-	    foreach( $mc_list_settings[$list_id]->mf_config as $k => $settings ) {
-	    	$configured_fields[$settings['name']] = null;
+	    if ( isset( $mc_list_settings[$list_id]->mf_config )) {
+
+		    foreach ( $mc_list_settings[ $list_id ]->mf_config as $k => $settings ) {
+			    $configured_fields[ $settings['name'] ] = null;
+		    }
 	    }
 
 	    // check if there's a difference between what we have stored & what the user has specified in filters, etc.
@@ -1174,10 +1182,15 @@ class PMProMailChimp
 
         $msgt = 'error';
 
-	    if ( !is_string($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
+	    if ( !is_string($obj) && !is_array($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
 		    $msg = $obj->get_error_message();
         } elseif ( is_string($obj) ) {
-            $msg = $obj;
+		    $msg = $obj;
+	    } elseif (is_array( $obj )) {
+	    	foreach( $obj as $o ) {
+			    $msg = '';
+			    $msg .= $o->get_error_message();
+		    }
         } else {
         	$msg = __("Unable to identify error message", "pmpromc");
 	    }
