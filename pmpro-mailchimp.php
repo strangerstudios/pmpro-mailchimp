@@ -958,7 +958,7 @@ function pmpromc_subscribe($list, $user)
 
     $options = get_option("pmpromc_options");
     $api = pmpromc_getAPI();
-    $merge_fields = $api->populate_merge_fields( $user );
+    $merge_fields = $api->populate_merge_fields( $list, $user );
 
     if (WP_DEBUG) {
         error_log("Trying to subscribe {$user->ID} to list {$list}");
