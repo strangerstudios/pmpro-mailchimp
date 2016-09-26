@@ -960,7 +960,19 @@ function pmpromc_subscribe($list, $user)
     $api = pmpromc_getAPI();
     $merge_fields = apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user);
 
-    $api->subscribe($list, $user, $merge_fields, "html", $options['double_opt_in']);
+    if (WP_DEBUG) {
+        error_log("Trying to subscribe {$user->ID} to list {$list}");
+    }
+
+    if ( false === $api->subscribe($list, $user, $merge_fields, "html", $options['double_opt_in']) ) {
+
+        global $msgt;
+        global $msg;
+
+        if (WP_DEBUG) {
+            error_log("Error during subscription attempt: {$msg}");
+        }
+    }
 }
 
 /**
@@ -999,6 +1011,10 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
 
     //don't unsubscribe if unsubscribe option is no
     if (empty($options['unsubscribe'])) {
+
+        if (WP_DEBUG) {
+            error_log("No need to unsubscribe {$user_id} with level IDL {$level_id}");
+        }
 
         return;
     }

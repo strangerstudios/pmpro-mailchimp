@@ -207,11 +207,14 @@ class PMProMailChimp
         $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
         $resp = wp_remote_request($url, $args);
 
-        //handle response
-        if (is_wp_error($resp)) {
+	    if (WP_DEBUG) {
+	    	error_log("Subscribe: Response object: " . print_r($resp, true));
+	    }
 
-            $this->set_error_msg($resp);
-            return false;
+        //handle response
+        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+	        $this->set_error_msg($resp);
+	        return false;
         }
 
         return true;
@@ -254,10 +257,10 @@ class PMProMailChimp
 
             $resp = wp_remote_request($user_url, $args);
 
-            if (is_wp_error($resp)) {
-                $this->set_error_msg($resp);
-                return false;
-            }
+	        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		        $this->set_error_msg($resp);
+		        return false;
+	        }
         }
 
         return true;
@@ -281,10 +284,10 @@ class PMProMailChimp
 
         $resp = wp_remote_get($url, $this->url_args);
 
-        if (is_wp_error($resp)) {
-            $this->set_error_msg($resp);
-            return false;
-        }
+	    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		    $this->set_error_msg($resp);
+		    return false;
+	    }
 
         $member_info = $this->decode_response($resp['body']);
         return $member_info;
@@ -344,10 +347,10 @@ class PMProMailChimp
 
         $resp = wp_remote_request($url, $args);
 
-        if (is_wp_error($resp)) {
-            $this->set_error_msg($resp);
-            return false;
-        }
+	    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		    $this->set_error_msg($resp);
+		    return false;
+	    }
 
         return true;
     }
@@ -449,11 +452,10 @@ class PMProMailChimp
         $response = wp_remote_get($url, $this->url_args);
 
         //check response
-        if (is_wp_error($response)) {
-
-            $this->set_error_msg($response);
-            return false;
-        } else {
+	    if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		    $this->set_error_msg($response);
+		    return false;
+	    }  else {
 
             $body = $this->decode_response($response['body']);
             $this->merge_fields[$list_id] = isset($body->merge_fields) ? $body->merge_fields : array();
@@ -501,10 +503,10 @@ class PMProMailChimp
         $response = wp_remote_request($url, $args);
 
         //check response
-        if (is_wp_error($response)) {
-            $this->set_error_msg($response);
-            $merge_field = false;
-        } else {
+	    if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		    $this->set_error_msg($response);
+		    return false;
+	    } else {
             $body = $this->decode_response($response['body']);
             $merge_field = isset($body->merge_field) ? $body->merge_field : array();
         }
@@ -601,10 +603,12 @@ class PMProMailChimp
 
         $msgt = 'error';
 
-        if (is_wp_error($obj)) {
-            $msg = $obj->get_error_message();
-        } else {
+	    if ( !is_string($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
+		    $msg = $obj->get_error_message();
+        } elseif ( is_string($obj) ) {
             $msg = $obj;
-        }
+        } else {
+        	$msg = __("Unable to identify error message", "pmpromc");
+	    }
     }
 }
