@@ -826,10 +826,6 @@ function pmpromc_refresh_interest_categories() {
 	$list = isset( $_REQUEST['pmpromc_refresh_list_id'] ) ? sanitize_text_field( $_REQUEST['pmpromc_refresh_list_id'] ) : null;
 	wp_verify_nonce( 'pmpromc', "pmpromc_refresh_{$list}" );
 
-	if ( WP_DEBUG ) {
-		error_log( "Request during refresh? " . print_r( $_REQUEST, true ) );
-	}
-
 	$api      = apply_filters( 'get_mailchimpapi_class_instance', null );
 	$level_id = isset( $_REQUEST['pmpromc_refresh_list_level'] ) ? intval( $_REQUEST['pmpromc_refresh_list_level'] ) : null;
 
