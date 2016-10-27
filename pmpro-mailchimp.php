@@ -404,7 +404,7 @@ function pmpromc_admin_init() {
 	register_setting( 'pmpromc_options', 'pmpromc_options', 'pmpromc_options_validate' );
 	add_settings_section( 'pmpromc_section_general', 'General Settings', 'pmpromc_section_general', 'pmpromc_options' );
 	add_settings_field( 'pmpromc_option_api_key', 'MailChimp API Key', 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general' );
-	add_settings_field( 'pmpromc_option_mc_api_fetch_list_limit', __( "Available lists (number)", "pmpromc" ), 'pmpromc_option_retrieve_lists', 'pmpromc_options', 'pmpromc_section_general' );
+	add_settings_field( 'pmpromc_option_mc_api_fetch_list_limit', __( "Objects fetched per API call (number)", "pmpromc" ), 'pmpromc_option_retrieve_lists', 'pmpromc_options', 'pmpromc_section_general' );
 	add_settings_field( 'pmpromc_option_users_lists', 'All Users List', 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general' );
 
 	//only if PMPro is installed
