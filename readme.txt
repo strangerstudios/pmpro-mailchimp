@@ -1,5 +1,5 @@
 === Paid Memberships Pro - MailChimp Add On ===
-Contributors: strangerstudios
+Contributors: strangerstudios, sjolshag
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 3.5
 Tested up to: 4.5.3
