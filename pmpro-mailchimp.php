@@ -32,7 +32,7 @@ Author URI: http://www.strangerstudios.com
 /**
  * Deny TESTING the "GROUPINGS" entry in the `pmpro_mailchimp_listsubscribe_fields` suppled array of merge fields
  */
-if (! defined( 'PMPRO_MC_TESTING' ) ) {
+if ( ! defined( 'PMPRO_MC_TESTING' ) ) {
 	define( 'PMPRO_MC_TESTING', false );
 }
 
@@ -428,7 +428,7 @@ function pmpromc_admin_init() {
 	if ( ! empty( $pmpromc_levels ) ) {
 		foreach ( $pmpromc_levels as $level ) {
 
-			add_settings_field( 'pmpromc_option_memberships_lists_' . $level->id, $level->name, 'pmpromc_option_memberships_lists', 'pmpromc_options', 'pmpromc_section_levels', array( $level ) );
+			add_settings_field( 'pmpromc_option_memberships_lists_' . $level->id, "{$level->name} (ID: {$level->id})", 'pmpromc_option_memberships_lists', 'pmpromc_options', 'pmpromc_section_levels', array( $level ) );
 
 		}
 	}
@@ -449,7 +449,7 @@ function pmpromc_admin_init() {
 
 					add_settings_field(
 						"pmpromc_option_interest_categories_{$level->id}",
-						$level->name,
+						"{$level->name} (ID: {$level->id})",
 						'pmpromc_option_interest_categories',
 						'pmpromc_options',
 						'pmpromc_section_igs',
@@ -629,7 +629,9 @@ function pmpromc_section_igs() {
 		?>
 		<p>For each membership level below, as needed, select the interest group(s) that a new subscriber should be
 			assigned.</p>
-		<p>You can manage (add/remove/change) your Interest Group definitions on the <a href="<?php echo esc_url_raw( $mc_url ); ?>" target="_blank"><?php _e("MailChimp Server"); ?></a>. Select the "Manage Subscribers" menu, then the "Groups" sub-menu for the desired MailChimp list</p>
+		<p>You can manage (add/remove/change) your Interest Group definitions on the <a
+				href="<?php echo esc_url_raw( $mc_url ); ?>" target="_blank"><?php _e( "MailChimp Server" ); ?></a>.
+			Select the "Manage Subscribers" menu, then the "Groups" sub-menu for the desired MailChimp list</p>
 		<?php
 	} else {
 		//just deactivated or needs to be installed?
@@ -746,13 +748,13 @@ function pmpromc_option_interest_categories( $args ) {
 					<?php esc_attr_e( $pmpromc_lists[ $list_id ]->name ); ?>
 				</div>
 				<div class="pmpromc-server-refresh-form">
-								<?php wp_nonce_field( "pmpromc", "pmpromc_refresh_{$list_id}" ); ?>
-				<input type="hidden" name="pmpromc_refresh_list_id[]"
-				       value="<?php esc_attr_e( $list_id ); ?>" class="pmpro_refresh_list_id">
-				<input type="hidden" name="pmpromc_refresh_list_level[]"
-				       value="<?php esc_attr_e( $level->id ); ?>" class="pmpro_refresh_list_level_id">
-				<input type="submit" value="<?php _e( "Server Refresh", "pmpromc" ); ?>"
-				       class="pmpromc_server_refresh button-secondary">
+					<?php wp_nonce_field( "pmpromc", "pmpromc_refresh_{$list_id}" ); ?>
+					<input type="hidden" name="pmpromc_refresh_list_id[]"
+					       value="<?php esc_attr_e( $list_id ); ?>" class="pmpro_refresh_list_id">
+					<input type="hidden" name="pmpromc_refresh_list_level[]"
+					       value="<?php esc_attr_e( $level->id ); ?>" class="pmpro_refresh_list_level_id">
+					<input type="submit" value="<?php _e( "Server Refresh", "pmpromc" ); ?>"
+					       class="pmpromc_server_refresh button-secondary">
 				</div>
 				<?php
 				foreach ( $categories as $cat_id => $category ) {
@@ -767,23 +769,24 @@ function pmpromc_option_interest_categories( $args ) {
 								<?php esc_attr_e( $category->name ); ?>
 							</p>
 							<?php
-							if (empty( $category->interests ) ) {
+							if ( empty( $category->interests ) ) {
 								$mc_url = "https://" . PMProMailChimp::get_mc_dc() . ".admin.mailchimp.com/lists/";
 								?>
 								<div class="pmpromc-ic-checkboxgroup">
-									<p><?php printf( __('No interests <a href="%s" target="_blank">defined on the server</a> for this Interest Category', "pmpromc"), esc_url_raw( $mc_url ) ); ?></p>
+									<p><?php printf( __( 'No interests <a href="%s" target="_blank">defined on the server</a> for this Interest Category', "pmpromc" ), esc_url_raw( $mc_url ) ); ?></p>
 								</div>
-							<?php
+								<?php
 							}
-							foreach ( $category->interests as $id => $label ) {
+							foreach ( $category->interests as $int_id => $label ) {
 
-								$has_id = isset( $options["level_{$level->id}_interests"][ $list_id ] ) && in_array( $id, $options["level_{$level->id}_interests"][ $list_id ] );
+								$has_id = isset( $options["level_{$level->id}_interests"][ $list_id ][$cat_id] ) &&
+								          in_array( $int_id, $options["level_{$level->id}_interests"][ $list_id ][$cat_id] );
 								?>
 								<div class="pmpromc-ic-checkboxgroup">
 									<input type="checkbox"
 									       name="pmpromc_options[level_<?php esc_attr_e( $level->id ); ?>_interests][<?php esc_attr_e( $list_id ); ?>][<?php esc_attr_e( $cat_id ); ?>][]"
 									       class="pmpromc-interest-category_<?php esc_attr_e( $ig_name ); ?>"
-									       value="<?php esc_attr_e( $id ); ?>" <?php checked( true, $has_id ); ?>>
+									       value="<?php esc_attr_e( $int_id ); ?>" <?php checked( true, $has_id ); ?>>
 									<span
 										class="pmpromc-interest-category-type"><?php esc_attr_e( $label ); ?></span>
 								</>
@@ -820,15 +823,15 @@ function pmpromc_option_interest_categories( $args ) {
  */
 function pmpromc_refresh_interest_categories() {
 
-	$list     = isset( $_REQUEST['pmpromc_refresh_list_id'] ) ? sanitize_text_field( $_REQUEST['pmpromc_refresh_list_id'] ) : null;
-	wp_verify_nonce('pmpromc',"pmpromc_refresh_{$list}");
+	$list = isset( $_REQUEST['pmpromc_refresh_list_id'] ) ? sanitize_text_field( $_REQUEST['pmpromc_refresh_list_id'] ) : null;
+	wp_verify_nonce( 'pmpromc', "pmpromc_refresh_{$list}" );
 
-	if (WP_DEBUG) {
-		error_log("Request during refresh? " . print_r( $_REQUEST, true));
+	if ( WP_DEBUG ) {
+		error_log( "Request during refresh? " . print_r( $_REQUEST, true ) );
 	}
 
-	$api       = apply_filters( 'get_mailchimpapi_class_instance', null );
-	$level_id = isset( $_REQUEST['pmpromc_refresh_list_level'] ) ?intval( $_REQUEST['pmpromc_refresh_list_level'] ) : null;
+	$api      = apply_filters( 'get_mailchimpapi_class_instance', null );
+	$level_id = isset( $_REQUEST['pmpromc_refresh_list_level'] ) ? intval( $_REQUEST['pmpromc_refresh_list_level'] ) : null;
 
 	global $pmpro_msg;
 	global $pmpro_msgt;
@@ -873,6 +876,7 @@ function pmpromc_clear_buffers() {
 	return $buffers;
 
 }
+
 add_action( 'wp_ajax_pmpromc_refresh_list_id', 'pmpromc_refresh_interest_categories' );
 
 function pmpromc_option_users_lists() {
@@ -911,8 +915,8 @@ function pmpromc_option_double_opt_in() {
 }
 
 function pmpromc_option_retrieve_lists() {
-	$options = get_option( 'pmpromc_options', false );
-	$list_count = isset( $options['mc_api_fetch_list_limit'] ) ? $options['mc_api_fetch_list_limit'] : apply_filters('pmpro_addon_mc_api_fetch_list_limit', 15 );
+	$options    = get_option( 'pmpromc_options', false );
+	$list_count = isset( $options['mc_api_fetch_list_limit'] ) ? $options['mc_api_fetch_list_limit'] : apply_filters( 'pmpro_addon_mc_api_fetch_list_limit', 15 );
 	?>
 	<input type="text" name="pmpromc_options[mc_api_fetch_list_limit]"
 	       value="<?php esc_attr_e( $list_count ); ?>">
@@ -1023,13 +1027,16 @@ function pmpromc_options_validate( $input ) {
 					if ( ! empty( $input["level_{$level->id}_interests"][ $list_id ] ) ) {
 
 						if ( empty( $newinput["level_{$level->id}_interests"] ) ) {
-							$newinput["level_{$level->id}_interests"]             = array();
+							$newinput["level_{$level->id}_interests"] = array();
+						}
+
+						if ( empty( $newinput["level_{$level->id}_interests"][ $list_id ] ) ) {
 							$newinput["level_{$level->id}_interests"][ $list_id ] = array();
 						}
 
 						foreach ( $input["level_{$level->id}_interests"][ $list_id ] as $ig => $interests ) {
-							$value                                                = array_map( 'sanitize_text_field', $interests );
-							$newinput["level_{$level->id}_interests"][ $list_id ] = $value;
+							$value                                                       = array_map( 'sanitize_text_field', $interests );
+							$newinput["level_{$level->id}_interests"][ $list_id ][ $ig ] = $value;
 						}
 					}
 				}
@@ -1074,7 +1081,7 @@ function pmpromc_load_scripts( $hook ) {
 		return;
 	}
 
-	wp_register_script('pmpromc-admin', plugins_url( 'js/pmpro-mailchimp-admin.js', __FILE__ ), array( 'jquery' ) );
+	wp_register_script( 'pmpromc-admin', plugins_url( 'js/pmpro-mailchimp-admin.js', __FILE__ ), array( 'jquery' ) );
 
 	wp_localize_script(
 		'pmpromc-admin',
@@ -1084,7 +1091,7 @@ function pmpromc_load_scripts( $hook ) {
 		)
 	);
 
-	wp_enqueue_script('pmpromc-admin');
+	wp_enqueue_script( 'pmpromc-admin' );
 }
 
 add_action( 'admin_enqueue_scripts', 'pmpromc_load_scripts' );
@@ -1633,9 +1640,9 @@ add_filter( 'plugin_row_meta', 'pmpromc_plugin_row_meta', 10, 2 );
  *
  * @return array
  */
-function test_pmpromc_listsubscribe_fields($fields, $user = null, $list_id = null )  {
+function test_pmpromc_listsubscribe_fields( $fields, $user = null, $list_id = null ) {
 
-	if ( defined('PMPRO_MC_TESTING') && true === PMPRO_MC_TESTING ) {
+	if ( defined( 'PMPRO_MC_TESTING' ) && true === PMPRO_MC_TESTING ) {
 		if ( WP_DEBUG ) {
 			error_log( "PMPROMC: Loading test filter for listsubscribe fields" );
 		}
@@ -1661,4 +1668,5 @@ function test_pmpromc_listsubscribe_fields($fields, $user = null, $list_id = nul
 
 	return $fields;
 }
-add_action('pmpro_mailchimp_listsubscribe_fields', 'test_pmpromc_listsubscribe_fields', 10, 3);
+
+add_action( 'pmpro_mailchimp_listsubscribe_fields', 'test_pmpromc_listsubscribe_fields', 10, 3 );
