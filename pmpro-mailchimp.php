@@ -745,10 +745,6 @@ function pmpromc_option_interest_categories( $args ) {
 				<div style="font-size: 1.1em; font-style: italic; font-weight: 600; padding: 10px 0;">
 					<?php esc_attr_e( $pmpromc_lists[ $list_id ]->name ); ?>
 				</div>
-				<?php
-
-				$level_id = isset( $_REQUEST['pmpromc_refresh_list_level'] ) ? intval( $_REQUEST['pmpromc_refresh_list_level'] ) : null;
-				?>
 				<div class="pmpromc-server-refresh-form">
 								<?php wp_nonce_field( "pmpromc", "pmpromc_refresh_{$list_id}" ); ?>
 				<input type="hidden" name="pmpromc_refresh_list_id[]"
@@ -803,6 +799,15 @@ function pmpromc_option_interest_categories( $args ) {
 			} else { ?>
 				<div class="pmpromc-interest-cateogry_none">
 				<?php printf( __( "No interest groups/categories found for: %s", "pmpromc" ), esc_attr( $pmpromc_lists[ $list_id ]->name ) ); ?>
+				<div class="pmpromc-server-refresh-form">
+					<?php wp_nonce_field( "pmpromc", "pmpromc_refresh_{$list_id}" ); ?>
+					<input type="hidden" name="pmpromc_refresh_list_id[]"
+					       value="<?php esc_attr_e( $list_id ); ?>" class="pmpro_refresh_list_id">
+					<input type="hidden" name="pmpromc_refresh_list_level[]"
+					       value="<?php esc_attr_e( $level->id ); ?>" class="pmpro_refresh_list_level_id">
+					<input type="submit" value="<?php _e( "Server Refresh", "pmpromc" ); ?>"
+					       class="pmpromc_server_refresh button-secondary">
+				</div>
 				</div><?php
 			}
 		} ?>

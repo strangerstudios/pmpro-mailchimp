@@ -187,6 +187,10 @@ class PMProMailChimp {
 						)
 					);
 
+					if (WP_DEBUG) {
+						error_log( wp_remote_retrieve_response_message( $response ) );
+					}
+
 					return false;
 					break;
 
@@ -200,6 +204,10 @@ class PMProMailChimp {
 							wp_remote_retrieve_response_message( $response )
 						)
 					);
+
+					if (WP_DEBUG) {
+						error_log( wp_remote_retrieve_response_message( $response ) );
+					}
 
 					return false;
 			}
@@ -659,6 +667,8 @@ class PMProMailChimp {
 
 		global $current_user;
 
+		$this->get_all_lists();
+
 		/**
 		 * Local definition for list settings (merge fields & interest categories)
 		 * @since 2.1
@@ -693,6 +703,9 @@ class PMProMailChimp {
 			$mcapi_list_settings[ $list_id ]->merge_fields        = array();
 		}
 
+		$server_ic     = $this->get_interest_categories( $list_id );
+		$mcapi_list_settings[ $list_id ]->interest_categories = $mcapi_list_settings[ $list_id ]->interest_categories + $server_ic;
+
 		$filtered_mf_config = apply_filters( 'pmpro_mailchimp_merge_fields',
 			array(
 				array( 'name' => 'PMPLEVELID', 'type' => 'number' ),
@@ -725,14 +738,8 @@ class PMProMailChimp {
 			}
 		}
 
-		if ( WP_DEBUG ) {
-			error_log( "Current filtered Merge Field List: " . print_r( $filtered_mf_config, true ) );
-			error_log( "Current list of v2 Grouping fields: " . print_r( $v2_category_def, true ) );
-		}
-
 		// look for categories
 		$category_type = apply_filters( 'pmpro_mailchimp_list_interest_category_type', 'checkboxes', $list_id );
-		$server_ic     = $this->get_interest_categories( $list_id );
 
 		// process & convert any MCAPI-v2-style interest groups (groupings) aka interest categories.
 
@@ -741,10 +748,6 @@ class PMProMailChimp {
 			$new_ics = array();
 
 			foreach ( $v2_category_def as $key => $grouping_def ) {
-
-				if ( WP_DEBUG ) {
-					error_log( "Processing {$key} for grouping definition: " . print_r( $grouping_def, true ) );
-				}
 
 				foreach( $grouping_def['groups'] as $group_name ) {
 
@@ -767,10 +770,6 @@ class PMProMailChimp {
 
 				$mcapi_list_settings[ $list_id ]->interest_categories = $mcapi_list_settings[ $list_id ]->interest_categories + $new_ics;
 			}
-		}
-
-		if (WP_DEBUG) {
-			error_log("List of Interest Categories: " . print_r( $mcapi_list_settings[ $list_id ]->interest_categories, true ) );
 		}
 
 		// Update server unknown interest categories are found locally
@@ -984,6 +983,10 @@ class PMProMailChimp {
 
 		if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 			$this->set_error_msg( wp_remote_retrieve_response_message( $resp ) );
+
+			if (WP_DEBUG) {
+				error_log( wp_remote_retrieve_response_message( $resp ) );
+			}
 
 			return false;
 		}
