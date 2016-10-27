@@ -160,6 +160,8 @@ class PMProMailChimp {
 	 */
 	public function connect() {
 
+		$options = $options    = get_option( 'pmpromc_options', false );
+
 		/**
 		 * Set the number of lists to return from the MailChimp server.
 		 *
@@ -167,9 +169,9 @@ class PMProMailChimp {
 		 *
 		 * @param   int $max_lists - Max number of lists to return
 		 */
-		$max_lists = apply_filters( 'pmpro_addon_mc_api_fetch_list_limit', 15 );
+		$max = !empty( $options['mc_api_fetch_list_limit'] ) ? $options['mc_api_fetch_list_limit'] : apply_filters( 'pmpro_addon_mc_api_fetch_list_limit', 15 );
 
-		$url      = self::$api_url . "/lists/?count={$max_lists}";
+		$url      = self::$api_url . "/lists/?count={$max}";
 		$response = wp_remote_get( $url, $this->url_args );
 
 		// Fix: is_wp_error() appears to be unreliable since WordPress v4.5
@@ -703,8 +705,7 @@ class PMProMailChimp {
 			$mcapi_list_settings[ $list_id ]->merge_fields        = array();
 		}
 
-		$server_ic     = $this->get_interest_categories( $list_id );
-		$mcapi_list_settings[ $list_id ]->interest_categories = $mcapi_list_settings[ $list_id ]->interest_categories + $server_ic;
+		$mcapi_list_settings[ $list_id ]->interest_categories = $this->get_interest_categories( $list_id );
 
 		$filtered_mf_config = apply_filters( 'pmpro_mailchimp_merge_fields',
 			array(
@@ -914,8 +915,10 @@ class PMProMailChimp {
 	 */
 	public function get_interest_categories( $list_id ) {
 
+		$max = !empty( $options['mc_api_fetch_list_limit'] ) ? $options['mc_api_fetch_list_limit'] : apply_filters( 'pmpro_addon_mc_api_fetch_list_limit', 15 );
+
 		// get all existing interest categories from MC servers
-		$url = self::$api_url . "/lists/{$list_id}/interest-categories/";
+		$url = self::$api_url . "/lists/{$list_id}/interest-categories/?count={$max}";
 
 		$args = array(
 			'method'     => 'GET', // Fetch data (read)
@@ -965,7 +968,9 @@ class PMProMailChimp {
 	 */
 	public function get_interests_for_category( $list_id, $cat_id ) {
 
-		$url = self::$api_url . "/lists/{$list_id}/interest-categories/{$cat_id}/interests";
+		$max = !empty( $options['mc_api_fetch_list_limit'] ) ? $options['mc_api_fetch_list_limit'] : apply_filters( 'pmpro_addon_mc_api_fetch_list_limit', 15 );
+
+		$url = self::$api_url . "/lists/{$list_id}/interest-categories/{$cat_id}/interests/?count={$max}";
 
 		$args = array(
 			'method'     => 'GET', // Allows us to add or update a user ID
