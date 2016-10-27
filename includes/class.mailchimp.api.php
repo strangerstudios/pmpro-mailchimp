@@ -597,10 +597,12 @@ class PMProMailChimp {
 
 		$interests = array();
 
-		foreach ( self::$options["level_{$pmpro_level->id}_interests"][ $list_id ] as $interest_id ) {
+		foreach ( self::$options["level_{$pmpro_level->id}_interests"][ $list_id ] as $category_id => $interest_list ) {
 
-			// assign the interest to this user Id(filtered, but set to true by default).
-			$interests[ $interest_id ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $list_id, $interest_id, ( $pmpro_active ? $pmpro_level : null ) );
+			foreach( $interest_list as $interest ) {
+				// assign the interest to this user Id(filtered, but set to true by default).
+				$interests[ $interest ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $interest, $list_id, ( $pmpro_active ? $pmpro_level : null ) );
+			}
 
 		}
 
@@ -1118,10 +1120,6 @@ class PMProMailChimp {
 					$mcapi_list_settings[ $list_id ]->merge_fields[ $settings['name'] ] = $this->add_merge_field( $list_id, $settings['name'], $settings['type'], $visibility );
 				}
 			}
-		}
-
-		if (WP_DEBUG) {
-			error_log("MCAPI: Updating API List Settings: " . print_r( $mcapi_list_settings[ $list_id ]->merge_fields, true) );
 		}
 
 		// update the PMPro MailChimp API settings for all lists (no autoload)
