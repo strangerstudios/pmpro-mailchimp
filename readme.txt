@@ -43,6 +43,15 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 3.0 =
+* ENHANCEMENT: Support for Interest Groups & syncing with upstream MailChimp Server
+* ENHANCEMENT: Assign per-level/list Interest Group(s) to user when subscribing subscription
+* ENHANCEMENT: Convert 'GROUPINGS' (MailChimp API v2.0 style interest groups) to MCAPIv3 Interest Groups
+* ENHANCEMENT: New pmpromc_api_user_agent filter
+* ENHANCEMENT: Make "number of lists to fetch from MailChimp server" a setting
+* ENHANCEMENT: Move JavaScript to own JS file & load on admin page only.
+* BUG: Would sometimes break during pmpro_after_checkout hook execution
+
 = 2.0.3 =
 * BUG: Fixed issue with updating email addresses in MailChimp when email addresses are updated in WordPress.
 * ENHANCEMENT: Added a filter pmpromc_profile_update that you can set to __return_true to tell the addon to synchronize user data on every profile update. By default, PMPro MailChimp will only synchronize data if the email address has changed. Filter passes $update_user, $user_id, and $old_user_data and is documented in the code.
