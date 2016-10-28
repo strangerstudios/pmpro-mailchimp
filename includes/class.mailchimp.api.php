@@ -598,9 +598,6 @@ class PMProMailChimp {
 			$pmpro_active = true;
 		}
 
-		$mc_list_settings = get_option( 'pmcapi_list_settings', null );
-		// $options          = get_option( 'pmpromc_options', null );
-
 		$interests = array();
 
 		foreach ( self::$options["level_{$level->id}_interests"][ $list_id ] as $category_id => $interest_list ) {
@@ -612,7 +609,7 @@ class PMProMailChimp {
 
 		}
 
-		if ( WP_DEBUG ) {
+		if ( WP_DEBUG && !empty( $interests ) ) {
 			error_log( "Returning interest groups for level {$pmpro_level->name} and list {$list_id}: " . print_r( $interests, true ) );
 		}
 
