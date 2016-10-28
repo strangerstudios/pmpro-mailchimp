@@ -57,20 +57,23 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 * ENHANCEMENT: Get upstream merge fields before processing local fields
 * ENHANCEMENT: Support for using & configuring Interest Groups & syncing with upstream MailChimp Server
 * ENHANCEMENT: Assign per-level/list Interest Group(s) to user when subscribing subscription
-* ENHANCEMENT: Add NONCE handling in the admin JavaScript to refresh Interest groups & merge fields on the MailChimp API server(s).
-* ENHANCEMENT: Migrate 'GROUPINGS' entries in the 'pmpro_mailchimp_listsubscribe_fields' filter to V3 Interest Groups.
-* ENHANCEMENT: Move JavaScript to own JS file & load on admin page only.
+* ENHANCEMENT: Add NONCE handling in the admin JavaScript to refresh Interest groups & merge fields on the MailChimp API server(s)
+* ENHANCEMENT: Migrate 'GROUPINGS' entries in the 'pmpro_mailchimp_listsubscribe_fields' filter to V3 Interest Groups
+* ENHANCEMENT: Move JavaScript to own JS file & load on admin page only
+* ENHANCEMENT: Tighten up DEBUG output
+* BUG/ENHANCEMENT: Removed unneeded function calls
 * BUG: Fetch the message text when experiencing wp_remote*() response errors
 * BUG: Handle UTF-8 BOM character in decode function
 * BUG: Didn't always return existing interest groups from MC server
-* BUG: Error when attempting to unsubscribe a user who isn't subscribed. FIX: Would sometimes fail when there were no merge fields.
+* BUG: Error when attempting to unsubscribe a user who isn't subscribed.
+* BUG: Would sometimes fail when there were no merge fields
 * BUG: Fatal error due to incorrect number of arguments
 * BUG: Fatal error during init
 * BUG: Didn't use the right interest category ID value
 * BUG: Didn't always return all defined interest groups and interests from MC server
 * BUG: Didn't always handle situations with multiple interest groups defined for a list and level
 * BUG: Didn't always add the interest categories during Mailling List signup
-* BUG: Didn't always fetch a valid PMPro Level object when loading interest groups for the user.
+* BUG: Didn't always fetch a valid PMPro Level object when loading interest groups for the user
 
 = 2.0.3 =
 * BUG: Fixed issue with updating email addresses in MailChimp when email addresses are updated in WordPress.
