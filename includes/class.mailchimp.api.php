@@ -587,6 +587,12 @@ class PMProMailChimp {
 
 		global $pmpro_level;
 
+		if ( isset( $pmpro_level->id ) ) {
+			$level = $pmpro_level;
+		} else {
+			$level = pmpro_getMembershipLevelForUser( $user->ID );
+		}
+
 		if ( is_plugin_active( 'paid-memberships-pro/paid-memberships-pro.php' ) ) {
 
 			$pmpro_active = true;
@@ -597,11 +603,11 @@ class PMProMailChimp {
 
 		$interests = array();
 
-		foreach ( self::$options["level_{$pmpro_level->id}_interests"][ $list_id ] as $category_id => $interest_list ) {
+		foreach ( self::$options["level_{$level->id}_interests"][ $list_id ] as $category_id => $interest_list ) {
 
 			foreach( $interest_list as $interest ) {
 				// assign the interest to this user Id(filtered, but set to true by default).
-				$interests[ $interest ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $interest, $list_id, ( $pmpro_active ? $pmpro_level : null ) );
+				$interests[ $interest ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $interest, $list_id, ( $pmpro_active ? $level : null ) );
 			}
 
 		}
