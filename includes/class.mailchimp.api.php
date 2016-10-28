@@ -602,11 +602,13 @@ class PMProMailChimp {
 
 		foreach ( self::$options["level_{$level->id}_interests"][ $list_id ] as $category_id => $interest_list ) {
 
-			foreach( $interest_list as $interest ) {
-				// assign the interest to this user Id(filtered, but set to true by default).
-				$interests[ $interest ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $interest, $list_id, ( $pmpro_active ? $level : null ) );
-			}
+			if ( ! empty( $interest_list ) ) {
 
+				foreach ( $interest_list as $interest ) {
+					// assign the interest to this user Id(filtered, but set to true by default).
+					$interests[ $interest ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $interest, $list_id, ( $pmpro_active ? $level : null ) );
+				}
+			}
 		}
 
 		if ( WP_DEBUG && !empty( $interests ) ) {
