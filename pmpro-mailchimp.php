@@ -1668,3 +1668,15 @@ function test_pmpromc_listsubscribe_fields( $fields, $user = null, $list_id = nu
 }
 
 add_action( 'pmpro_mailchimp_listsubscribe_fields', 'test_pmpromc_listsubscribe_fields', 10, 3 );
+
+// Load one-click update support for v3.x BETA from custom repository
+if ( file_exists( plugin_dir_path( __FILE__ ) . "plugin-updates/plugin-update-checker.php" ) ) {
+
+	require_once( plugin_dir_path( __FILE__ ) . "plugin-updates/plugin-update-checker.php" );
+
+	$plugin_updates = \PucFactory::buildUpdateChecker(
+		'https://eighty20results.com/protected-content/pmpro-mailchimp/metadata.json',
+		__FILE__,
+		'pmpro-mailchimp'
+	);
+}
