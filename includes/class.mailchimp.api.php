@@ -53,13 +53,30 @@ class PMProMailChimp {
 	 */
 	private static $options;
 
+	/**
+	 * @var array   $url_args       Arguments to use for URI to MailChimp server
+	 */
 	private $url_args;
+
 	/**
 	 * @var array   $all_lists          Lists retrieved from the MC API server
 	 */
 	private $all_lists = array();
 
+	/**
+	 * @var string  $subscriber_id      MD5 encoded ID (email) for a specific subscriber
+	 */
 	private $subscriber_id;
+
+	/**
+	 * @var array   $error_msg - Array of error messages to list/display
+	 */
+	private $error_msg = array();
+
+	/**
+	 * @var array   $error_class - Array of CSS classes to use when listing/displaying error messages
+	 */
+	private $error_class = array();
 
 	/**
 	 * API constructor - Configure the settings, if the API key gets passed on instantiation.
@@ -98,6 +115,9 @@ class PMProMailChimp {
 
 		// Fix the 'groupings setting once it has been converted to interest group(s).
 		add_filter( 'pmpro_mailchimp_listsubscribe_fields', array( $this, 'fix_listsubscribe_fields'), -1, 3 );
+
+		// Show error message(s) on admin page.
+		add_action( 'admin_notices', array( $this, 'display_errors' ) );
 
 		return self::$class;
 	}
@@ -602,11 +622,15 @@ class PMProMailChimp {
 
 		foreach ( self::$options["level_{$level->id}_interests"][ $list_id ] as $category_id => $interest_list ) {
 
-			if ( ! empty( $interest_list ) ) {
+			if ( ! empty( $interest_list ) && is_array( $interest_list ) ) {
 
 				foreach ( $interest_list as $interest ) {
 					// assign the interest to this user Id(filtered, but set to true by default).
 					$interests[ $interest ] = apply_filters( 'pmpro_addon_mc_api_assign_interest_to_user', true, $user, $interest, $list_id, ( $pmpro_active ? $level : null ) );
+				}
+			} elseif ( !is_array( $interest_list ) ) {
+				if (WP_DEBUG) {
+					error_log("Warning: Interest Group is not an array and contains: " . print_r( $interest_list, true));
 				}
 			}
 		}
@@ -1262,6 +1286,7 @@ class PMProMailChimp {
 	 * @since 2.0.0
 	 */
 	public function get_all_lists() {
+
 		if ( empty( $this->all_lists ) ) {
 			$this->connect();
 		}
@@ -1329,11 +1354,11 @@ class PMProMailChimp {
 	 * @since 2.1   Added to the pmpro_msg[t] error messaging system
 	 */
 	private function set_error_msg( $obj ) {
+
 		global $msgt, $pmpro_msgt;
 		global $msg, $pmpro_msg;
 
 		$msgt = 'error';
-
 
 		if ( ! is_string( $obj ) && ! is_array( $obj ) && ( 200 !== wp_remote_retrieve_response_code( $obj ) ) ) {
 			error_log("Object: " . print_r( $obj, true ));
@@ -1350,8 +1375,36 @@ class PMProMailChimp {
 		}
 
 		if ( is_plugin_active( 'paid-memberships-pro/paid-memberships-pro.php' ) ) {
-			$pmpro_msg  = $msg;
-			$pmpro_msgt = $msgt;
+			pmpro_setMessage( $msg, $msgt, true );
+		}
+
+		// Add to internal error message list.
+		$this->error_msg[] = $msg;
+		$this->error_class[] = 'error';
+	}
+
+	/**
+	 * Show all error message(s) in /wp-admin/
+	 *
+	 * @since 2.1 Error message display in admin_notice action
+	 */
+	public function display_errors() {
+
+		if ( is_admin() && ( !defined( 'DOING_AJAX' ) || true !== DOING_AJAX ) ) {
+
+			// Process all error message(s) for MailChimp API activities
+			foreach( $this->error_msg as $k => $emsg ) {
+				?>
+				<div class="notice notice-<?php esc_attr_e( $this->error_class[ $k ] ); ?>">
+					<p><?php esc_attr_e( $emsg ); ?></p>
+				</div>
+				<?php
+			}
+
+			// Reset error message list
+			$this->error_msg = array();
+			$this->error_class = array();
+
 		}
 	}
 }
