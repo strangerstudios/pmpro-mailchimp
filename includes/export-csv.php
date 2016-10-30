@@ -1,5 +1,7 @@
 <?php
 
+	// TODO: add support for interest groups for the list(s)?
+
 	if(!function_exists("current_user_can") || (!current_user_can("manage_options") && !current_user_can("pmpro_memberslistcsv")))
 	{
 		die(__("You do not have permissions to perform this action.", "pmpro"));

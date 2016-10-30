@@ -1,5 +1,5 @@
 === Paid Memberships Pro - MailChimp Add On ===
-Contributors: strangerstudios
+Contributors: strangerstudios, sjolshag
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 3.5
 Tested up to: 4.5.3
@@ -43,6 +43,46 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 3.0.1 =
+
+* ENHANCEMENT: Improved documentation for class parameters
+* ENHANCEMENT: Supports array of error messages to display in /wp-admin/
+* ENHANCEMENT: Add error message(s) to PMPro error system (if plugin is active)
+* BUG: Didn't always handle unexpected interest group definitions
+* BUG: Generated PHP Notice if no interest category was defined for the level
+
+= 3.0 =
+
+* ENHANCEMENT: Renamed label for object fetch limit option
+* ENHANCEMENT: Removed unneeded DEBUG output
+* ENHANCEMENT: Added Membership Level ID to the listings
+* ENHANCEMENT: Add contributor to readme.txt
+* ENHANCEMENT: Add support for Membership Level specific Interest Category assignment on PMPro MailChimp Settings page
+* ENHANCEMENT: Add basic test environment for GROUPINGS conversion to v3.0 Interest Category support
+* ENHANCEMENT: Add license (GPL v2.0) and documentation for properties
+* ENHANCEMENT: WordPress code style
+* ENHANCEMENT: Static function to return the Mailchimp API's Datacenter value for the API (i.e. ccNN => cc = country, NN = number)
+* ENHANCEMENT: Get upstream merge fields before processing local fields
+* ENHANCEMENT: Support for using & configuring Interest Groups & syncing with upstream MailChimp Server
+* ENHANCEMENT: Assign per-level/list Interest Group(s) to user when subscribing subscription
+* ENHANCEMENT: Add NONCE handling in the admin JavaScript to refresh Interest groups & merge fields on the MailChimp API server(s)
+* ENHANCEMENT: Migrate 'GROUPINGS' entries in the 'pmpro_mailchimp_listsubscribe_fields' filter to V3 Interest Groups
+* ENHANCEMENT: Move JavaScript to own JS file & load on admin page only
+* ENHANCEMENT: Tighten up DEBUG output
+* BUG/ENHANCEMENT: Removed unneeded function calls
+* BUG: Fetch the message text when experiencing wp_remote*() response errors
+* BUG: Handle UTF-8 BOM character in decode function
+* BUG: Didn't always return existing interest groups from MC server
+* BUG: Error when attempting to unsubscribe a user who isn't subscribed.
+* BUG: Would sometimes fail when there were no merge fields
+* BUG: Fatal error due to incorrect number of arguments
+* BUG: Fatal error during init
+* BUG: Didn't use the right interest category ID value
+* BUG: Didn't always return all defined interest groups and interests from MC server
+* BUG: Didn't always handle situations with multiple interest groups defined for a list and level
+* BUG: Didn't always add the interest categories during Mailling List signup
+* BUG: Didn't always fetch a valid PMPro Level object when loading interest groups for the user
+
 = 2.0.3 =
 * BUG: Fixed issue with updating email addresses in MailChimp when email addresses are updated in WordPress.
 * ENHANCEMENT: Added a filter pmpromc_profile_update that you can set to __return_true to tell the addon to synchronize user data on every profile update. By default, PMPro MailChimp will only synchronize data if the email address has changed. Filter passes $update_user, $user_id, and $old_user_data and is documented in the code.
