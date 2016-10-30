@@ -43,6 +43,14 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 3.0.1 =
+
+* ENHANCEMENT: Improved documentation for class parameters
+* ENHANCEMENT: Supports array of error messages to display in /wp-admin/
+* ENHANCEMENT: Add error message(s) to PMPro error system (if plugin is active)
+* BUG: Didn't always handle unexpected interest group definitions
+* BUG: Generated PHP Notice if no interest category was defined for the level
+
 = 3.0 =
 
 * ENHANCEMENT: Renamed label for object fetch limit option
