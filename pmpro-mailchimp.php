@@ -100,7 +100,18 @@ function pmpromc_sync_merge_fields_ajax()
 {
     //setup vars
     global $wpdb;
-    $api = pmpromc_getAPI();
+    // $api = pmpromc_getAPI();
+    $api = apply_filters('get_mailchimpapi_class_instance', null);
+    
+    if ( empty( $api ) ) {
+
+	global $pmpro_msg, $pmpro_msgt;
+	$pmpro_msg = __("Error loading MailChimp API", "pmpromc");
+	$pmpro_msgt = "error";
+	    
+	return false;    
+    }
+	
     $last_user_id = get_option('pmpromc_sync_merge_fields_last_user_id', 0);
     $limit = 3;
     $options = get_option("pmpromc_options");
@@ -451,9 +462,19 @@ function pmpromc_additional_lists_on_checkout()
 
     $options = get_option("pmpromc_options");
 
+    $api = apply_filters('get_mailchimpapi_class_instance', null);
+    
+    if ( empty( $api ) ) {
+
+	global $pmpro_msg, $pmpro_msgt;
+	$pmpro_msg = __("Error loading MailChimp API", "pmpromc");
+	$pmpro_msgt = "error";
+	    
+	return false;    
+    }	
+
     //have access?
     if (!empty($options['api_key'])) {
-        $api = apply_filters('get_mailchimpapi_class_instance', null);
         $api->set_key();
     } else
         return;
@@ -780,9 +801,9 @@ function pmpromc_options_page()
 
     // $api = pmpromc_getAPI();
     $api = apply_filters('get_mailchimpapi_class_instance', null);
-    $api->set_key();
 
     if (!empty($api)) {
+	$api->set_key();
         $pmpromc_lists = $api->get_all_lists();
         $all_lists = array();
 
@@ -957,7 +978,17 @@ function pmpromc_subscribe($list, $user)
         return;
 
     $options = get_option("pmpromc_options");
-    $api = pmpromc_getAPI();
+    $api = apply_filters('get_mailchimpapi_class_instance', null);
+    
+    if ( empty( $api ) ) {
+
+	global $pmpro_msg, $pmpro_msgt;
+	$pmpro_msg = __("Error loading MailChimp API", "pmpromc");
+	$pmpro_msgt = "error";
+	    
+	return false;    
+    }
+	
     $merge_fields = apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user);
 
     if (WP_DEBUG) {
@@ -988,8 +1019,17 @@ function pmpromc_unsubscribe($list, $user)
         return;
 
     $options = get_option("pmpromc_options");
-    $api = pmpromc_getAPI();
+    $api = apply_filters('get_mailchimpapi_class_instance', null);
+    
+    if ( empty( $api ) ) {
 
+	global $pmpro_msg, $pmpro_msgt;
+	$pmpro_msg = __("Error loading MailChimp API", "pmpromc");
+	$pmpro_msgt = "error";
+	    
+	return false;    
+    }
+	
     if ($api) {
         $api->unsubscribe($list, $user);
     } else {
@@ -1091,7 +1131,17 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
     $dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
 
     //load API
-    $api = pmpromc_getAPI();
+    $api = apply_filters('get_mailchimpapi_class_instance', null);
+    
+    if ( empty( $api ) ) {
+
+	global $pmpro_msg, $pmpro_msgt;
+	$pmpro_msg = __("Error loading MailChimp API", "pmpromc");
+	$pmpro_msgt = "error";
+	    
+	return false;    
+    }
+	
     $list_user = get_userdata($user_id);
 
     //unsubscribe
@@ -1192,10 +1242,9 @@ function pmpromc_profile_update($user_id, $old_user_data)
 
         //get all lists
         $api = apply_filters('get_mailchimpapi_class_instance', null);
-        $api->set_key();
 
         if (!empty($api)) {
-
+	    $api->set_key();
             $lists = $api->get_all_lists();
         }
 
