@@ -992,7 +992,7 @@ function pmpromc_subscribe($list, $user)
 /**
  * Unsubscribe a user from a specific list
  *
- * @param $list - the List ID
+ * @param $list - the List ID or list object
  * @param $user - The WP_User object for the user
  */
 function pmpromc_unsubscribe($list, $user)
@@ -1004,8 +1004,14 @@ function pmpromc_unsubscribe($list, $user)
     $options = get_option("pmpromc_options");
     $api = pmpromc_getAPI();
 
+	if(is_object($list)) {
+		$listid = $list->id;
+	} else {
+		$listid = $list;
+	}
+
     if ($api) {
-        $api->unsubscribe($list, $user);
+        $api->unsubscribe($listid, $user);
     } else {
         wp_die(__('Error during unsubscribe operation. Please report this error to the administrator', 'pmpromc'));
     }
@@ -1271,7 +1277,7 @@ function pmpromc_pmpro_mailchimp_listsubscribe_fields($fields, $user, $list)
 
     return $fields;
 }
-add_filter('pmpro_mailchimp_listsubscribe_fields', 'pmpromc_pmpro_mailchimp_listsubscribe_fields', 10, 2);
+add_filter('pmpro_mailchimp_listsubscribe_fields', 'pmpromc_pmpro_mailchimp_listsubscribe_fields', 10, 3);
 
 /**
  * Add links to the plugin action links
