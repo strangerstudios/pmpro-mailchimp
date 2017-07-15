@@ -205,8 +205,8 @@ class PMProMailChimp
 
         //hit api
         $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
-        $resp = wp_remote_request($url, $args);
-
+        $resp = wp_remote_request($url, $args);	
+		
 	    if (WP_DEBUG) {
 	    	error_log("Subscribe: Response object: " . print_r($resp, true));
 	    }
@@ -260,7 +260,7 @@ class PMProMailChimp
 	        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 		        $this->set_error_msg($resp);
 		        return false;
-	        }
+	        }			
         }
 
         return true;
@@ -604,7 +604,10 @@ class PMProMailChimp
         $msgt = 'error';
 
 	    if ( !is_string($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
-		    $msg = $obj->get_error_message();
+		    if(is_array($obj) && !empty($obj['response']))
+				$msg = $obj['response']['code'] . ' ' . $obj['response']['message'];
+			else
+				$msg = $obj->get_error_message();
         } elseif ( is_string($obj) ) {
             $msg = $obj;
         } else {

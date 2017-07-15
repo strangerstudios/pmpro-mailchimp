@@ -966,8 +966,9 @@ add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_sess
  */
 function pmpromc_subscribe($list, $user)
 {
-    //make sure user has an email address
-    if (empty($user->user_email))
+	//make sure user has an email address
+    $email = $user->user_email;	
+	if (empty($email))
         return;
 
     $options = get_option("pmpromc_options");
@@ -998,7 +999,8 @@ function pmpromc_subscribe($list, $user)
 function pmpromc_unsubscribe($list, $user)
 {
     //make sure user has an email address
-    if (empty($user->user_email))
+    $email = $user->user_email;	
+	if (empty($email))
         return;
 
     $options = get_option("pmpromc_options");
@@ -1033,7 +1035,7 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
     if (empty($options['unsubscribe'])) {
 
         if (WP_DEBUG) {
-            error_log("No need to unsubscribe {$user_id} with level IDL {$level_id}");
+            error_log("No need to unsubscribe {$user_id} with level ID {$level_id}");
         }
 
         return;
