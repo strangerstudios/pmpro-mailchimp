@@ -194,7 +194,7 @@ class PMProMailChimp
             'status' => (1 == $dbl_opt_in ? 'pending' : 'subscribed'),
             // 'interests' => $this->set_interests($user_obj), /** TODO: Incorporate segmentation using membership level */
         );
-
+		
         $args = array(
             'method' => 'PUT', // Allows us to add or update a user ID
             'user-agent' => self::$user_agent,
@@ -395,40 +395,37 @@ class PMProMailChimp
 
         //get merge fields for this list
         $list_merge_fields = $this->get_merge_fields($list_id);
+		
+		foreach ($pmpro_merge_fields as $merge_field) {
 
-        if ( ! empty($list_merge_fields) ) {
+			if (is_array($merge_field)) {
 
-            foreach ($pmpro_merge_fields as $merge_field) {
+				//pull from array
+				$field_name = $merge_field['name'];
+				$field_type = $merge_field['type'];
 
-                if (is_array($merge_field)) {
+				if (!empty($merge_field['public'])) {
+					$field_public = $merge_field['public'];
+				} else {
+					$field_public = false;
+				}
+			} else {
 
-                    //pull from array
-                    $field_name = $merge_field['name'];
-                    $field_type = $merge_field['type'];
+				//defaults
+				$field_name = $merge_field;
+				$field_type = 'text';
+				$field_public = false;
+			}
 
-                    if (!empty($merge_field['public'])) {
-                        $field_public = $merge_field['public'];
-                    } else {
-                        $field_public = false;
-                    }
-                } else {
+			//add field if missing
+			if (empty($list_merge_fields) || false === $this->in_merge_fields($field_name, $list_merge_fields)) {
 
-                    //defaults
-                    $field_name = $merge_field;
-                    $field_type = 'text';
-                    $field_public = false;
-                }
+				$new_merge_field = $this->add_merge_field($field_name, $field_type, $field_public, $list_id);
 
-                //add field if missing
-                if (false === $this->in_merge_fields($field_name, $list_merge_fields)) {
-
-                    $new_merge_field = $this->add_merge_field($field_name, $field_type, $field_public, $list_id);
-
-                    //and add to cache
-                    $this->merge_fields[$list_id][] = $new_merge_field;
-                }
-            }
-        }
+				//and add to cache
+				$this->merge_fields[$list_id][] = $new_merge_field;
+			}
+		}
     }
 
     /**
