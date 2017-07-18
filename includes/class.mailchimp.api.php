@@ -160,7 +160,7 @@ class PMProMailChimp
      */
     public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false)
     {		
-		///echo "(subscribe: " . $list . ")";
+		///echo "(subscribe: " . $list . ")";		
 		
 		// Can't be empty
         $test = (array)($user_obj);
@@ -185,7 +185,7 @@ class PMProMailChimp
 
         //make sure merge fields are setup if PMPro is active
         if (function_exists('pmpro_getMembershipLevelForUser')) {
-            //$this->add_pmpro_merge_fields($list);
+            $this->add_pmpro_merge_fields($list);
         }
 
         //build request
@@ -204,13 +204,11 @@ class PMProMailChimp
             'headers' => $this->url_args['headers'],
             'body' => $this->encode($request),
         );
-
+				
         //hit api
         $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
         $resp = wp_remote_request($url, $args);			
-		
-		///d($resp);
-		
+				
 	    if (WP_DEBUG) {
 	    	error_log("Subscribe: Response object: " . print_r($resp, true));
 	    }
@@ -235,7 +233,7 @@ class PMProMailChimp
      */
     public function unsubscribe($list = '', WP_User $user_objs = null)
     {		
-		///echo "(unsubscribe:" . $list . ")";
+		///echo "(unsubscribe:" . $list . ")";		
 		
 		// Can't be empty
         if (empty($list) || empty($user_objs)) {
@@ -262,9 +260,7 @@ class PMProMailChimp
             $user_url = $url . "/{$user_id}";
 
             $resp = wp_remote_request($user_url, $args);
-			
-			///d($resp);
-			
+						
 	        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 		        $this->set_error_msg($resp);
 		        return false;
@@ -379,7 +375,7 @@ class PMProMailChimp
     }
 
     /**
-     * Make sure a list has the PMPLEVELID, PMPLEVELIDS and PMPLEVEL merge fields.
+     * Make sure a list has the PMPLEVELID, PMPALLIDS and PMPLEVEL merge fields.
      *
      * @param string $list_id - The MC list ID
      *
@@ -397,7 +393,7 @@ class PMProMailChimp
         $pmpro_merge_fields = apply_filters('pmpro_mailchimp_merge_fields',
             array(
                 array('name' => 'PMPLEVELID', 'type' => 'number'),
-                array('name' => 'PMPLEVELIDS', 'type' => 'text'),
+                array('name' => 'PMPALLIDS', 'type' => 'text'),
 				array('name' => 'PMPLEVEL', 'type' => 'text'),
             ),
             $list_id);
@@ -425,7 +421,7 @@ class PMProMailChimp
 				$field_type = 'text';
 				$field_public = false;
 			}
-
+			
 			//add field if missing
 			if (empty($list_merge_fields) || false === $this->in_merge_fields($field_name, $list_merge_fields)) {
 
@@ -483,7 +479,9 @@ class PMProMailChimp
      */
     public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id)
     {
-        //default type to text
+        ///echo "(add merge field: $merge_field)";
+		
+		//default type to text
         if (empty($type)) {
             $type = 'text';
         }
@@ -507,7 +505,7 @@ class PMProMailChimp
         //hit the API
         $url = self::$api_url . "/lists/" . $list_id . "/merge-fields";
         $response = wp_remote_request($url, $args);
-
+		
         //check response
 	    if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 		    $this->set_error_msg($response);

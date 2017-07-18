@@ -979,7 +979,7 @@ function pmpromc_queueUserToSubscribeToList($user_id, $list) {
 	if(empty($pmpromc_users_to_subscribe))
 		$pmpromc_users_to_subscribe = array();
 	
-	if(!isset($pmpromc_users_to_subscribe))
+	if(!isset($pmpromc_users_to_subscribe[$user_id]))
 		$pmpromc_users_to_subscribe[$user_id] = array($list);
 	elseif(!in_array($list, $pmpromc_users_to_subscribe[$user_id]))
 		$pmpromc_users_to_subscribe[$user_id][] = $list;		
@@ -1019,7 +1019,7 @@ add_filter('wp_redirect', 'pmpromc_processSubscriptions', 99);
  * @param $user - The WP_User object for the user
  */
 function pmpromc_unsubscribe($list, $user)
-{
+{	
     //make sure user has an email address
     $email = $user->user_email;	
 	if (empty($email))
@@ -1308,13 +1308,17 @@ function pmpromc_pmpro_mailchimp_listsubscribe_fields($fields, $user, $list)
 		$level_names[] = $level->name;
 	}
 	
+	//make sure we don't have dupes
+	$level_ids = array_unique($level_ids);
+	$level_names = array_unique($level_names);
+		
 	if(!empty($level_ids)) {
-		$fields['PMPROLEVELID'] = $level_ids[0];
-		$fields['PMPROLEVELIDS'] = '{' . implode('}{', $level_ids) . '}';
-		$fields['PMPROLEVEL'] = implode(',', $level_names);
+		$fields['PMPLEVELID'] = $level_ids[0];
+		$fields['PMPALLIDS'] = '{' . implode('}{', $level_ids) . '}';
+		$fields['PMPLEVEL'] = implode(',', $level_names);
 	} else {
-		$fields['PMPROLEVELID'] = '';
-		$fields['PMPLEVELIDS'] = '{}';
+		$fields['PMPLEVELID'] = '';
+		$fields['PMPALLIDS'] = '{}';
 		$fields['PMPLEVEL'] = '';
 	}   
 		
