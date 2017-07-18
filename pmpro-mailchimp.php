@@ -1302,39 +1302,23 @@ function pmpromc_pmpro_mailchimp_listsubscribe_fields($fields, $user, $list)
     $options = get_option("pmpromc_options");
 
     $levels = pmpro_getMembershipLevelsForUser($user->ID);
-	$affectedlevels = array();
-
-	// Loop through each level, see if this list is related to that level. If so, add it to the array.
-	foreach($levels as $curlevel) {
-		// Are there lists for this level?
-		if (!empty($options['level_' . $curlevel->id . '_lists'])) {
-
-			//subscribe to each list
-			foreach ($options['level_' . $curlevel->id . '_lists'] as $list_to_check) {
-
-				if(intval($list) == intval($list_to_check)) {
-					$affectedlevels[$curlevel->id] = $curlevel->name;
-				}
-			}
-		}
+	$level_ids = array();
+	$level_names = array();
+	foreach($levels as $level) {
+		$level_ids[] = $level->id;
+		$level_names[] = $level->name;
 	}
-
-    if (count($affectedlevels) == 0) { // No levels found.
-        $fields['PMPLEVELID'] = '';
-        $fields['PMPLEVELIDS'] = '{}';
+	
+	if(!empty($level_ids)) {
+		$fields['PMPROLEVELID'] = $level_ids[0];
+		$fields['PMPROLEVELIDS'] = '{' . implode('}{', $level_ids) . '}';
+		$fields['PMPROLEVEL'] = implode(',', $level_names);
+	} else {
+		$fields['PMPROLEVELID'] = '';
+		$fields['PMPLEVELIDS'] = '{}';
 		$fields['PMPLEVEL'] = '';
-	} elseif(count($affectedlevels) == 1) { // Only one level found
-
-		reset($affectedlevels); // Let's look at the first (and only) element.
-        $fields['PMPLEVELID'] = key($affectedlevels);
-        $fields['PMPLEVELIDS'] = '{' . $fields['PMPLEVELID'] . '}';
-		$fields['PMPLEVEL'] = current($affectedlevels);        
-    } else { // Multiple levels found. Setting the parms to a comma-separated list of level IDs/names.
-		$fields['PMPLEVELID'] = key($affectedlevels);
-		$fields['PMPLEVELIDS'] = '{' . join('},{', array_keys($affectedlevels)) . '}';
-		$fields['PMPLEVEL'] = join(',', array_values($affectedlevels));
-    }
-
+	}   
+		
     return $fields;
 }
 add_filter('pmpro_mailchimp_listsubscribe_fields', 'pmpromc_pmpro_mailchimp_listsubscribe_fields', 10, 3);
