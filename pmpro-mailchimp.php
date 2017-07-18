@@ -6,6 +6,7 @@ Description: Sync your WordPress users and members with MailChimp lists.
 Version: 2.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
+Text Domain: pmpro-mailchimp
 */
 /*
 	Copyright 2011-2016	Stranger Studios	(email : jason@strangerstudios.com)
@@ -254,7 +255,7 @@ function pmpromc_add_custom_user_profile_fields($user)
     <table class="form-table">
         <tr>
             <th>
-                <label for="address"><?php _e('Mailing Lists', 'pmpromc'); ?>
+                <label for="address"><?php _e('Mailing Lists', 'pmpro-mailchimp'); ?>
                 </label></th>
             <td>
                 <?php
@@ -823,28 +824,26 @@ function pmpromc_options_page()
         <?php } ?>
 
         <form action="options-general.php?page=pmpromc_options" method="post">
-            <h3>Subscribe users to one or more MailChimp lists when they sign up for your site.</h3>
-            <p>If you have <a href="http://www.paidmembershipspro.com" target="_blank">Paid Memberships Pro</a>
+            <h3><?php _e('Subscribe users to one or more MailChimp lists when they sign up for your site.', 'pmpro-mailchimp');?></h3>
+            <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a>
                 installed, you can subscribe members to one or more MailChimp lists based on their membership level or
-                specify "Opt-in Lists" that members can select at membership checkout. <a href="http://eepurl.com/k4aAH"
-                                                                                          target="_blank">Get a Free
-                    MailChimp account</a>.</p>
+                specify "Opt-in Lists" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free MailChimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
             <?php if (function_exists('pmpro_getAllLevels')) { ?>
                 <hr/>
-                <h3>Synchronize a Member's Level Name and ID</h3>
-                <p>Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and
+                <h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
+                <p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and
                     <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only affect new or updated
-                        members.</strong> You must import this data into MailChimp for existing members. <a
+                        members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a
                         href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/"
-                        target="_blank">Read the documentation on importing existing members into MailChimp</a>.</p>
-                <p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();">Click here to
-                        export your members list for a MailChimp Import</a></p>
+                        target="_blank"><?php _e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
+                <p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to
+                        export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
                 <hr/>
 
                 <div id="pmpromc_export_instructions" class="postbox" style="display: none;">
                     <div class="inside">
-                        <h3>Export a CSV for your MailChimp Import</h3>
-                        <p>Membership Level:
+                        <h3><?php _e('Export a CSV for your MailChimp Import', 'pmpro-mailchimp');?></h3>
+                        <p><?php _e('Membership Level', 'pmpro-mailchimp');?>:
                             <select id="pmpromc_export_level" name="l">
                                 <?php
                                 $levels = pmpro_getAllLevels(true, true);
@@ -854,26 +853,22 @@ function pmpromc_options_page()
                                     <?php
                                 }
                                 ?>
-                            </select> <a class="button-primary" id="pmpromc_export_link" href="" target="_blank">Download
-                                List (.CSV)</a></p>
+                            </select> <a class="button-primary" id="pmpromc_export_link" href="" target="_blank"><?php _e('Download List (.CSV)', 'pmpro-mailchimp');?></a></p>
                         <hr/>
-                        <p><strong>MailChimp Import Steps</strong></p>
+                        <p><strong><?php _e('MailChimp Import Steps', 'pmpro-mailchimp');?></strong></p>
                         <ol>
-                            <li>Download a CSV of member data for each membership level.</li>
-                            <li>Log in to MailChimp.</li>
-                            <li>Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-delimited
-                                text file.
+                            <li><?php _e('Download a CSV of member data for each membership level.', 'pmpro-mailchimp');?></li>
+                            <li><?php _e('Log in to MailChimp.', 'pmpro-mailchimp');?></li>
+                            <li><?php _e('Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-delimited
+                                text file.', 'pmpro-mailchimp');?>
                             </li>
-                            <li>Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have
-                                those exact names in all uppercase letters.
+                            <li><?php _e('Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have
+                                those exact names in all uppercase letters.', 'pmpro-mailchimp');?>
                             </li>
-                            <li>Check “auto update my existing list”. Click "Import".</li>
+                            <li><?php _e('Check "auto update my existing list". Click "Import".', 'pmpro-mailchimp');?></li>
                         </ol>
 
-                        <p>For more detailed instructions and screenshots, <a
-                                href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/"
-                                target="_blank">click here to read our documentation on importing existing members into
-                                MailChimp</a>.</p>
+                        <p><?php printf(__('For more detailed instructions and screenshots, <a href="%s" target="_blank">click here to read our documentation on importing existing members into MailChimp</a>.', 'pmpro-mailchimp'), 'http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/');?></p>
 
                     </div>
                 </div>
@@ -904,7 +899,7 @@ function pmpromc_options_page()
 
             <div class="bottom-buttons">
                 <input type="hidden" name="pmpromc_options[set]" value="1"/>
-				<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e('Save Settings'); ?>">
+				<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e(__('Save Settings', 'pmpro-mailchimp')); ?>">
             </div>
 
         </form>
@@ -1073,7 +1068,7 @@ function pmpromc_unsubscribe($list, $user)
     if ($api) {
         $api->unsubscribe($listid, $user);
     } else {
-        wp_die(__('Error during unsubscribe operation. Please report this error to the administrator', 'pmpromc'));
+        wp_die(__('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp'));
     }
 }
 
@@ -1375,6 +1370,14 @@ function pmpromc_pmpro_mailchimp_listsubscribe_fields($fields, $user, $list)
 add_filter('pmpro_mailchimp_listsubscribe_fields', 'pmpromc_pmpro_mailchimp_listsubscribe_fields', 10, 3);
 
 /**
+ * Load the languages folder for translations.
+ */
+function pmpromc_load_textdomain(){
+	load_plugin_textdomain( 'pmpro-mailchimp', false, basename( dirname( __FILE__ ) ) . '/languages' ); 
+}
+add_action( 'plugins_loaded', 'pmpromc_load_textdomain' );
+
+/**
  * Add links to the plugin action links
  *
  * @param $links (array) - The existing link array
@@ -1385,7 +1388,7 @@ function pmpromc_add_action_links($links)
 {
 
     $new_links = array(
-        '<a href="' . get_admin_url(NULL, 'options-general.php?page=pmpromc_options') . '">Settings</a>',
+        '<a href="' . get_admin_url(NULL, 'options-general.php?page=pmpromc_options') . '">' . __('Settings', 'pmpro-mailchimp') . '</a>',
     );
     return array_merge($new_links, $links);
 }
@@ -1402,8 +1405,8 @@ function pmpromc_plugin_row_meta($links, $file)
 {
     if (strpos($file, 'pmpro-mailchimp.php') !== false) {
         $new_links = array(
-            '<a href="' . esc_url('http://www.paidmembershipspro.com/add-ons/third-party-integration/pmpro-mailchimp-integration/') . '" title="' . esc_attr(__('View Documentation', 'pmpro')) . '">' . __('Docs', 'pmpro') . '</a>',
-            '<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr(__('Visit Customer Support Forum', 'pmpro')) . '">' . __('Support', 'pmpro') . '</a>',
+            '<a href="' . esc_url('http://www.paidmembershipspro.com/add-ons/third-party-integration/pmpro-mailchimp-integration/') . '" title="' . esc_attr(__('View Documentation', 'pmpro-mailchimp')) . '">' . __('Docs', 'pmpro-mailchimp') . '</a>',
+            '<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr(__('Visit Customer Support Forum', 'pmpro-mailchimp')) . '">' . __('Support', 'pmpro-mailchimp') . '</a>',
         );
         $links = array_merge($links, $new_links);
     }
