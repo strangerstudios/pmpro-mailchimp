@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: info@spaidmembershipspro.com\n"
-"POT-Creation-Date: 2017-07-18 10:40-0400\n"
+"POT-Creation-Date: 2017-07-18 10:49-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,29 +53,55 @@ msgstr ""
 msgid "You do not have permissions to perform this action."
 msgstr ""
 
-#: pmpro-mailchimp.php:253 pmpro-mailchimp.php:253
+#: pmpro-mailchimp.php:236 pmpro-mailchimp.php:253
 msgid "Opt-in MailChimp Lists"
 msgstr ""
 
-#: pmpro-mailchimp.php:258 pmpro-mailchimp.php:258
+#: pmpro-mailchimp.php:241 pmpro-mailchimp.php:258
 msgid "Mailing Lists"
 msgstr ""
 
-#: pmpro-mailchimp.php:509 pmpro-mailchimp.php:509
+#: pmpro-mailchimp.php:492 pmpro-mailchimp.php:509
 msgid "Join one or more of our mailing lists."
 msgstr ""
 
-#: pmpro-mailchimp.php:511 pmpro-mailchimp.php:511
+#: pmpro-mailchimp.php:494 pmpro-mailchimp.php:511
 msgid "Join our mailing list."
 msgstr ""
 
-#: pmpro-mailchimp.php:827 pmpro-mailchimp.php:827
+#: pmpro-mailchimp.php:639 pmpro-mailchimp.php:650
+msgid "No"
+msgstr ""
+
+#: pmpro-mailchimp.php:640 pmpro-mailchimp.php:651
+msgid "Yes (Only old level lists.)"
+msgstr ""
+
+#: pmpro-mailchimp.php:652
+msgid "Yes (All other lists.)"
+msgstr ""
+
+#: pmpro-mailchimp.php:654
+msgid ""
+"Recommended: Yes. However, if you manage multiple lists in MailChimp and "
+"have users subscribe outside of WordPress, you may want to choose No so "
+"contacts aren't unsubscribed from other lists when they register on your "
+"site."
+msgstr ""
+
+#: pmpro-mailchimp.php:670
+msgid ""
+"To segment your list subscribers by membership level, create a custom field "
+"in MailChimp and enter the merge tag here."
+msgstr ""
+
+#: pmpro-mailchimp.php:806 pmpro-mailchimp.php:827
 msgid ""
 "Subscribe users to one or more MailChimp lists when they sign up for your "
 "site."
 msgstr ""
 
-#: pmpro-mailchimp.php:828 pmpro-mailchimp.php:828
+#: pmpro-mailchimp.php:807 pmpro-mailchimp.php:828
 #, php-format
 msgid ""
 "If you have <a href=\"%s\" target=\"_blank\">Paid Memberships Pro</a> "
@@ -85,16 +111,16 @@ msgid ""
 "MailChimp account</a>."
 msgstr ""
 
-#: pmpro-mailchimp.php:831 pmpro-mailchimp.php:831 pmpro-mailchimp.php:833
+#: pmpro-mailchimp.php:810 pmpro-mailchimp.php:831 pmpro-mailchimp.php:833
 msgid "Synchronize a Member's Level Name and ID"
 msgstr ""
 
-#: pmpro-mailchimp.php:832 pmpro-mailchimp.php:832 pmpro-mailchimp.php:834
+#: pmpro-mailchimp.php:811 pmpro-mailchimp.php:832 pmpro-mailchimp.php:834
 #: pmpro-mailchimp.php:838
 msgid "Read the documentation on importing existing members into MailChimp"
 msgstr ""
 
-#: pmpro-mailchimp.php:832 pmpro-mailchimp.php:832
+#: pmpro-mailchimp.php:811 pmpro-mailchimp.php:832 pmpro-mailchimp.php:834
 msgid ""
 "Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> "
 "and <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only "
@@ -102,58 +128,60 @@ msgid ""
 "MailChimp for existing members."
 msgstr ""
 
-#: pmpro-mailchimp.php:833 pmpro-mailchimp.php:833 pmpro-mailchimp.php:835
+#: pmpro-mailchimp.php:812 pmpro-mailchimp.php:833 pmpro-mailchimp.php:835
 msgid "Click here to export your members list for a MailChimp Import"
 msgstr ""
 
-#: pmpro-mailchimp.php:838 pmpro-mailchimp.php:838 pmpro-mailchimp.php:840
+#: pmpro-mailchimp.php:817 pmpro-mailchimp.php:838 pmpro-mailchimp.php:840
 #: pmpro-mailchimp.php:845
 msgid "Export a CSV for your MailChimp Import"
 msgstr ""
 
-#: pmpro-mailchimp.php:839 pmpro-mailchimp.php:839 pmpro-mailchimp.php:841
+#: pmpro-mailchimp.php:818 pmpro-mailchimp.php:839 pmpro-mailchimp.php:841
 #: pmpro-mailchimp.php:846
 msgid "Membership Level"
 msgstr ""
 
-#: pmpro-mailchimp.php:849 pmpro-mailchimp.php:849 pmpro-mailchimp.php:851
+#: pmpro-mailchimp.php:828 pmpro-mailchimp.php:849 pmpro-mailchimp.php:851
 #: pmpro-mailchimp.php:856
 msgid "Download List (.CSV)"
 msgstr ""
 
-#: pmpro-mailchimp.php:851 pmpro-mailchimp.php:851 pmpro-mailchimp.php:853
+#: pmpro-mailchimp.php:830 pmpro-mailchimp.php:851 pmpro-mailchimp.php:853
 #: pmpro-mailchimp.php:858
 msgid "MailChimp Import Steps"
 msgstr ""
 
-#: pmpro-mailchimp.php:853 pmpro-mailchimp.php:853 pmpro-mailchimp.php:855
+#: pmpro-mailchimp.php:832 pmpro-mailchimp.php:853 pmpro-mailchimp.php:855
 #: pmpro-mailchimp.php:860
 msgid "Download a CSV of member data for each membership level."
 msgstr ""
 
-#: pmpro-mailchimp.php:854 pmpro-mailchimp.php:854 pmpro-mailchimp.php:856
+#: pmpro-mailchimp.php:833 pmpro-mailchimp.php:854 pmpro-mailchimp.php:856
 #: pmpro-mailchimp.php:861
 msgid "Log in to MailChimp."
 msgstr ""
 
-#: pmpro-mailchimp.php:855 pmpro-mailchimp.php:855
+#: pmpro-mailchimp.php:834 pmpro-mailchimp.php:855 pmpro-mailchimp.php:857
+#: pmpro-mailchimp.php:862
 msgid ""
 "Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-"
 "delimited text file."
 msgstr ""
 
-#: pmpro-mailchimp.php:857 pmpro-mailchimp.php:857 pmpro-mailchimp.php:860
+#: pmpro-mailchimp.php:836 pmpro-mailchimp.php:857 pmpro-mailchimp.php:860
+#: pmpro-mailchimp.php:865
 msgid ""
 "Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields "
 "should have those exact names in all uppercase letters."
 msgstr ""
 
-#: pmpro-mailchimp.php:859 pmpro-mailchimp.php:859 pmpro-mailchimp.php:862
+#: pmpro-mailchimp.php:838 pmpro-mailchimp.php:859 pmpro-mailchimp.php:862
 #: pmpro-mailchimp.php:868
 msgid "Check \"auto update my existing list\". Click \"Import\"."
 msgstr ""
 
-#: pmpro-mailchimp.php:862 pmpro-mailchimp.php:862 pmpro-mailchimp.php:865
+#: pmpro-mailchimp.php:841 pmpro-mailchimp.php:862 pmpro-mailchimp.php:865
 #: pmpro-mailchimp.php:871
 #, php-format
 msgid ""
@@ -162,66 +190,43 @@ msgid ""
 "members into MailChimp</a>."
 msgstr ""
 
-#: pmpro-mailchimp.php:893 pmpro-mailchimp.php:893 pmpro-mailchimp.php:896
+#: pmpro-mailchimp.php:872 pmpro-mailchimp.php:893 pmpro-mailchimp.php:896
 #: pmpro-mailchimp.php:902
 msgid "Save Settings"
 msgstr ""
 
-#: pmpro-mailchimp.php:1062 pmpro-mailchimp.php:1062 pmpro-mailchimp.php:1065
+#: pmpro-mailchimp.php:1041 pmpro-mailchimp.php:1062 pmpro-mailchimp.php:1065
 #: pmpro-mailchimp.php:1071
 msgid ""
 "Error during unsubscribe operation. Please report this error to the "
 "administrator"
 msgstr ""
 
-#: pmpro-mailchimp.php:1382 pmpro-mailchimp.php:1382 pmpro-mailchimp.php:1385
+#: pmpro-mailchimp.php:1361 pmpro-mailchimp.php:1382 pmpro-mailchimp.php:1385
 #: pmpro-mailchimp.php:1391
 msgid "Settings"
 msgstr ""
 
-#: pmpro-mailchimp.php:1399 pmpro-mailchimp.php:1399 pmpro-mailchimp.php:1402
+#: pmpro-mailchimp.php:1378 pmpro-mailchimp.php:1399 pmpro-mailchimp.php:1402
 #: pmpro-mailchimp.php:1408
 msgid "Docs"
 msgstr ""
 
-#: pmpro-mailchimp.php:1399 pmpro-mailchimp.php:1399 pmpro-mailchimp.php:1402
+#: pmpro-mailchimp.php:1378 pmpro-mailchimp.php:1399 pmpro-mailchimp.php:1402
 #: pmpro-mailchimp.php:1408
 msgid "View Documentation"
 msgstr ""
 
-#: pmpro-mailchimp.php:1400 pmpro-mailchimp.php:1400 pmpro-mailchimp.php:1403
+#: pmpro-mailchimp.php:1379 pmpro-mailchimp.php:1400 pmpro-mailchimp.php:1403
 #: pmpro-mailchimp.php:1409
 msgid "Support"
 msgstr ""
 
-#: pmpro-mailchimp.php:1400 pmpro-mailchimp.php:1400 pmpro-mailchimp.php:1403
+#: pmpro-mailchimp.php:1379 pmpro-mailchimp.php:1400 pmpro-mailchimp.php:1403
 #: pmpro-mailchimp.php:1409
 msgid "Visit Customer Support Forum"
 msgstr ""
 
-#: pmpro-mailchimp.php:828
-#, php-format
-msgid ""
-"If you have <a href=\"%s\" target=\"_blank\">Paid Memberships Pro</a> installed, you can subscribe members to one or more MailChimp lists based on their membership level or specify \"Opt-in Lists\" that members can select at membership checkout. <a href=\"%s\" target=\"_blank\">Get a Free MailChimp account</a>."
-msgstr ""
-
-#: pmpro-mailchimp.php:834
-msgid ""
-"Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> "
-"and <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members."
-msgstr ""
-
 #: pmpro-mailchimp.php:839
-msgid ""
-"Click here export your members list for a MailChimp Import"
-msgstr ""
-
-#: pmpro-mailchimp.php:857 pmpro-mailchimp.php:862
-msgid ""
-"Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-delimited text file."
-msgstr ""
-
-#: pmpro-mailchimp.php:865
-msgid ""
-"Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have those exact names in all uppercase letters."
+msgid "Click here export your members list for a MailChimp Import"
 msgstr ""

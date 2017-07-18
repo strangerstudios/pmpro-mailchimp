@@ -636,8 +636,8 @@ function pmpromc_option_double_opt_in()
     $options = get_option('pmpromc_options');
     ?>
     <select name="pmpromc_options[double_opt_in]">
-        <option value="0" <?php selected($options['double_opt_in'], 0); ?>>No</option>
-        <option value="1" <?php selected($options['double_opt_in'], 1); ?>>Yes</option>
+        <option value="0" <?php selected($options['double_opt_in'], 0); ?>><?php _('No', 'pmpro-mailchimp');?></option>
+        <option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
     </select>
     <?php
 }
@@ -647,13 +647,11 @@ function pmpromc_option_unsubscribe()
     $options = get_option('pmpromc_options');
     ?>
     <select name="pmpromc_options[unsubscribe]">
-        <option value="0" <?php selected($options['unsubscribe'], 0); ?>>No</option>
-        <option value="1" <?php selected($options['unsubscribe'], 1); ?>>Yes (Only old level lists.)</option>
-        <option value="all" <?php selected($options['unsubscribe'], "all"); ?>>Yes (All other lists.)</option>
+        <option value="0" <?php selected($options['unsubscribe'], 0); ?>><?php _('No', 'pmpro-mailchimp');?></option>
+        <option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
+        <option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _('Yes (All other lists.)', 'pmpro-mailchimp');?></option>
     </select>
-    <small>Recommended: Yes. However, if you manage multiple lists in MailChimp and have users subscribe outside of
-        WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your
-        site.
+    <small><?php _("Recommended: Yes. However, if you manage multiple lists in MailChimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.", 'pmpro-mailchimp');?>
     </small>
     <?php
 }
@@ -669,9 +667,7 @@ function pmpromc_option_level_field()
     ?>
     <input id='pmpromc_level_field' name='pmpromc_options[level_field]' size='20' type='text'
            value='<?php echo esc_attr($level_field); ?>'/>
-    <small>To segment your list subscribers by membership level, create a custom field in MailChimp and enter the merge
-        tag here.
-    </small>
+    <small><?php _('To segment your list subscribers by membership level, create a custom field in MailChimp and enter the merge tag here.', 'pmpro-mailchimp');?></small>
     <?php
 }
 
