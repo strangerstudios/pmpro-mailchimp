@@ -354,13 +354,11 @@ function pmpromc_subscribeToAdditionalLists($user_id)
         $additional_lists = $_REQUEST['additional_lists'];
 
     if (!empty($additional_lists)) {
-        update_user_meta($user_id, 'pmpromc_additional_lists', $additional_lists);
-
-        $list_user = get_userdata($user_id);
+        update_user_meta($user_id, 'pmpromc_additional_lists', $additional_lists);       
 
         foreach ($additional_lists as $list) {
             //subscribe them
-            pmpromc_subscribe($list, $list_user);
+            pmpromc_queueUserToSubscribeToList($user_id, $list);
         }
     }
 }
@@ -376,13 +374,11 @@ function pmpromc_user_register($user_id)
 
     //should we add them to any lists?
     if (!empty($options['users_lists']) && !empty($options['api_key'])) {
-        //get user info
-        $list_user = get_userdata($user_id);
-
+        
         //subscribe to each list
         foreach ($options['users_lists'] as $list) {
             //subscribe them
-            pmpromc_subscribe($list, $list_user);
+           pmpromc_queueUserToSubscribeToList($user_id, $list);
         }
     }
 }
@@ -826,7 +822,7 @@ function pmpromc_options_page()
             <div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
         <?php } ?>
 
-        <form action="options.php" method="post">
+        <form action="options-general.php?page=pmpromc_options" method="post">
             <h3>Subscribe users to one or more MailChimp lists when they sign up for your site.</h3>
             <p>If you have <a href="http://www.paidmembershipspro.com" target="_blank">Paid Memberships Pro</a>
                 installed, you can subscribe members to one or more MailChimp lists based on their membership level or
@@ -908,7 +904,7 @@ function pmpromc_options_page()
 
             <div class="bottom-buttons">
                 <input type="hidden" name="pmpromc_options[set]" value="1"/>
-                <input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e('Save Settings'); ?>">
+				<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e('Save Settings'); ?>">
             </div>
 
         </form>
@@ -966,6 +962,26 @@ add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_sess
  */
 function pmpromc_subscribe($list, $user)
 {
+	global $pmpromc_subscribe_cache;
+	
+	//in case a user id was passed in instead of a user object
+	if(!is_object($user))
+		$user = get_userdata($user);
+	
+	//have we already subscribed to this list?
+	if(!empty($pmpromc_subscribe_cache) && !empty($pmpromc_subscribe_cache[$list]) && in_array($user->ID, $pmpromc_subscribe_cache[$list]))
+		return;
+	else {
+		//save in cache to make sure we don't try to subscribe again later
+		if(empty($pmpromc_subscribe_cache))
+			$pmpromc_subscribe_cache = array($list=>array($user->ID));
+		elseif(empty($pmpromc_subscribe_cache[$list])) {
+			$pmpromc_subscribe_cache[$list] = array($user->ID);
+		} else {
+			$pmpromc_subscribe_cache[$list][] = $user->ID;
+		}
+	}
+	
 	//make sure user has an email address
     $email = $user->user_email;	
 	if (empty($email))
@@ -987,8 +1003,50 @@ function pmpromc_subscribe($list, $user)
         if (WP_DEBUG) {
             error_log("Error during subscription attempt: {$msg}");
         }
-    }
+    }	
 }
+
+/**
+ * Add a user to the queue to subscribe to a list
+ */
+function pmpromc_queueUserToSubscribeToList($user_id, $list) {
+	global $pmpromc_users_to_subscribe;
+	
+	if(empty($pmpromc_users_to_subscribe))
+		$pmpromc_users_to_subscribe = array();
+	
+	if(!isset($pmpromc_users_to_subscribe))
+		$pmpromc_users_to_subscribe[$user_id] = array($list);
+	elseif(!in_array($list, $pmpromc_users_to_subscribe[$user_id]))
+		$pmpromc_users_to_subscribe[$user_id][] = $list;		
+}
+
+/**
+ * Just before redirecting away or loading the page,
+ * make sure we process subscriptions.
+ */
+function pmpromc_processSubscriptions($param) {
+	global $pmpromc_users_to_subscribe;
+	
+	//anything to do?
+	if(empty($pmpromc_users_to_subscribe))
+		return;
+	
+	//subscribe
+	foreach($pmpromc_users_to_subscribe as $user_id => $lists) {
+		foreach($lists as $list) {
+			pmpromc_subscribe($list, $user_id);
+		}
+	}
+	
+	//unset so we don't do this twice by accident
+	unset($pmpromc_users_to_subscribe);
+		
+	//sometimes called in a filter and we need to pass this back
+	return $param;
+}
+add_action('template_redirect', 'pmpromc_processSubscriptions', 1);
+add_filter('wp_redirect', 'pmpromc_processSubscriptions', 99);
 
 /**
  * Unsubscribe a user from a specific list
@@ -1020,14 +1078,53 @@ function pmpromc_unsubscribe($list, $user)
 }
 
 /**
+ * Add a user to the queue to process unsubscriptions for.
+ * Stored in $pmpromc_users_to_unsubscribe global
+ */
+function pmpromc_queueUserToUnsubscribeFromLists($user_id) {
+	global $pmpromc_users_to_unsubscribe;
+	
+	if(empty($pmpromc_users_to_unsubscribe))
+		$pmpromc_users_to_unsubscribe = array($user_id);
+	elseif(!in_array($user_id, $pmpromc_users_to_unsubscribe)) {
+		$pmpromc_users_to_unsubscribe[] = $user_id;
+	}
+}
+
+/**
+ * Just before redirecting away or loading the page,
+ * make sure we process unsubscriptions.
+ */
+function pmpromc_processUnsubscriptions($param) {
+	global $pmpromc_users_to_unsubscribe;
+	
+	//anything to do?
+	if(empty($pmpromc_users_to_unsubscribe))
+		return;
+	
+	//unsubscribe
+	foreach($pmpromc_users_to_unsubscribe as $user_id) {
+		pmpromc_unsubscribeFromLists($user_id);		
+	}
+	
+	//unset so we don't do this twice by accident
+	unset($pmpromc_users_to_unsubscribe);
+		
+	//sometimes called in a filter and we need to pass this back
+	return $param;
+}
+add_action('template_redirect', 'pmpromc_processUnsubscriptions', 2);
+add_filter('wp_redirect', 'pmpromc_processUnsubscriptions', 100);
+
+/**
  * Unsubscribe a user based on their membership level.
  *
  * @param $user_id (int) - User Id
- * @param $level_id (int) - PMPro Membership Level Id
+ * @param $level_id (int) - Deprecated
  */
-function pmpromc_unsubscribeFromLists($user_id, $level_id)
+function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL)
 {
-    global $pmpromc_levels;
+    global $wpdb;
     $options = get_option("pmpromc_options");
     $all_lists = get_option("pmpromc_all_lists");
 
@@ -1035,75 +1132,76 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id)
     if (empty($options['unsubscribe'])) {
 
         if (WP_DEBUG) {
-            error_log("No need to unsubscribe {$user_id} with level ID {$level_id}");
+            error_log("No need to unsubscribe {$user_id}");
         }
 
         return;
     }
 
-    //unsubscribing from all lists or just old level lists?
-    if ($options['unsubscribe'] == "all") {
-
-        $unsubscribe_lists = wp_list_pluck($all_lists, "id");
-        $membership_driven_lists = array();
-
-    } else {
-
-		// Get all lists - let's start with everything.
-        $api = apply_filters('get_mailchimpapi_class_instance', null);
-        $api->set_key();
-
-        if (!empty($api)) {
-            $unsubscribe_lists = $api->get_all_lists();
-        }
-
-		if (!empty($unsubscribe_lists)) { // Let's see what levels they SHOULD have.
-		
-            $user = get_userdata($user_id);
-            $user->membership_levels = pmpro_getMembershipLevelsForUser($user_id);
-            $membership_driven_lists = array();
-
-            //check users lists
-            if (!empty($user->membership_levels) && !empty($options['users_lists'])) {
-                foreach ($options['users_lists'] as $users_list) {
-					// they have a level, so don't unsub them from the users list.
-					$membership_driven_lists[] = $users_list;
-                }
-            }
-
-            //get lists for this user's membership level
-            foreach($user->membership_levels as $user_level) {
-				if (!empty($options['level_' . $user_level->id . '_lists']) && !empty($options['api_key'])) {
-					foreach ($options['level_' . $user_level->id . '_lists'] as $level_list) {
-						// they have a level, so don't unsub them from the users list.
-						$membership_driven_lists[] = $level_list;
-					}
-				}
-			}
-		}
+	//what levels does the user have now?
+	$user_levels = pmpro_getMembershipLevelsForUser($user_id);
+	if(!empty($user_levels)) {
+		$user_level_ids = array();
+		foreach($user_levels as $level)
+			$user_level_ids[] = $level->id;
+	} else {
+		$user_level_ids = array();
 	}
 	
-    //we don't want to unsubscribe from any additional lists the user has opted-in to
+    //unsubscribing from all lists or just old level lists?
+    if ($options['unsubscribe'] == "all") {
+        $unsubscribe_lists = wp_list_pluck($all_lists, "id");        
+    } else {							
+		//format user's current levels as string for query
+		if(!empty($user_level_ids))
+			$user_level_ids_string = implode(',', $user_level_ids);
+		else
+			$user_level_ids_string = '0';
+		
+		//get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes
+		$sqlQuery = $wpdb->prepare("SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string);
+		$levels_unsubscribing_from = $wpdb->get_col($sqlQuery);
+		
+		//figure out which lists to unsubscribe from
+		$unsubscribe_lists = array();
+		foreach($levels_unsubscribing_from as $unsub_level_id) {
+			if (!empty($options['level_' . $unsub_level_id . '_lists'])) {
+				$unsubscribe_lists = array_merge($unsubscribe_lists, $options['level_' . $unsub_level_id . '_lists']);
+			}
+		}
+		$unsubscribe_lists = array_unique($unsubscribe_lists);				
+	}
+	
+	//still lists to unsubscribe from?
+    if (empty($unsubscribe_lists)) {
+        return;
+    }
+		
+	$level_lists = array();   
+	if (!empty($user_level_ids)) {
+        foreach($user_level_ids as $user_level_id) {
+			if (!empty($options['level_' . $user_level_id . '_lists'])) {
+				$level_lists = array_merge($level_lists, $options['level_' . $user_level_id . '_lists']);
+			}
+		}	
+    } else {
+        $level_lists = isset($options['users_lists']) ? $options['users_lists'] : array();
+    }
+	
+    //we don't want to unsubscribe from lists for the new level(s) or any additional lists the user is subscribed to	
     $user_additional_lists = get_user_meta($user_id, 'pmpromc_additional_lists', true);
-
     if (!is_array($user_additional_lists)) {
 
         $user_additional_lists = array();
     }
-
-    //make sure this is an array
-    if (!is_array($membership_driven_lists)) {
-    
-        $membership_driven_lists = array();
-    }
-
+   
     //merge
-    $dont_unsubscribe_lists = array_merge($user_additional_lists, $membership_driven_lists);
-
+    $dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
+	
     //load API
     $api = pmpromc_getAPI();
     $list_user = get_userdata($user_id);
-
+	
     //unsubscribe
     foreach ($unsubscribe_lists as $list) {
 
@@ -1135,41 +1233,35 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 
     //should we add them to any lists?
     if (!empty($options['level_' . $level_id . '_lists']) && !empty($options['api_key'])) {
-
-        //get user info
-        $list_user = get_userdata($user_id);
-
+        
         //subscribe to each list
         foreach ($options['level_' . $level_id . '_lists'] as $list) {
 
-            //subscribe them
-            pmpromc_subscribe($list, $list_user);
+            //subscribe them            
+			pmpromc_queueUserToSubscribeToList($user_id, $list);
         }
 
         //unsubscribe them from lists not selected, or all lists from their old level
-        pmpromc_unsubscribeFromLists($user_id, $level_id);
+        pmpromc_queueUserToUnsubscribeFromLists($user_id);
 
     } elseif (!empty($options['api_key']) && count($options) > 3) {
 
         //now they are a normal user should we add them to any lists?
         //Case where PMPro is not installed?
-        if (!empty($options['users_lists']) && !empty($options['api_key'])) {
-
-            //get user info
-            $list_user = get_userdata($user_id);
+        if (!empty($options['users_lists']) && !empty($options['api_key'])) {            
 
             //subscribe to each list
             foreach ($options['users_lists'] as $list) {
                 //subscribe them
-                pmpromc_subscribe($list, $list_user);
+                pmpromc_queueUserToSubscribeToList($user_id, $list);
             }
 
             //unsubscribe from any list not assigned to users
-            pmpromc_unsubscribeFromLists($user_id, $level_id);
+            pmpromc_queueUserToUnsubscribeFromLists($user_id);
         } else {
 
             //some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
-            pmpromc_unsubscribeFromLists($user_id, $level_id);
+            pmpromc_queueUserToUnsubscribeFromLists($user_id);
         }
     }
 }
@@ -1263,17 +1355,18 @@ function pmpromc_pmpro_mailchimp_listsubscribe_fields($fields, $user, $list)
 	}
 
     if (count($affectedlevels) == 0) { // No levels found.
-
         $fields['PMPLEVELID'] = '';
-        $fields['PMPLEVEL'] = '';
+        $fields['PMPLEVELIDS'] = '{}';
+		$fields['PMPLEVEL'] = '';
 	} elseif(count($affectedlevels) == 1) { // Only one level found
 
 		reset($affectedlevels); // Let's look at the first (and only) element.
         $fields['PMPLEVELID'] = key($affectedlevels);
-        $fields['PMPLEVEL'] = current($affectedlevels);        
+        $fields['PMPLEVELIDS'] = '{' . $fields['PMPLEVELID'] . '}';
+		$fields['PMPLEVEL'] = current($affectedlevels);        
     } else { // Multiple levels found. Setting the parms to a comma-separated list of level IDs/names.
-
-		$fields['PMPLEVELID'] = join(',', array_keys($affectedlevels));
+		$fields['PMPLEVELID'] = key($affectedlevels);
+		$fields['PMPLEVELIDS'] = '{' . join('},{', array_keys($affectedlevels)) . '}';
 		$fields['PMPLEVEL'] = join(',', array_values($affectedlevels));
     }
 

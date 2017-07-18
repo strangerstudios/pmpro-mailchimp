@@ -159,8 +159,10 @@ class PMProMailChimp
      * @since 2.0.0
      */
     public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false)
-    {
-        // Can't be empty
+    {		
+		///echo "(subscribe: " . $list . ")";
+		
+		// Can't be empty
         $test = (array)($user_obj);
 
         if (empty($list) || empty($test)) {
@@ -183,7 +185,7 @@ class PMProMailChimp
 
         //make sure merge fields are setup if PMPro is active
         if (function_exists('pmpro_getMembershipLevelForUser')) {
-            $this->add_pmpro_merge_fields($list);
+            //$this->add_pmpro_merge_fields($list);
         }
 
         //build request
@@ -205,7 +207,9 @@ class PMProMailChimp
 
         //hit api
         $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
-        $resp = wp_remote_request($url, $args);	
+        $resp = wp_remote_request($url, $args);			
+		
+		///d($resp);
 		
 	    if (WP_DEBUG) {
 	    	error_log("Subscribe: Response object: " . print_r($resp, true));
@@ -230,8 +234,10 @@ class PMProMailChimp
      * @since 2.0.0
      */
     public function unsubscribe($list = '', WP_User $user_objs = null)
-    {
-        // Can't be empty
+    {		
+		///echo "(unsubscribe:" . $list . ")";
+		
+		// Can't be empty
         if (empty($list) || empty($user_objs)) {
             return false;
         }
@@ -256,13 +262,15 @@ class PMProMailChimp
             $user_url = $url . "/{$user_id}";
 
             $resp = wp_remote_request($user_url, $args);
-
+			
+			///d($resp);
+			
 	        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 		        $this->set_error_msg($resp);
 		        return false;
 	        }			
         }
-
+		
         return true;
     }
 
@@ -371,7 +379,7 @@ class PMProMailChimp
     }
 
     /**
-     * Make sure a list has the PMPLEVELID and PMPLEVEL merge fields.
+     * Make sure a list has the PMPLEVELID, PMPLEVELIDS and PMPLEVEL merge fields.
      *
      * @param string $list_id - The MC list ID
      *
@@ -389,7 +397,8 @@ class PMProMailChimp
         $pmpro_merge_fields = apply_filters('pmpro_mailchimp_merge_fields',
             array(
                 array('name' => 'PMPLEVELID', 'type' => 'number'),
-                array('name' => 'PMPLEVEL', 'type' => 'text'),
+                array('name' => 'PMPLEVELIDS', 'type' => 'text'),
+				array('name' => 'PMPLEVEL', 'type' => 'text'),
             ),
             $list_id);
 
