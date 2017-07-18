@@ -13,23 +13,6 @@ Text Domain: pmpro-mailchimp
 	GPLv2 Full license details in license.txt
 */
 
-/*
-	* options
-	- MailChimp API Key
-	
-	If PMPro is not installed:
-	- New users should be subscribed to these lists: [ ]
-	- Remove members from list when they unsubscribe/delete their account? [ ]
-	
-	If PMPro is installed:
-	* All new users should be subscribed to these lists:
-	* New users with no membership should be subscribed to these lists:
-	* New users with membership # should be subscribed to these lists: 
-	* (Show each level)		
-	
-	* Provide export for initial import?
-*/
-
 //init
 function pmpromc_init()
 {
@@ -825,19 +808,12 @@ function pmpromc_options_page()
 
         <form action="options-general.php?page=pmpromc_options" method="post">
             <h3><?php _e('Subscribe users to one or more MailChimp lists when they sign up for your site.', 'pmpro-mailchimp');?></h3>
-            <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a>
-                installed, you can subscribe members to one or more MailChimp lists based on their membership level or
-                specify "Opt-in Lists" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free MailChimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
+            <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more MailChimp lists based on their membership level or specify "Opt-in Lists" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free MailChimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
             <?php if (function_exists('pmpro_getAllLevels')) { ?>
                 <hr/>
                 <h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
-                <p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and
-                    <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only affect new or updated
-                        members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a
-                        href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/"
-                        target="_blank"><?php _e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
-                <p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to
-                        export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
+                <p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php _e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
+                <p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
                 <hr/>
 
                 <div id="pmpromc_export_instructions" class="postbox" style="display: none;">
@@ -859,11 +835,9 @@ function pmpromc_options_page()
                         <ol>
                             <li><?php _e('Download a CSV of member data for each membership level.', 'pmpro-mailchimp');?></li>
                             <li><?php _e('Log in to MailChimp.', 'pmpro-mailchimp');?></li>
-                            <li><?php _e('Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-delimited
-                                text file.', 'pmpro-mailchimp');?>
+                            <li><?php _e('Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-delimited text file.', 'pmpro-mailchimp');?>
                             </li>
-                            <li><?php _e('Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have
-                                those exact names in all uppercase letters.', 'pmpro-mailchimp');?>
+                            <li><?php _e('Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have those exact names in all uppercase letters.', 'pmpro-mailchimp');?>
                             </li>
                             <li><?php _e('Check "auto update my existing list". Click "Import".', 'pmpro-mailchimp');?></li>
                         </ol>
