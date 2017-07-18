@@ -24,14 +24,12 @@ function pmpromc_init()
         require_once(dirname(__FILE__) . '/includes/class.mailchimp.api.php');
     }
 
-    $GLOBALS['pmpromc_api'] = apply_filters('get_mailchimpapi_class_instance', null);
-
+	$GLOBALS['pmpromc_api'] = apply_filters('get_mailchimpapi_class_instance', null);
     if (is_null($GLOBALS['pmpromc_api'])) {
         $GLOBALS['pmpromc_api'] = new PMProMailChimp();
     }
-
     $GLOBALS['pmpromc_api']->set_key();
-
+	
     //are we on the checkout page?
     $is_checkout_page = (isset($_REQUEST['submit-checkout']) || (isset($_REQUEST['confirm']) && isset($_REQUEST['gateway'])));
 
@@ -83,8 +81,13 @@ function pmpromc_sync_merge_fields_ajax()
 {
     //setup vars
     global $wpdb;
+    
+	//get API and bail if we can't set it
     $api = pmpromc_getAPI();
-    $last_user_id = get_option('pmpromc_sync_merge_fields_last_user_id', 0);
+	if(empty($api))
+		return;
+    
+	$last_user_id = get_option('pmpromc_sync_merge_fields_last_user_id', 0);
     $limit = 3;
     $options = get_option("pmpromc_options");
     $all_lists = get_option("pmpromc_all_lists");
@@ -179,12 +182,14 @@ function pmpromc_getAPI()
 
     if (isset($options['api_key'])) {
         $api = apply_filters('get_mailchimpapi_class_instance', null);
-        $api->set_key();
+        d($api);
+		if(!empty($api))
+			$api->set_key();
     } else {
         return false;
     }
 
-    if (false !== $api->connect()) {
+    if (!empty($api) && false !== $api->connect()) {
         return $api;
     }
 
@@ -205,14 +210,14 @@ function pmpromc_add_custom_user_profile_fields($user)
     else
         $additional_lists = array();
 
-    // $api = pmpromc_getAPI();
-    $api = apply_filters('get_mailchimpapi_class_instance', null);
-    $api->set_key();
-
-    if (!empty($api)) {
-        $lists = $api->get_all_lists();
-    }
-
+	//get API and bail if we can't set it
+    $api = pmpromc_getAPI();
+	if(empty($api))
+		return;
+    
+	//get lists
+    $lists = $api->get_all_lists();
+    
     //no lists?
     if (!empty($lists)) {
         $additional_lists_array = array();
@@ -444,12 +449,10 @@ function pmpromc_additional_lists_on_checkout()
 
     $options = get_option("pmpromc_options");
 
-    //have access?
-    if (!empty($options['api_key'])) {
-        $api = apply_filters('get_mailchimpapi_class_instance', null);
-        $api->set_key();
-    } else
-        return;
+    //get API and bail if we can't set it
+    $api = pmpromc_getAPI();
+	if(empty($api))
+		return;
 
     //are there additional lists?
     if (!empty($options['additional_lists']))
@@ -767,9 +770,10 @@ function pmpromc_options_page()
     else
         $api_key = false;
 
-    // $api = pmpromc_getAPI();
-    $api = apply_filters('get_mailchimpapi_class_instance', null);
-    $api->set_key();
+    //get API and bail if we can't set it
+    $api = pmpromc_getAPI();
+	if(empty($api))
+		return;
 
     if (!empty($api)) {
         $pmpromc_lists = $api->get_all_lists();
@@ -952,7 +956,12 @@ function pmpromc_subscribe($list, $user)
         return;
 
     $options = get_option("pmpromc_options");
+    
+	//get API and bail if we can't set it
     $api = pmpromc_getAPI();
+	if(empty($api))
+		return;
+	
     $merge_fields = apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user, $list);
 
     if (WP_DEBUG) {
@@ -1025,8 +1034,10 @@ function pmpromc_unsubscribe($list, $user)
 	if (empty($email))
         return;
 
-    $options = get_option("pmpromc_options");
+    //get API and bail if we can't set it
     $api = pmpromc_getAPI();
+	if(empty($api))
+		return;
 
 	if(is_object($list)) {
 		$listid = $list->id;
@@ -1162,8 +1173,11 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL)
     //merge
     $dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
 	
-    //load API
+    //get API and bail if we can't set it
     $api = pmpromc_getAPI();
+	if(empty($api))
+		return;
+	
     $list_user = get_userdata($user_id);
 	
     //unsubscribe
@@ -1255,16 +1269,14 @@ function pmpromc_profile_update($user_id, $old_user_data)
     $update_user = apply_filters('pmpromc_profile_update', $update_user, $user_id, $old_user_data);
 
     if ($update_user) {
-
-        //get all lists
-        $api = apply_filters('get_mailchimpapi_class_instance', null);
-        $api->set_key();
-
-        if (!empty($api)) {
-
-            $lists = $api->get_all_lists();
-        }
-
+		//get API and bail if we can't set it
+		$api = pmpromc_getAPI();
+		if(empty($api))
+			return;
+		
+        //get all lists        
+        $lists = $api->get_all_lists();
+        
         if ( ! empty($lists)) {
 
             foreach ($lists as $list) {
