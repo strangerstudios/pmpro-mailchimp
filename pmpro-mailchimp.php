@@ -49,7 +49,6 @@ function pmpromc_init()
         add_action("pmpro_after_checkout", "pmpromc_pmpro_after_checkout", 15);
     }
 }
-
 add_action("init", "pmpromc_init", 0);
 
 /*
@@ -995,7 +994,7 @@ function pmpromc_processSubscriptions($param) {
 	
 	//anything to do?
 	if(empty($pmpromc_users_to_subscribe))
-		return;
+		return $param;
 	
 	//subscribe
 	foreach($pmpromc_users_to_subscribe as $user_id => $lists) {
@@ -1065,7 +1064,7 @@ function pmpromc_processUnsubscriptions($param) {
 	
 	//anything to do?
 	if(empty($pmpromc_users_to_unsubscribe))
-		return;
+		return $param;
 	
 	//unsubscribe
 	foreach($pmpromc_users_to_unsubscribe as $user_id) {
