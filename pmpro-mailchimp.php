@@ -182,17 +182,31 @@ function pmpromc_getAPI()
 
     if (isset($options['api_key'])) {
         $api = apply_filters('get_mailchimpapi_class_instance', null);        
-		if(!empty($api))
+		if(!empty($api)) {
 			$api->set_key();
+			if($api->connect() !== false)
+				$r = $api;
+			else
+				$r = false;
+		}
     } else {
-        return false;
+        $r = false;
     }
-
-    if (!empty($api) && false !== $api->connect()) {
-        return $api;
-    }
-
-    return false;
+    
+	//log error if API fails to load, each use of $api in the larger code base should catch $api === false and fail quietly
+	if(empty($r)) {
+		if(WP_DEBUG) {
+			error_log('Error loading MailChimp API');
+		}
+		
+		/**
+		 * Hook in case we want to handle cases where $r is false and throw an error
+		 * @param $api False if API didn't init, or might have an error if setting keys or connecting failed.
+		 */
+		do_action('pmpromc_get_api_failed', $api);
+	}
+	
+	return $r;
 }
 
 /*
