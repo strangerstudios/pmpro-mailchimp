@@ -391,22 +391,19 @@ function pmpromc_admin_init()
 {
     //setup settings
     register_setting('pmpromc_options', 'pmpromc_options', 'pmpromc_options_validate');
-    add_settings_section('pmpromc_section_general', 'General Settings', 'pmpromc_section_general', 'pmpromc_options');
-    add_settings_field('pmpromc_option_api_key', 'MailChimp API Key', 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');
-    add_settings_field('pmpromc_option_users_lists', 'All Users List', 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
+    add_settings_section('pmpromc_section_general', __('General Settings', 'pmpro-mailchimp'), 'pmpromc_section_general', 'pmpromc_options');
+    add_settings_field('pmpromc_option_api_key', __('MailChimp API Key', 'pmpro-mailchimp'), 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');
+    add_settings_field('pmpromc_option_users_lists', __('All Users List', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
 
     //only if PMPro is installed
     if (function_exists("pmpro_hasMembershipLevel"))
-        add_settings_field('pmpromc_option_additional_lists', 'Opt-in Lists', 'pmpromc_option_additional_lists', 'pmpromc_options', 'pmpromc_section_general');
+        add_settings_field('pmpromc_option_additional_lists', __('Opt-in Lists', 'pmpro-mailchimp'), 'pmpromc_option_additional_lists', 'pmpromc_options', 'pmpromc_section_general');
 
-    add_settings_field('pmpromc_option_double_opt_in', 'Require Double Opt-in?', 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');
-    add_settings_field('pmpromc_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');
-
-    //setting this up automatically now
-    //add_settings_field('pmpromc_option_level_field', 'Custom Field for Level', 'pmpromc_option_level_field', 'pmpromc_options', 'pmpromc_section_general');
-
+    add_settings_field('pmpromc_option_double_opt_in', __('Require Double Opt-in?', 'pmpro-mailchimp'), 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');
+    add_settings_field('pmpromc_option_unsubscribe', __('Unsubscribe on Level Change?', 'pmpro-mailchimp'), 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');
+    
     //pmpro-related options
-    add_settings_section('pmpromc_section_levels', 'Membership Levels and Lists', 'pmpromc_section_levels', 'pmpromc_options');
+    add_settings_section('pmpromc_section_levels', __('Membership Levels and Lists', 'pmpro-mailchimp'), 'pmpromc_section_levels', 'pmpromc_options');
 
     //add options for levels
     pmpromc_getPMProLevels();
@@ -417,8 +414,6 @@ function pmpromc_admin_init()
             add_settings_field('pmpromc_option_memberships_lists_' . $level->id, $level->name, 'pmpromc_option_memberships_lists', 'pmpromc_options', 'pmpromc_section_levels', array($level));
         }
     }
-
-
 }
 
 add_action("admin_init", "pmpromc_admin_init");
@@ -574,19 +569,18 @@ function pmpromc_section_levels()
     global $wpdb, $pmpromc_levels;
 
     //do we have PMPro installed?
-    if (class_exists("MemberOrder")) {
+    if (defined('PMPRO_VERSION')) {
         ?>
-        <p>PMPro is installed.</p>
+        <p><?php _e('PMPro is installed.', 'pmpro-mailchimp');?></p>
         <?php
         //do we have levels?
         if (empty($pmpromc_levels)) {
             ?>
-            <p>Once you've <a href="admin.php?page=pmpro-membershiplevels">created some levels in Paid Memberships
-                    Pro</a>, you will be able to assign MailChimp lists to them here.</p>
+            <p><?php printf(__("Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign MailChimp lists to them here.", 'pmpro-mailchimp'), 'admin.php?page=pmpro-membershiplevels');?></p>
             <?php
         } else {
             ?>
-            <p>For each level below, choose the list(s) that a new user should be subscribed to when they register.</p>
+            <p><?php _e('For each level below, choose the list(s) that a new user should be subscribed to when they register.', 'pmpro-mailchimp');?></p>
             <?php
         }
     } else {
@@ -594,16 +588,12 @@ function pmpromc_section_levels()
         if (file_exists(dirname(__FILE__) . "/../paid-memberships-pro/paid-memberships-pro.php")) {
             //just deactivated
             ?>
-            <p><a href="plugins.php?plugin_status=inactive">Activate Paid Memberships Pro</a> to add membership
-                functionality to your site and finer control over your MailChimp lists.</p>
+            <p><?php printf(__('<a href="%s">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your MailChimp lists.', 'pmpro-mailchimp'), 'plugins.php?plugin_status=inactive');?></p>
             <?php
         } else {
             //needs to be installed
             ?>
-            <p>
-                <a href="plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins">Install
-                    Paid Memberships Pro</a> to add membership functionality to your site and finer control over your
-                MailChimp lists.</p>
+            <p><?php printf(__('<a href="%s">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your MailChimp lists.', 'pmpro-mailchimp'), 'plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins');?></p>
             <?php
         }
     }
@@ -651,8 +641,8 @@ function pmpromc_option_double_opt_in()
     $options = get_option('pmpromc_options');
     ?>
     <select name="pmpromc_options[double_opt_in]">
-        <option value="0" <?php selected($options['double_opt_in'], 0); ?>><?php _('No', 'pmpro-mailchimp');?></option>
-        <option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
+        <option value="0" <?php selected($options['double_opt_in'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
+        <option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _e('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
     </select>
     <?php
 }
@@ -662,11 +652,11 @@ function pmpromc_option_unsubscribe()
     $options = get_option('pmpromc_options');
     ?>
     <select name="pmpromc_options[unsubscribe]">
-        <option value="0" <?php selected($options['unsubscribe'], 0); ?>><?php _('No', 'pmpro-mailchimp');?></option>
-        <option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
-        <option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _('Yes (All other lists.)', 'pmpro-mailchimp');?></option>
+        <option value="0" <?php selected($options['unsubscribe'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
+        <option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _e('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
+        <option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (All other lists.)', 'pmpro-mailchimp');?></option>
     </select>
-    <small><?php _("Recommended: Yes. However, if you manage multiple lists in MailChimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.", 'pmpro-mailchimp');?>
+    <small><?php _e("Recommended: Yes. However, if you manage multiple lists in MailChimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.", 'pmpro-mailchimp');?>
     </small>
     <?php
 }
@@ -682,7 +672,7 @@ function pmpromc_option_level_field()
     ?>
     <input id='pmpromc_level_field' name='pmpromc_options[level_field]' size='20' type='text'
            value='<?php echo esc_attr($level_field); ?>'/>
-    <small><?php _('To segment your list subscribers by membership level, create a custom field in MailChimp and enter the merge tag here.', 'pmpro-mailchimp');?></small>
+    <small><?php _e('To segment your list subscribers by membership level, create a custom field in MailChimp and enter the merge tag here.', 'pmpro-mailchimp');?></small>
     <?php
 }
 
@@ -722,7 +712,7 @@ function pmpromc_options_validate($input)
     $newinput['double_opt_in'] = isset($input['double_opt_in']) ? intval($input['double_opt_in']) : null;
     $newinput['unsubscribe'] = isset($input['unsubscribe']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']) : null;
     $newinput['level_field'] = isset($input['level_field']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['level_field']) : null;
-
+	
     //user lists
     if (!empty($input['users_lists']) && is_array($input['users_lists'])) {
         $count = count($input['users_lists']);
@@ -747,7 +737,7 @@ function pmpromc_options_validate($input)
         for ($i = 0; $i < $count; $i++)
             $newinput['additional_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['additional_lists'][$i]));
     }
-
+	
     return $newinput;
 }
 
@@ -784,9 +774,7 @@ function pmpromc_options_page()
         $api_key = false;
 
     //get API and bail if we can't set it
-    $api = pmpromc_getAPI();
-	if(empty($api))
-		return;
+    $api = pmpromc_getAPI();	
 
     if (!empty($api)) {
         $pmpromc_lists = $api->get_all_lists();
@@ -818,7 +806,7 @@ function pmpromc_options_page()
             <div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
         <?php } ?>
 
-        <form action="options-general.php?page=pmpromc_options" method="post">
+        <form action="options.php" method="post">
             <h3><?php _e('Subscribe users to one or more MailChimp lists when they sign up for your site.', 'pmpro-mailchimp');?></h3>
             <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more MailChimp lists based on their membership level or specify "Opt-in Lists" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free MailChimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
             <?php if (function_exists('pmpro_getAllLevels')) { ?>
