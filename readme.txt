@@ -1,9 +1,9 @@
 === Paid Memberships Pro - MailChimp Add On ===
 Contributors: strangerstudios
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
-Requires at least: 3.5
-Tested up to: 4.5.3
-Stable tag: 2.0.3
+Requires at least: 4
+Tested up to: 4.8
+Stable tag: 2.1
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -43,6 +43,12 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 2.1 =
+* BUG: Fixed a variety of bugs related to the MailChimp API, including a bug introduced in v2.0.3 that sometimes kept the plugin from subscribing users to lists.
+* BUG/ENHANCEMENT: Doing a better job of limiting the number of API requests made to avoid API limits.
+* ENHANCEMENT: Supports the pmpro-multiple-memberships-per-user Add On.
+* ENHANCEMENT: Added localization support. (Now should be able to create language files via GlotPress)
+
 = 2.0.3 =
 * BUG: Fixed issue with updating email addresses in MailChimp when email addresses are updated in WordPress.
 * ENHANCEMENT: Added a filter pmpromc_profile_update that you can set to __return_true to tell the addon to synchronize user data on every profile update. By default, PMPro MailChimp will only synchronize data if the email address has changed. Filter passes $update_user, $user_id, and $old_user_data and is documented in the code.
