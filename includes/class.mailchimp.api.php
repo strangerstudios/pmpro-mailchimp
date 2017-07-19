@@ -109,7 +109,7 @@ class PMProMailChimp
         $url = self::$api_url . "/lists/?count={$max_lists}";
         $response = wp_remote_get($url, $this->url_args);
 
-        if (is_wp_error($response)) {
+        if ( 200 !== wp_remote_retrieve_response_code( $response )) {
 
             switch (wp_remote_retrieve_response_code($response)) {
                 case 401:
