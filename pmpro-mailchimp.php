@@ -181,8 +181,7 @@ function pmpromc_getAPI()
         return false;
 
     if (isset($options['api_key'])) {
-        $api = apply_filters('get_mailchimpapi_class_instance', null);
-        d($api);
+        $api = apply_filters('get_mailchimpapi_class_instance', null);        
 		if(!empty($api))
 			$api->set_key();
     } else {
