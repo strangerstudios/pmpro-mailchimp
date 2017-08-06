@@ -109,35 +109,47 @@ class PMProMailChimp
         $url = self::$api_url . "/lists/?count={$max_lists}";
         $response = wp_remote_get($url, $this->url_args);
 
-        if ( 200 !== wp_remote_retrieve_response_code( $response )) {
-
-            switch (wp_remote_retrieve_response_code($response)) {
+        if ( is_wp_error( $response ) ) {
+            $this->set_error_msg(
+                sprintf(
+                    __(
+                        'Error while communicating with the Mailchimp servers: <p><em>%s</em></p>',
+                        'pmpro-mailchimp'
+                    ),
+                    $response->get_error_message()
+                )
+            );
+            return false;
+	} elseif ( 200 !== wp_remote_retrieve_response_code( $response )) {
+	    switch (wp_remote_retrieve_response_code($response)) {
                 case 401:
+		    $json_response = $this->decode_response($response['body']);
                     $this->set_error_msg(
                         sprintf(
                             __(
-                                'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.',
+                                'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s: %s. Detail: %s</em></p> Please try entering your API key again.',
                                 'pmpro-mailchimp'
                             ),
-                            $response->get_error_message()
+			    $json_response->status, $json_response->title, $json_response->detail
                         )
                     );
                     return false;
                     break;
 
                 default:
+		    $json_response = $this->decode_response($response['body']);
                     $this->set_error_msg(
                         sprintf(
                             __(
-                                'Error while communicating with the Mailchimp servers: <p><em>%s</em></p>',
+                                'Error while communicating with the Mailchimp servers: <p><em>%s: %s. Detail: %s</em></p>',
                                 'pmpro-mailchimp'
                             ),
-                            $response->get_error_message()
+			    $json_response->status, $json_response->title, $json_response->detail
                         )
                     );
                     return false;
             }
-        } else {
+	} else {
 
             $body = $this->decode_response($response['body']);
             $this->all_lists = isset($body->lists) ? $body->lists : array();
