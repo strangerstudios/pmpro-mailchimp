@@ -108,10 +108,11 @@ class PMProMailChimp
 
         $url = self::$api_url . "/lists/?count={$max_lists}";
         $response = wp_remote_get($url, $this->url_args);
+	$resp_code = wp_remote_retrieve_response_code( $response );
+	    
+        if ( is_numeric( $resp_code ) && 200 !== $resp_code ) {
 
-        if ( 200 !== wp_remote_retrieve_response_code( $response )) {
-
-            switch (wp_remote_retrieve_response_code($response)) {
+            switch ($resp_code) {
                 case 401:
                     $this->set_error_msg(
                         sprintf(
@@ -119,7 +120,7 @@ class PMProMailChimp
                                 'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.',
                                 'pmpro-mailchimp'
                             ),
-                            $response->get_error_message()
+                            is_object( $response ) ? $response->get_error_message() : __( 'Unknown error returned', 'pmpro-mailchimp' )
                         )
                     );
                     return false;
@@ -132,16 +133,21 @@ class PMProMailChimp
                                 'Error while communicating with the Mailchimp servers: <p><em>%s</em></p>',
                                 'pmpro-mailchimp'
                             ),
-                            $response->get_error_message()
+                            is_object( $response ) ? $response->get_error_message() : __( 'Unknown error returned', 'pmpro-mailchimp' )
                         )
                     );
                     return false;
             }
-        } else {
+        } else if ( is_numeric( $resp_code ) && 200 == $resp_code ) {
 
             $body = $this->decode_response($response['body']);
             $this->all_lists = isset($body->lists) ? $body->lists : array();
-        }
+        } else {
+		$this->set_error_msg(                       
+                     __( 'Error while communicating with the Mailchimp servers.', 'pmpro-mailchimp' ),                     
+                );
+		return false;
+	}
 
         return true;
     }
