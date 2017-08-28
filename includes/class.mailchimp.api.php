@@ -143,9 +143,7 @@ class PMProMailChimp
             $body = $this->decode_response($response['body']);
             $this->all_lists = isset($body->lists) ? $body->lists : array();
         } else {
-		$this->set_error_msg(                       
-                     __( 'Error while communicating with the Mailchimp servers.', 'pmpro-mailchimp' ),                     
-                );
+		$this->set_error_msg( __( 'Error while communicating with the Mailchimp servers.', 'pmpro-mailchimp' ) );
 		return false;
 	}
 
