@@ -101,40 +101,29 @@ class PMProMailChimp
      * @return bool - True if able to conenct to MailChimp API services.
      * @since 2.0.0
      */
-    public function connect()
-    {
+    public function connect() {
         // test connectivity by fetching all lists
         $max_lists = apply_filters('pmpro_addon_mc_api_fetch_list_limit', 15);
 
         $url = self::$api_url . "/lists/?count={$max_lists}";
         $response = wp_remote_get($url, $this->url_args);
-	$resp_code = wp_remote_retrieve_response_code( $response );
+		$resp_code = wp_remote_retrieve_response_code( $response );
 	    
         if ( is_numeric( $resp_code ) && 200 !== $resp_code ) {
-
+			
             switch ($resp_code) {
                 case 401:
-                    $this->set_error_msg(
-                        sprintf(
-                            __(
-                                'Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.',
-                                'pmpro-mailchimp'
-                            ),
-                            is_object( $response ) ? $response->get_error_message() : __( 'Unknown error returned', 'pmpro-mailchimp' )
-                        )
+                    $this->set_error_msg(                        
+                            $response,
+							__('Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')             
                     );
                     return false;
                     break;
 
                 default:
-                    $this->set_error_msg(
-                        sprintf(
-                            __(
-                                'Error while communicating with the Mailchimp servers: <p><em>%s</em></p>',
-                                'pmpro-mailchimp'
-                            ),
-                            is_object( $response ) ? $response->get_error_message() : __( 'Unknown error returned', 'pmpro-mailchimp' )
-                        )
+                    $this->set_error_msg(                        
+                            $response,
+							__('Error while communicating with the Mailchimp servers: <p><em>%s</em></p>', 'pmpro-mailchimp')
                     );
                     return false;
             }
@@ -143,9 +132,9 @@ class PMProMailChimp
             $body = $this->decode_response($response['body']);
             $this->all_lists = isset($body->lists) ? $body->lists : array();
         } else {
-		$this->set_error_msg( __( 'Error while communicating with the Mailchimp servers.', 'pmpro-mailchimp' ) );
-		return false;
-	}
+			$this->set_error_msg( __( 'Error while communicating with the Mailchimp servers.', 'pmpro-mailchimp' ) );
+			return false;
+		}
 
         return true;
     }
@@ -604,7 +593,7 @@ class PMProMailChimp
      *
      * @since 2.0.0
      */
-    private function set_error_msg($obj)
+    private function set_error_msg($obj, $message = NULL)
     {
         global $msgt;
         global $msg;
@@ -621,5 +610,11 @@ class PMProMailChimp
         } else {
         	$msg = __("Unable to identify error message", "pmpromc");
 	    }
+		
+		//if an additional string message was sent, append it the beginning
+		if(!empty($message) && strpos($message, '%s') !== false)
+			$msg = sprintf($message, $msg);
+		else
+			$msg = $message . " " . $msg;
     }
 }
