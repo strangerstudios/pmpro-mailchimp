@@ -106,16 +106,16 @@ class PMProMailChimp
         $max_lists = apply_filters('pmpro_addon_mc_api_fetch_list_limit', 15);
 
         $url = self::$api_url . "/lists/?count={$max_lists}";
-        $response = wp_remote_get($url, $this->url_args);
+        $response = wp_remote_get($url, $this->url_args);		
 		$resp_code = wp_remote_retrieve_response_code( $response );
-	    
+
         if ( is_numeric( $resp_code ) && 200 !== $resp_code ) {
 			
             switch ($resp_code) {
                 case 401:
                     $this->set_error_msg(                        
                             $response,
-							__('Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')             
+							__('Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')
                     );
                     return false;
                     break;
@@ -128,11 +128,10 @@ class PMProMailChimp
                     return false;
             }
         } else if ( is_numeric( $resp_code ) && 200 == $resp_code ) {
-
             $body = $this->decode_response($response['body']);
             $this->all_lists = isset($body->lists) ? $body->lists : array();
         } else {
-			$this->set_error_msg( __( 'Error while communicating with the Mailchimp servers.', 'pmpro-mailchimp' ) );
+			$this->set_error_msg( $response, __( 'Error while communicating with the Mailchimp servers.', 'pmpro-mailchimp' ) );
 			return false;
 		}
 
@@ -312,7 +311,8 @@ class PMProMailChimp
                 "FNAME" => $new_user->first_name,
                 "LNAME" => $new_user->last_name
             ),
-            $new_user
+            $new_user,
+	    $list_id
         );
 
         if ($old_user->user_email != $new_user->user_email) {
@@ -599,19 +599,39 @@ class PMProMailChimp
         global $msg;
 
         $msgt = 'error';
-
+		
 	    if ( !is_string($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
-		    if(is_array($obj) && !empty($obj['response']))
-				$msg = $obj['response']['code'] . ' ' . $obj['response']['message'];
-			else
+		    //there is an error and we have some kind of array or response object
+			if(is_array($obj) && !empty($obj['response'])) {
+				//this is the format the MailChimp API returns				
+								
+				if(!empty($obj['body'])) {
+					//check for details in the body in json format
+					$json_response = $this->decode_response($obj['body']);
+					
+					if(!empty($json_response->status)) {
+						$msg = sprintf('<p><em>%s: %s. ' . __('Detail', 'pmpro-mailchimp') . ': %s</em></p>', $json_response->status, $json_response->title, $json_response->detail);
+					}
+				}
+				
+				if(empty($msg)) {
+					//only have code and message
+					$msg = $obj['response']['code'] . ' ' . $obj['response']['message'];				
+				}
+				
+			} else {
+				//assume a WP_Error object or something else that supports ->get_error_message();
 				$msg = $obj->get_error_message();
+			}
         } elseif ( is_string($obj) ) {
-            $msg = $obj;
+            //just a string, use it
+			$msg = $obj;
         } else {
+			//default error
         	$msg = __("Unable to identify error message", "pmpromc");
 	    }
 		
-		//if an additional string message was sent, append it the beginning
+		//if an additional string message was passed in, append it to the beginning or use sprintf
 		if(!empty($message) && strpos($message, '%s') !== false)
 			$msg = sprintf($message, $msg);
 		else
