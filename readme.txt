@@ -44,7 +44,7 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 
 == Changelog ==
 = 2.1.1 =
-* BUG FIX: Fixed issues with error handling and the display of error messages. Specifically, entering an incorrect API key will no longer crash the settings page.
+* BUG FIX: Fixed issues with error handling and the display of error messages. Specifically, entering an incorrect API key will no longer crash the settings page. (Thanks, Hugh Brock)
 
 = 2.1 =
 * BUG: Fixed a variety of bugs related to the MailChimp API, including a bug introduced in v2.0.3 that sometimes kept the plugin from subscribing users to lists.
