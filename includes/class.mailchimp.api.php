@@ -312,7 +312,7 @@ class PMProMailChimp
                 "LNAME" => $new_user->last_name
             ),
             $new_user,
-	    $list_id
+			$list_id
         );
 
         if ($old_user->user_email != $new_user->user_email) {
