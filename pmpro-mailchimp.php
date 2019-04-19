@@ -1223,7 +1223,9 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
         //unsubscribe them from lists not selected, or all lists from their old level
         pmpromc_queueUserToUnsubscribeFromLists($user_id);
 
-    } elseif (!empty($options['api_key']) && count($options) > 3) {
+    }
+    
+    if (!empty($options['api_key']) && count($options) > 3) {
 
         //now they are a normal user should we add them to any lists?
         //Case where PMPro is not installed?
