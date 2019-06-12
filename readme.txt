@@ -44,8 +44,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 
 == Changelog ==
 = 2.1.2 =
+* BUG FIX: Checking for 204 status when unsubscribing. We were checking for 200 before and throwing an error incorrectly.
+* BUG FIX: Fixed bug where users weren't unsubscribed from MailChimp when they expired. A further refactoring is needed to avoid hitting the MailChimp API limit if many users are processed at once.
 * BUG FIX/ENHANCEMENT: The "All Users" label was changed to "Non-member Users" to match how the setting is actually used.
-* BUG FIX: Checking for 204 status when unsubscribing 
 
 = 2.1.1 =
 * BUG FIX: Fixed issues with error handling and the display of error messages. Specifically, entering an incorrect API key will no longer crash the settings page. (Thanks, Hugh Brock)
