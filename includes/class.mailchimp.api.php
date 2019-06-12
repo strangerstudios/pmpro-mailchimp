@@ -253,7 +253,7 @@ class PMProMailChimp
 
             $resp = wp_remote_request($user_url, $args);
 						
-	        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+	        if ( 204 !== wp_remote_retrieve_response_code( $resp ) ) {
 		        $this->set_error_msg($resp);
 		        return false;
 	        }			
