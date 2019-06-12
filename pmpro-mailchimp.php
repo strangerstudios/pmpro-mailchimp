@@ -393,7 +393,7 @@ function pmpromc_admin_init()
     register_setting('pmpromc_options', 'pmpromc_options', 'pmpromc_options_validate');
     add_settings_section('pmpromc_section_general', __('General Settings', 'pmpro-mailchimp'), 'pmpromc_section_general', 'pmpromc_options');
     add_settings_field('pmpromc_option_api_key', __('MailChimp API Key', 'pmpro-mailchimp'), 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');
-    add_settings_field('pmpromc_option_users_lists', __('All Users List', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
+    add_settings_field('pmpromc_option_users_lists', __('Non-member Users', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
 
     //only if PMPro is installed
     if (function_exists("pmpro_hasMembershipLevel"))
