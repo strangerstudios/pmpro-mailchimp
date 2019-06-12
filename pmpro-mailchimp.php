@@ -423,7 +423,7 @@ add_action("admin_init", "pmpromc_admin_init");
 */
 function pmpromc_option_additional_lists()
 {
-
+	
     global $pmpromc_lists;
 
     $options = get_option('pmpromc_options');
@@ -809,6 +809,7 @@ function pmpromc_options_page()
         <form action="options.php" method="post">
             <h3><?php _e('Subscribe users to one or more MailChimp lists when they sign up for your site.', 'pmpro-mailchimp');?></h3>
             <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more MailChimp lists based on their membership level or specify "Opt-in Lists" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free MailChimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
+            <p>TIP: To deselect lists use CTRL+Click(PC) or CMD+Click(Mac).</p>
             <?php if (function_exists('pmpro_getAllLevels')) { ?>
                 <hr/>
                 <h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
