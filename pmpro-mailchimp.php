@@ -800,7 +800,7 @@ function pmpromc_options_page()
     ?>
     <div class="wrap">
         <div id="icon-options-general" class="icon32"><br></div>
-        <h2>MailChimp Integration Options and Settings</h2>
+        <h2><?php _e( 'MailChimp Integration Options and Settings', 'pmpro-mailchimp' );?></h2>
 
         <?php if (!empty($msg)) { ?>
             <div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
@@ -809,7 +809,7 @@ function pmpromc_options_page()
         <form action="options.php" method="post">
             <h3><?php _e('Subscribe users to one or more MailChimp lists when they sign up for your site.', 'pmpro-mailchimp');?></h3>
             <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more MailChimp lists based on their membership level or specify "Opt-in Lists" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free MailChimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
-            <p>TIP: To deselect lists use CTRL+Click(PC) or CMD+Click(Mac).</p>
+            <p><?php _e( 'TIP: To deselect lists use CTRL+Click(PC) or CMD+Click(Mac).', 'pmpro-mailchimp' );?></p>
             <?php if (function_exists('pmpro_getAllLevels')) { ?>
                 <hr/>
                 <h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
@@ -1379,8 +1379,8 @@ function pmpromc_plugin_row_meta($links, $file)
 {
     if (strpos($file, 'pmpro-mailchimp.php') !== false) {
         $new_links = array(
-            '<a href="' . esc_url('http://www.paidmembershipspro.com/add-ons/third-party-integration/pmpro-mailchimp-integration/') . '" title="' . esc_attr(__('View Documentation', 'pmpro-mailchimp')) . '">' . __('Docs', 'pmpro-mailchimp') . '</a>',
-            '<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr(__('Visit Customer Support Forum', 'pmpro-mailchimp')) . '">' . __('Support', 'pmpro-mailchimp') . '</a>',
+            '<a href="' . esc_url('https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/') . '" title="' . esc_attr(__('View Documentation', 'pmpro-mailchimp')) . '">' . __('Docs', 'pmpro-mailchimp') . '</a>',
+            '<a href="' . esc_url('https://wwww.paidmembershipspro.com/support/') . '" title="' . esc_attr(__('Visit Customer Support Forum', 'pmpro-mailchimp')) . '">' . __('Support', 'pmpro-mailchimp') . '</a>',
         );
         $links = array_merge($links, $new_links);
     }
