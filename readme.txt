@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 4
-Tested up to: 4.8.2
-Stable tag: 2.1.1
+Tested up to: 5.2.1
+Stable tag: 2.1.2
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -43,6 +43,10 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 2.1.2 =
+* BUG FIX/ENHANCEMENT: The "All Users" label was changed to "Non-member Users" to match how the setting is actually used.
+* BUG FIX: Checking for 204 status when unsubscribing 
+
 = 2.1.1 =
 * BUG FIX: Fixed issues with error handling and the display of error messages. Specifically, entering an incorrect API key will no longer crash the settings page. (Thanks, Hugh Brock)
 
