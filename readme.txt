@@ -43,6 +43,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 2.1.2 =
+* BUG: Fixed bug where users weren't unsubscribed from MailChimp when they expired.
+
 = 2.1.1 =
 * BUG FIX: Fixed issues with error handling and the display of error messages. Specifically, entering an incorrect API key will no longer crash the settings page. (Thanks, Hugh Brock)
 
