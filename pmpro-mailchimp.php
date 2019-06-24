@@ -814,7 +814,7 @@ function pmpromc_options_page()
                 <hr/>
                 <h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
                 <p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php _e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
-                <p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
+                <p><a class="button" onclick="jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
                 <hr/>
 
                 <div id="pmpromc_export_instructions" class="postbox" style="display: none;">
