@@ -36,7 +36,7 @@ class PMProMailChimp
             $this->url_args = array(
                 'timeout' => apply_filters('pmpro_addon_mc_api_timeout', 10),
                 'headers' => array(
-                    'Authorization' => 'Basic ' . self::$api_key
+                    'Authorization' => 'PMPro_MC ' . self::$api_key
                 ),
             );
 
@@ -83,7 +83,7 @@ class PMProMailChimp
         $this->url_args = array(
             'timeout' => apply_filters('pmpromc_api_timeout', 10),
             'headers' => array(
-                'Authorization' => 'Basic ' . self::$api_key
+                'Authorization' => 'PMPro_MC ' . self::$api_key
             ),
         );
 
