@@ -74,7 +74,7 @@
 		$headers[] = 'Content-Disposition: attachment; filename="pmpro_mailchimp_export.csv"';
 
 	//set default CSV file headers, using comma as delimiter
-	$csv_file_header = "email,PMPLEVEL,PMPLEVELID";	
+	$csv_file_header = "email";	
 
 	// Add fields CSV file, similar to MailChimp API update request.
 	// Array params are blank because we only need to get CSV headers.
@@ -96,8 +96,6 @@
 	//these are the meta_keys for the fields (arrays are object, property. so e.g. $theuser->ID)
 	$default_columns = array(		
 		array("theuser", "user_email"),		
-		array("theuser", "membership_name"),
-		array("theuser", "membership_id")		
 	);
 	
 	//set the preferred date format:
