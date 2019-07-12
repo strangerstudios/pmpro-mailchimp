@@ -218,46 +218,45 @@ class PMProMailChimp
      * Unsubscribe user from the specified distribution list (MC)
      *
      * @param string $list - MC distribution list ID
-     * @param \WP_User|null $user_objs - The User's WP_User object
+     * @param array $user_ids - Users to unsubscribe
      * @return bool - True/False depending on whether the operation is successful.
      *
      * @since 2.0.0
      */
-    public function unsubscribe($list = '', WP_User $user_objs = null)
-    {		
-		///echo "(unsubscribe:" . $list . ")";		
+    public function unsubscribe($list = '', $user_ids = []) {
 		
-		// Can't be empty
-        if (empty($list) || empty($user_objs)) {
+		    // Can't be empty.
+        if (empty($list) || empty($user_ids)) {
             return false;
         }
-
-        // Force the emails into an array
-        if (!is_array($user_objs)) {
-            $user_objs = array($user_objs);
+        
+        $data = new \stdClass();
+        $data->members = [];
+        
+        foreach ( $user_ids as $user_id ) {
+          $user_data = new \stdClass();
+          $user_data->email_address = get_userdata( $user_id )->user_email;
+          $user_data->status = 'unsubscribed';
+          $user_data->merge_fields = new \stdClass();
+          $data->members[] = $user_data;
         }
-
-        $url = self::$api_url . "/lists/{$list}/members";
-
+        
+        $data->update_existing = true;
+        
+        $url = self::$api_url . "/lists/{$list}";
         $args = array(
-            'method' => 'DELETE', // Allows us remove a user ID
+            'method' => 'POST', // Allows us update a user ID
             'user-agent' => self::$user_agent,
-            'timeout' => $this->url_args['timeout'],
             'headers' => $this->url_args['headers'],
-            'body' => null,
+            'timeout' => $this->url_args['timeout'],
+            'body' => json_encode($data),
         );
-
-        foreach ($user_objs as $user) {
-            $user_id = $this->subscriber_id($user->user_email);
-            $user_url = $url . "/{$user_id}";
-
-            $resp = wp_remote_request($user_url, $args);
+        $resp = wp_remote_post($url, $args);
 						
-	        if ( 204 !== wp_remote_retrieve_response_code( $resp ) ) {
-		        $this->set_error_msg($resp);
-		        return false;
-	        }			
-        }
+	      if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		      $this->set_error_msg($resp);
+		      return false;
+	      }			
 		
         return true;
     }

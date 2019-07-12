@@ -1073,22 +1073,41 @@ function pmpromc_queueUserToUnsubscribeFromLists($user_id) {
  * Just before redirecting away or loading the page,
  * make sure we process unsubscriptions.
  */
-function pmpromc_processUnsubscriptions($param) {
-	global $pmpromc_users_to_unsubscribe;
-
-	//anything to do?
+function pmpromc_processUnsubscriptions( $param ) {
+  global $pmpromc_users_to_unsubscribe;
+  // Anything to do?
 	if(empty($pmpromc_users_to_unsubscribe))
 		return $param;
 
-	//unsubscribe
-	foreach($pmpromc_users_to_unsubscribe as $user_id) {
-		pmpromc_unsubscribeFromLists($user_id);
+  $list_unsubscriptions = array();
+
+  foreach ( $pmpromc_users_to_unsubscribe as $user_id ) {
+		$unsubscribe_list = pmpromc_get_unsubscribe_lists( $user_id );
+    foreach ( $unsubscribe_list as $list ) {
+      if ( ! array_key_exists( $list, $list_unsubscriptions ) ) {
+        $list_unsubscriptions[ $list ] = [];
+      }
+      $list_unsubscriptions[ $list ][] = $user_id;
+    }
 	}
+  foreach ( $list_unsubscriptions as $list => $users ) {
+    //get API and bail if we can't set it
+    $api = pmpromc_getAPI();
+    if ( empty( $api ) ) {
+      return;
+    }
 
-	//unset so we don't do this twice by accident
-	unset($pmpromc_users_to_unsubscribe);
-
-	//sometimes called in a filter and we need to pass this back
+    if ( $api ) {
+        $api->unsubscribe( $list, $users );
+    } else {
+        wp_die( __('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp') );
+    }
+  }
+  
+  // Unset so we don't do this twice by accident.
+	unset( $pmpromc_users_to_unsubscribe );
+  //wp_die();
+	// Sometimes called in a filter and we need to pass this back.
 	return $param;
 }
 add_action('template_redirect', 'pmpromc_processUnsubscriptions', 2);
@@ -1096,102 +1115,83 @@ add_filter('wp_redirect', 'pmpromc_processUnsubscriptions', 100);
 add_action('pmpro_membership_post_membership_expiry', 'pmpromc_processUnsubscriptions');
 
 /**
- * Unsubscribe a user based on their membership level.
+ * Get array of lists to unsubscribe a user from
  *
  * @param $user_id (int) - User Id
- * @param $level_id (int) - Deprecated
  */
-function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL)
-{
-    global $wpdb;
-    $options = get_option("pmpromc_options");
-    $all_lists = get_option("pmpromc_all_lists");
+function pmpromc_get_unsubscribe_lists( $user_id ) {
+  global $wpdb;
+  $options = get_option("pmpromc_options");
+  $all_lists = get_option("pmpromc_all_lists");
 
-    //don't unsubscribe if unsubscribe option is no
-    if (empty($options['unsubscribe'])) {
+  //don't unsubscribe if unsubscribe option is no
+  if (empty($options['unsubscribe'])) {
 
-        if (WP_DEBUG) {
-            error_log("No need to unsubscribe {$user_id}");
-        }
+      if (WP_DEBUG) {
+          error_log("No need to unsubscribe {$user_id}");
+      }
+      return;
+  }
 
-        return;
+  //what levels does the user have now?
+  $user_levels = pmpro_getMembershipLevelsForUser($user_id);
+  if(!empty($user_levels)) {
+    $user_level_ids = array();
+    foreach($user_levels as $level)
+      $user_level_ids[] = $level->id;
+  } else {
+    $user_level_ids = array();
+  }
+
+  //unsubscribing from all lists or just old level lists?
+  if ($options['unsubscribe'] == "all") {
+      $unsubscribe_lists = wp_list_pluck($all_lists, "id");
+  } else {
+  //format user's current levels as string for query
+  if(!empty($user_level_ids))
+    $user_level_ids_string = implode(',', $user_level_ids);
+  else
+    $user_level_ids_string = '0';
+
+  //get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes
+  $sqlQuery = $wpdb->prepare("SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string);
+  $levels_unsubscribing_from = $wpdb->get_col($sqlQuery);
+
+  //figure out which lists to unsubscribe from
+  $unsubscribe_lists = array();
+  foreach($levels_unsubscribing_from as $unsub_level_id) {
+    if (!empty($options['level_' . $unsub_level_id . '_lists'])) {
+      $unsubscribe_lists = array_merge($unsubscribe_lists, $options['level_' . $unsub_level_id . '_lists']);
     }
+  }
+  $unsubscribe_lists = array_unique($unsubscribe_lists);
+}
+//still lists to unsubscribe from?
+  if (empty($unsubscribe_lists)) {
+      return;
+  }
 
-	//what levels does the user have now?
-	$user_levels = pmpro_getMembershipLevelsForUser($user_id);
-	if(!empty($user_levels)) {
-		$user_level_ids = array();
-		foreach($user_levels as $level)
-			$user_level_ids[] = $level->id;
-	} else {
-		$user_level_ids = array();
-	}
-
-    //unsubscribing from all lists or just old level lists?
-    if ($options['unsubscribe'] == "all") {
-        $unsubscribe_lists = wp_list_pluck($all_lists, "id");
-    } else {
-		//format user's current levels as string for query
-		if(!empty($user_level_ids))
-			$user_level_ids_string = implode(',', $user_level_ids);
-		else
-			$user_level_ids_string = '0';
-
-		//get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes
-		$sqlQuery = $wpdb->prepare("SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string);
-		$levels_unsubscribing_from = $wpdb->get_col($sqlQuery);
-
-		//figure out which lists to unsubscribe from
-		$unsubscribe_lists = array();
-		foreach($levels_unsubscribing_from as $unsub_level_id) {
-			if (!empty($options['level_' . $unsub_level_id . '_lists'])) {
-				$unsubscribe_lists = array_merge($unsubscribe_lists, $options['level_' . $unsub_level_id . '_lists']);
-			}
-		}
-		$unsubscribe_lists = array_unique($unsubscribe_lists);
-	}
-
-	//still lists to unsubscribe from?
-    if (empty($unsubscribe_lists)) {
-        return;
+$level_lists = array();
+if (!empty($user_level_ids)) {
+      foreach($user_level_ids as $user_level_id) {
+    if (!empty($options['level_' . $user_level_id . '_lists'])) {
+      $level_lists = array_merge($level_lists, $options['level_' . $user_level_id . '_lists']);
     }
+  }
+  } else {
+      $level_lists = isset($options['users_lists']) ? $options['users_lists'] : array();
+  }
 
-	$level_lists = array();
-	if (!empty($user_level_ids)) {
-        foreach($user_level_ids as $user_level_id) {
-			if (!empty($options['level_' . $user_level_id . '_lists'])) {
-				$level_lists = array_merge($level_lists, $options['level_' . $user_level_id . '_lists']);
-			}
-		}
-    } else {
-        $level_lists = isset($options['users_lists']) ? $options['users_lists'] : array();
-    }
+  //we don't want to unsubscribe from lists for the new level(s) or any additional lists the user is subscribed to
+  $user_additional_lists = get_user_meta($user_id, 'pmpromc_additional_lists', true);
+  if (!is_array($user_additional_lists)) {
 
-    //we don't want to unsubscribe from lists for the new level(s) or any additional lists the user is subscribed to
-    $user_additional_lists = get_user_meta($user_id, 'pmpromc_additional_lists', true);
-    if (!is_array($user_additional_lists)) {
+      $user_additional_lists = array();
+  }
 
-        $user_additional_lists = array();
-    }
-
-    //merge
-    $dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
-
-    //get API and bail if we can't set it
-    $api = pmpromc_getAPI();
-	if(empty($api))
-		return;
-
-    $list_user = get_userdata($user_id);
-
-    //unsubscribe
-    foreach ($unsubscribe_lists as $list) {
-
-        if (!in_array($list, $dont_unsubscribe_lists)) {
-
-            pmpromc_unsubscribe($list, $list_user);
-        }
-    }
+  //merge
+  $dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
+  return array_diff($unsubscribe_lists, $dont_unsubscribe_lists);
 }
 
 /**
