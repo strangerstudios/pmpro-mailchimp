@@ -223,27 +223,24 @@ class PMProMailChimp
      *
      * @since 2.0.0
      */
-    public function unsubscribe($list = '', $user_ids = []) {
+    public function update_audience_members( $audience = '', $updates = [] ) {
 		
 		    // Can't be empty.
-        if (empty($list) || empty($user_ids)) {
+        if ( empty( $audience ) || empty( $updates ) ) {
             return false;
         }
         
-        $data = new \stdClass();
-        $data->members = [];
-        
-        foreach ( $user_ids as $user_id ) {
-          $user_data = new \stdClass();
-          $user_data->email_address = get_userdata( $user_id )->user_email;
-          $user_data->status = 'unsubscribed';
-          $user_data->merge_fields = new \stdClass();
-          $data->members[] = $user_data;
+        //make sure merge fields are setup if PMPro is active
+        if (function_exists('pmpro_getMembershipLevelForUser')) {
+            $this->add_pmpro_merge_fields($audience);
         }
         
-        $data->update_existing = true;
+        $data = (object) array(
+            'members' => $updates,
+            'update_existing' => true,
+        );
         
-        $url = self::$api_url . "/lists/{$list}";
+        $url = self::$api_url . "/lists/{$audience}";
         $args = array(
             'method' => 'POST', // Allows us update a user ID
             'user-agent' => self::$user_agent,

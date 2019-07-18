@@ -1032,27 +1032,7 @@ add_filter('wp_redirect', 'pmpromc_processSubscriptions', 99);
  */
 function pmpromc_unsubscribe($list, $user)
 {
-    //make sure user has an email address
-    $email = $user->user_email;
-	if (empty($email))
-        return;
-
-    //get API and bail if we can't set it
-    $api = pmpromc_getAPI();
-	if(empty($api))
-		return;
-
-	if(is_object($list)) {
-		$listid = $list->id;
-	} else {
-		$listid = $list;
-	}
-
-    if ($api) {
-        $api->unsubscribe($listid, $user);
-    } else {
-        wp_die(__('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp'));
-    }
+  pmpromc_add_audience_member_update($user, $list, 'unsubscribed');
 }
 
 /**
@@ -1060,66 +1040,103 @@ function pmpromc_unsubscribe($list, $user)
  * Stored in $pmpromc_users_to_unsubscribe global
  */
 function pmpromc_queueUserToUnsubscribeFromLists($user_id) {
-	global $pmpromc_users_to_unsubscribe;
+	// Check that user_id exists
+	if ( ! get_userdata( $user_id ) ) {
+    return;
+  }
 
-	if(empty($pmpromc_users_to_unsubscribe))
-		$pmpromc_users_to_unsubscribe = array($user_id);
-	elseif(!in_array($user_id, $pmpromc_users_to_unsubscribe)) {
-		$pmpromc_users_to_unsubscribe[] = $user_id;
-	}
+  // Get user lists to unsubscribe from
+  $unsubscribe_audiences = pmpromc_get_unsubscribe_audiences( $user_id );
+  
+  // Add member to queue
+  pmpromc_add_audience_member_update( $user_id, $unsubscribe_audiences, 'unsubscribed' );
 }
 
-/**
- * Just before redirecting away or loading the page,
- * make sure we process unsubscriptions.
- */
-function pmpromc_processUnsubscriptions( $param ) {
-  global $pmpromc_users_to_unsubscribe;
-  // Anything to do?
-	if(empty($pmpromc_users_to_unsubscribe))
-		return $param;
-
-  $list_unsubscriptions = array();
-
-  foreach ( $pmpromc_users_to_unsubscribe as $user_id ) {
-		$unsubscribe_list = pmpromc_get_unsubscribe_lists( $user_id );
-    foreach ( $unsubscribe_list as $list ) {
-      if ( ! array_key_exists( $list, $list_unsubscriptions ) ) {
-        $list_unsubscriptions[ $list ] = [];
-      }
-      $list_unsubscriptions[ $list ][] = $user_id;
+function pmpromc_add_audience_member_update( $user_id, $audiences, $status = 'subscribed' ) {
+  global $pmpromc_audience_member_updates;
+  
+  // Check that user_id exists
+	if ( ! get_userdata( $user_id ) ) {
+    return;
+  }
+  
+  $user = get_userdata( $user_id );
+  
+  // Check for valid status
+  if ( ! in_array( $status, [ 'subscribed', 'unsubscribed' ] ) ) {
+    return;
+  }
+  
+  if ( ! is_array($audiences) ) {
+    $audiences = array( $audiences );
+  }
+  
+  // Build empty user data.
+  $user_data = null;
+  
+  // Loop through audiences.
+  foreach ( $audiences as $audience ) {
+    // TODO: Check validity of audience
+    
+    // Build user profile if not yet built with status
+    if ( null === $user_data ) {
+      $user_data = (object) array(
+          'email_address' => get_userdata( $user_id )->user_email,
+          'status' => $status,
+          'merge_fields' => apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user, $audience),
+      );
     }
-	}
-  foreach ( $list_unsubscriptions as $list => $users ) {
-    //get API and bail if we can't set it
-    $api = pmpromc_getAPI();
-    if ( empty( $api ) ) {
-      return;
+    
+    // Add user to $pmpromc_audience_member_updates for list.
+    if ( empty( $pmpromc_audience_member_updates ) ) {
+      $pmpromc_audience_member_updates = array();
     }
+    
+    if ( ! array_key_exists( $audience, $pmpromc_audience_member_updates ) ) {
+      $pmpromc_audience_member_updates[ $audience ] = [];
+    }
+    $pmpromc_audience_member_updates[ $audience ][] = $user_data;
+  }
+}
 
+function pmpromc_process_audience_member_updates_queue() {
+  global $pmpromc_audience_member_updates;
+  
+  // Return if nothing in queue
+  if ( empty( $pmpromc_audience_member_updates ) ) {
+    return;
+  }
+
+  // Init API
+  $api = pmpromc_getAPI();
+  if ( empty( $api ) ) {
+    return;
+  }
+
+  // Loop through queue and call API for each audience
+  foreach ( $pmpromc_audience_member_updates as $audience => $updates ) {
     if ( $api ) {
-        $api->unsubscribe( $list, $users );
+        $api->update_audience_members( $audience, $updates );
     } else {
         wp_die( __('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp') );
     }
   }
   
-  // Unset so we don't do this twice by accident.
-	unset( $pmpromc_users_to_unsubscribe );
-  //wp_die();
-	// Sometimes called in a filter and we need to pass this back.
-	return $param;
+  // Unset the global
+  unset( $pmpromc_audience_member_updates);
 }
-add_action('template_redirect', 'pmpromc_processUnsubscriptions', 2);
-add_filter('wp_redirect', 'pmpromc_processUnsubscriptions', 100);
-add_action('pmpro_membership_post_membership_expiry', 'pmpromc_processUnsubscriptions');
+add_action('template_redirect', 'pmpromc_process_audience_member_updates_queue', 2);
+//add_filter('wp_redirect', 'pmpromc_process_audience_member_updates_queue', 100); // For some reason, this causes errors on activation
+add_action('pmpro_membership_post_membership_expiry', 'pmpromc_process_audience_member_updates_queue');
+add_action('shutdown', 'pmpromc_process_audience_member_updates_queue');
+
 
 /**
  * Get array of lists to unsubscribe a user from
  *
  * @param $user_id (int) - User Id
  */
-function pmpromc_get_unsubscribe_lists( $user_id ) {
+function pmpromc_get_unsubscribe_audiences( $user_id ) {
   global $wpdb;
   $options = get_option("pmpromc_options");
   $all_lists = get_option("pmpromc_all_lists");
@@ -1387,3 +1404,4 @@ function pmpromc_plugin_row_meta($links, $file)
     return $links;
 }
 add_filter('plugin_row_meta', 'pmpromc_plugin_row_meta', 10, 2);
+
