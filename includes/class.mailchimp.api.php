@@ -138,88 +138,12 @@ class PMProMailChimp
         return true;
     }
 
-    /**
-     * Subscribe user's email address to the specified list.
-     *
-     * @param string $list -- MC specific list ID
-     * @param WP_User|null $user_obj - The WP_User object
-     * @param array $merge_fields - Merge fields (see Mailchimp API docs).
-     * @param string $email_type - The type of message to send (text or html)
-     * @param bool $dbl_opt_in - Whether the list should use double opt-in or not
-     * @return bool -- True if successful, false otherwise.
-     *
-     * @since 2.0.0
-     */
-    public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false)
-    {		
-		///echo "(subscribe: " . $list . ")";		
-		
-		// Can't be empty
-        $test = (array)($user_obj);
-
-        if (empty($list) || empty($test)) {
-
-            global $msg;
-            global $msgt;
-
-            $msgt = "error";
-
-            if (empty($list)) {
-                $msg = __("No list ID specified for subscribe operation", "pmpromc");
-            }
-
-            if (empty($test)) {
-                $msg = __("No user specified for subscribe operation", "pmpromc");
-            }
-
-            return false;
-        }
-
-        //make sure merge fields are setup if PMPro is active
-        if (function_exists('pmpro_getMembershipLevelForUser')) {
-            $this->add_pmpro_merge_fields($list);
-        }
-
-        //build request
-        $request = array(
-            'email_type' => $email_type,
-            'email_address' => $user_obj->user_email,
-            'merge_fields' => $merge_fields,
-            'status' => (1 == $dbl_opt_in ? 'pending' : 'subscribed'),
-            // 'interests' => $this->set_interests($user_obj), /** TODO: Incorporate segmentation using membership level */
-        );
-		
-        $args = array(
-            'method' => 'PUT', // Allows us to add or update a user ID
-            'user-agent' => self::$user_agent,
-            'timeout' => $this->url_args['timeout'],
-            'headers' => $this->url_args['headers'],
-            'body' => $this->encode($request),
-        );
-				
-        //hit api
-        $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
-        $resp = wp_remote_request($url, $args);			
-				
-	    if (WP_DEBUG) {
-	    	error_log("Subscribe: Response object: " . print_r($resp, true));
-	    }
-
-        //handle response
-        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
-	        $this->set_error_msg($resp);
-	        return false;
-        }
-
-        return true;
-    }
 
     /**
      * Unsubscribe user from the specified distribution list (MC)
      *
-     * @param string $list - MC distribution list ID
-     * @param array $user_ids - Users to unsubscribe
-     * @return bool - True/False depending on whether the operation is successful.
+     * @param string $audience - MC distribution audience ID
+     * @param array $updates - Updates to send
      *
      * @since 2.0.0
      */
@@ -231,8 +155,8 @@ class PMProMailChimp
         }
         
         //make sure merge fields are setup if PMPro is active
-        if (function_exists('pmpro_getMembershipLevelForUser')) {
-            $this->add_pmpro_merge_fields($audience);
+        if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
+            $this->add_pmpro_merge_fields( $audience) ;
         }
         
         $data = (object) array(
@@ -249,7 +173,6 @@ class PMProMailChimp
             'body' => json_encode($data),
         );
         $resp = wp_remote_post($url, $args);
-						
 	      if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 		      $this->set_error_msg($resp);
 		      return false;
@@ -283,69 +206,6 @@ class PMProMailChimp
 
         $member_info = $this->decode_response($resp['body']);
         return $member_info;
-    }
-
-    /**
-     * Update the users information on the Mailchimp servers
-     *
-     * NOTE: if email address gets updated, the user will get unsubscribed and resubscribed!!!
-     *
-     * @param null $list_id - The MC list ID
-     * @param \WP_User|null $old_user - Pre-update WP_User info
-     * @param \WP_User|null $new_user - post-update WP_User Info
-     * @return bool - Success/failure during update operation
-     *
-     * @since 2.0.0
-     */
-    public function update_list_member($list_id = null, WP_User $old_user = null, WP_User $new_user = null)
-    {
-        $url = self::$api_url . "/lists/{$list_id}/members/" . $this->subscriber_id($old_user->user_email);
-
-        $merge_fields = apply_filters(
-            "pmpro_mailchimp_listsubscribe_fields",
-            array(
-                "FNAME" => $new_user->first_name,
-                "LNAME" => $new_user->last_name
-            ),
-            $new_user,
-			$list_id
-        );
-
-        if ($old_user->user_email != $new_user->user_email) {
-            $retval = $this->unsubscribe($list_id, $old_user);
-
-            // Don't use double opt-in since the user is already subscribed.
-            $retval = $retval && $this->subscribe($list_id, $new_user, $merge_fields, 'html', false);
-
-            if (false === $retval) {
-                $this->set_error_msg(__("Error while updating email address for user!", "pmpromc"));
-            }
-
-            return $retval;
-        }
-
-        // Not trying to change the email address of the user, so we'll attempt to update.
-        $request = array(
-            'email_type' => 'html',
-            'merge_fields' => $merge_fields,
-        );
-
-        $args = array(
-            'method' => 'PATCH', // Allows us to add or update a user ID
-            'user-agent' => self::$user_agent,
-            'timeout' => $this->url_args['timeout'],
-            'headers' => $this->url_args['headers'],
-            'body' => $this->encode($request),
-        );
-
-        $resp = wp_remote_request($url, $args);
-
-	    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
-		    $this->set_error_msg($resp);
-		    return false;
-	    }
-
-        return true;
     }
 
     /**

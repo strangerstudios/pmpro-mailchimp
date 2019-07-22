@@ -313,7 +313,7 @@ function pmpromc_save_custom_user_profile_fields($user_id)
             } //If we do not find them in the user selected lists, then unsubscribe them.
             else {
                 //Unsubscribe them
-                pmpromc_unsubscribe($list, $list_user);
+                pmpromc_queue_unsubscription($list_user, $list);
             }
         }
     }
@@ -359,7 +359,7 @@ function pmpromc_subscribeToAdditionalLists($user_id)
 
         foreach ($additional_lists as $list) {
             //subscribe them
-            pmpromc_queueUserToSubscribeToList($user_id, $list);
+            pmpromc_queue_subscription($user_id, $list);
         }
     }
 }
@@ -379,7 +379,7 @@ function pmpromc_user_register($user_id)
         //subscribe to each list
         foreach ($options['users_lists'] as $list) {
             //subscribe them
-           pmpromc_queueUserToSubscribeToList($user_id, $list);
+           pmpromc_queue_subscription($user_id, $list);
         }
     }
 }
@@ -924,146 +924,79 @@ function pmpromc_pmpro_paypalexpress_session_vars()
 
 add_action("pmpro_paypalexpress_session_vars", "pmpromc_pmpro_paypalexpress_session_vars");
 
+
+
 /**
- * Subscribe a user to a specific list
+ * Add a user to the queue to subscribe to an audience
  *
- * @param $list - the List ID
- * @param $user - The WP_User object for the user
+ * @param WP_User|int $user - The WP_User object or user_id for the user.
+ * @param Array|string $audiences - The id(s) of the audience(s) to add the user to
  */
-function pmpromc_subscribe($list, $user)
-{
-	global $pmpromc_subscribe_cache;
+function pmpromc_queue_subscription( $user, $audiences ) {
+  $options = get_option("pmpromc_options");
+  $status = ( 1 == $options['double_opt_in'] ? 'pending' : 'subscribed' );
 
-	//in case a user id was passed in instead of a user object
-	if(!is_object($user))
-		$user = get_userdata($user);
-
-	//have we already subscribed to this list?
-	if(!empty($pmpromc_subscribe_cache) && !empty($pmpromc_subscribe_cache[$list]) && in_array($user->ID, $pmpromc_subscribe_cache[$list]))
-		return;
-	else {
-		//save in cache to make sure we don't try to subscribe again later
-		if(empty($pmpromc_subscribe_cache))
-			$pmpromc_subscribe_cache = array($list=>array($user->ID));
-		elseif(empty($pmpromc_subscribe_cache[$list])) {
-			$pmpromc_subscribe_cache[$list] = array($user->ID);
-		} else {
-			$pmpromc_subscribe_cache[$list][] = $user->ID;
-		}
-	}
-
-	//make sure user has an email address
-    $email = $user->user_email;
-	if (empty($email))
-        return;
-
-    $options = get_option("pmpromc_options");
-
-	//get API and bail if we can't set it
-    $api = pmpromc_getAPI();
-	if(empty($api))
-		return;
-
-    $merge_fields = apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user, $list);
-
-    if (WP_DEBUG) {
-        error_log("Trying to subscribe {$user->ID} to list {$list}");
-    }
-
-    if ( false === $api->subscribe($list, $user, $merge_fields, "html", $options['double_opt_in']) ) {
-
-        global $msgt;
-        global $msg;
-
-        if (WP_DEBUG) {
-            error_log("Error during subscription attempt: {$msg}");
-        }
-    }
+  // Add member to queue
+  pmpromc_add_audience_member_update( $user, $audiences, $status );
 }
-
-/**
- * Add a user to the queue to subscribe to a list
- */
-function pmpromc_queueUserToSubscribeToList($user_id, $list) {
-
-	global $pmpromc_users_to_subscribe;
-
-	if(empty($pmpromc_users_to_subscribe))
-		$pmpromc_users_to_subscribe = array();
-
-	if(!isset($pmpromc_users_to_subscribe[$user_id]))
-		$pmpromc_users_to_subscribe[$user_id] = array($list);
-	elseif(!in_array($list, $pmpromc_users_to_subscribe[$user_id]))
-		$pmpromc_users_to_subscribe[$user_id][] = $list;
-}
-
-/**
- * Just before redirecting away or loading the page,
- * make sure we process subscriptions.
- */
-function pmpromc_processSubscriptions($param) {
-	global $pmpromc_users_to_subscribe;
-
-	//anything to do?
-	if(empty($pmpromc_users_to_subscribe))
-		return $param;
-
-	//subscribe
-	foreach($pmpromc_users_to_subscribe as $user_id => $lists) {
-		foreach($lists as $list) {
-			pmpromc_subscribe($list, $user_id);
-		}
-	}
-
-	//unset so we don't do this twice by accident
-	unset($pmpromc_users_to_subscribe);
-
-	//sometimes called in a filter and we need to pass this back
-	return $param;
-}
-add_action('template_redirect', 'pmpromc_processSubscriptions', 1);
-add_filter('wp_redirect', 'pmpromc_processSubscriptions', 99);
 
 /**
  * Unsubscribe a user from a specific list
  *
- * @param $list - the List ID or list object
- * @param $user - The WP_User object for the user
+ * @param WP_User|int $user - The WP_User object or user_id for the user.
+ * @param Array|string $audiences - The id(s) of the audience(s) to remove the user from
  */
-function pmpromc_unsubscribe($list, $user)
+function pmpromc_queue_unsubscription( $user, $audiences )
 {
-  pmpromc_add_audience_member_update($user, $list, 'unsubscribed');
+  pmpromc_add_audience_member_update( $user, $audiences, 'unsubscribed' );
 }
 
 /**
- * Add a user to the queue to process unsubscriptions for.
- * Stored in $pmpromc_users_to_unsubscribe global
+ * Add a user to the queue to process unsubscriptions form
+ * all levels that they should unsubscribe from
+ *
+ * @param WP_User|int $user - The WP_User object or user_id for the user.
  */
-function pmpromc_queueUserToUnsubscribeFromLists($user_id) {
-	// Check that user_id exists
-	if ( ! get_userdata( $user_id ) ) {
-    return;
+function pmpromc_queue_smart_unsubscriptions( $user ) {
+	// Get the user object if user_id is passed.
+  if( ! is_object( $user ) ) {
+		$user = get_userdata($user);
   }
 
   // Get user lists to unsubscribe from
-  $unsubscribe_audiences = pmpromc_get_unsubscribe_audiences( $user_id );
+  $unsubscribe_audiences = pmpromc_get_unsubscribe_audiences( $user->ID );
   
   // Add member to queue
-  pmpromc_add_audience_member_update( $user_id, $unsubscribe_audiences, 'unsubscribed' );
+  pmpromc_add_audience_member_update( $user, $unsubscribe_audiences, 'unsubscribed' );
 }
 
-function pmpromc_add_audience_member_update( $user_id, $audiences, $status = 'subscribed' ) {
+/**
+ * Update a user's Mailchimp information when profile is updated
+ *
+ * @param WP_User $old_user - The old WP_User object being changed
+ * @param WP_User $old_user - The new WP_User object being added
+ * @param Array|string $audiences - The id(s) of the audience(s) to remove the user from
+ */
+function pmpromc_queue_user_update( $old_user, $new_user, $audiences ) {
+  pmpromc_queue_unsubscription( $old_user, $audiences );
+  pmpromc_queue_subscription( $new_user, $audiences );
+}
+
+/**
+ * Queue an update to an audience
+ *
+ * @param WP_User|int $user - The WP_User object or user_id for the user to be updated
+ * @param Array|string $audiences - The id(s) of the audience(s) to remove the user from
+ * @param string $status - The mailchimp status to set the user to
+ */
+function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subscribed' ) {
   global $pmpromc_audience_member_updates;
-  
-  // Check that user_id exists
-	if ( ! get_userdata( $user_id ) ) {
-    return;
+  if( ! is_object( $user ) ) {
+		$user = get_userdata( $user );
   }
   
-  $user = get_userdata( $user_id );
-  
   // Check for valid status
-  if ( ! in_array( $status, [ 'subscribed', 'unsubscribed' ] ) ) {
+  if ( ! in_array( $status, [ 'subscribed', 'unsubscribed', 'pending' ] ) ) {
     return;
   }
   
@@ -1077,16 +1010,18 @@ function pmpromc_add_audience_member_update( $user_id, $audiences, $status = 'su
   // Loop through audiences.
   foreach ( $audiences as $audience ) {
     // TODO: Check validity of audience
+  
+    // TODO: Maybe make sure that user isn't already in audience queue
     
     // Build user profile if not yet built with status
     if ( null === $user_data ) {
       $user_data = (object) array(
-          'email_address' => get_userdata( $user_id )->user_email,
+          'email_address' => $user->user_email,
           'status' => $status,
           'merge_fields' => apply_filters("pmpro_mailchimp_listsubscribe_fields", array("FNAME" => $user->first_name, "LNAME" => $user->last_name), $user, $audience),
       );
     }
-    
+
     // Add user to $pmpromc_audience_member_updates for list.
     if ( empty( $pmpromc_audience_member_updates ) ) {
       $pmpromc_audience_member_updates = array();
@@ -1099,6 +1034,9 @@ function pmpromc_add_audience_member_update( $user_id, $audiences, $status = 'su
   }
 }
 
+/**
+ * Execute the updates queued by pmpromc_add_audience_member_update()
+ */
 function pmpromc_process_audience_member_updates_queue() {
   global $pmpromc_audience_member_updates;
   
@@ -1112,10 +1050,10 @@ function pmpromc_process_audience_member_updates_queue() {
   if ( empty( $api ) ) {
     return;
   }
-
   // Loop through queue and call API for each audience
   foreach ( $pmpromc_audience_member_updates as $audience => $updates ) {
     if ( $api ) {
+        // TODO: Process max 500 members at a time
         $api->update_audience_members( $audience, $updates );
     } else {
         wp_die( __('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp') );
@@ -1188,13 +1126,13 @@ function pmpromc_get_unsubscribe_audiences( $user_id ) {
       return;
   }
 
-$level_lists = array();
-if (!empty($user_level_ids)) {
-      foreach($user_level_ids as $user_level_id) {
-    if (!empty($options['level_' . $user_level_id . '_lists'])) {
-      $level_lists = array_merge($level_lists, $options['level_' . $user_level_id . '_lists']);
+  $level_lists = array();
+  if (!empty($user_level_ids)) {
+    foreach($user_level_ids as $user_level_id) {
+      if (!empty($options['level_' . $user_level_id . '_lists'])) {
+        $level_lists = array_merge($level_lists, $options['level_' . $user_level_id . '_lists']);
+      }
     }
-  }
   } else {
       $level_lists = isset($options['users_lists']) ? $options['users_lists'] : array();
   }
@@ -1237,11 +1175,11 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
         foreach ($options['level_' . $level_id . '_lists'] as $list) {
 
             //subscribe them
-			pmpromc_queueUserToSubscribeToList($user_id, $list);
+			pmpromc_queue_subscription($user_id, $list);
         }
 
         //unsubscribe them from lists not selected, or all lists from their old level
-        pmpromc_queueUserToUnsubscribeFromLists($user_id);
+        pmpromc_queue_smart_unsubscriptions($user_id);
 
     } elseif (!empty($options['api_key']) && count($options) > 3) {
 
@@ -1252,15 +1190,15 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
             //subscribe to each list
             foreach ($options['users_lists'] as $list) {
                 //subscribe them
-                pmpromc_queueUserToSubscribeToList($user_id, $list);
+                pmpromc_queue_subscription($user_id, $list);
             }
 
             //unsubscribe from any list not assigned to users
-            pmpromc_queueUserToUnsubscribeFromLists($user_id);
+            pmpromc_queue_smart_unsubscriptions($user_id);
         } else {
 
             //some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
-            pmpromc_queueUserToUnsubscribeFromLists($user_id);
+            pmpromc_queue_smart_unsubscriptions($user_id);
         }
 
     }
@@ -1302,14 +1240,13 @@ function pmpromc_profile_update($user_id, $old_user_data)
         if ( ! empty($lists)) {
 
             foreach ($lists as $list) {
-
+              error_log( print_r( $old_user_data, true ) );
                 //check for member
                 $member = $api->get_listinfo_for_member($list->id, $old_user_data);
-
                 //update member's email and other values (only if user is already subscribed - not pending!)
                 if ('subscribed' === $member->status) {
-
-                    $api->update_list_member($list->id, $old_user_data, $new_user_data);
+                    // TODO: Could do this all at once if we allow passing array of lists
+                    pmpromc_queue_user_update( $old_user_data, $new_user_data, $list->id );
                 }
             }
         }
