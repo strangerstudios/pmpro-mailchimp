@@ -137,7 +137,7 @@ function pmpromc_sync_merge_fields_ajax()
 
                     //subscribe again to update merge fields
                     if (!empty($list) && $list->status == 'subscribed')
-                        pmpromc_subscribe($users_list, $user);
+                        pmpromc_queue_subscription( $user, $users_list );
                 }
             }
 
@@ -150,7 +150,7 @@ function pmpromc_sync_merge_fields_ajax()
 
 						//subscribe again to update merge fields
 						if (!empty($list) && $list->status == 'subscribed')
-							pmpromc_subscribe($level_list, $user);
+              pmpromc_queue_subscription( $user, $level_list );
 					}
 				}
 			}
@@ -309,7 +309,7 @@ function pmpromc_save_custom_user_profile_fields($user_id)
             //If we find the list in the user selected lists then subscribe them
             if (in_array($list, $additional_user_lists)) {
                 //Subscribe them
-                pmpromc_subscribe($list, $list_user);
+                pmpromc_queue_subscription( $list_user, $list );
             } //If we do not find them in the user selected lists, then unsubscribe them.
             else {
                 //Unsubscribe them
@@ -1342,3 +1342,36 @@ function pmpromc_plugin_row_meta($links, $file)
 }
 add_filter('plugin_row_meta', 'pmpromc_plugin_row_meta', 10, 2);
 
+/**
+ * DEPRECATED FUNCTIONS BELOW
+ */
+function pmpromc_subscribe( $list, $user ) {
+  pmpromc_queue_subscription( $user, $list );
+  pmpromc_process_audience_member_updates_queue();
+}
+
+function pmpromc_queueUserToSubscribeToList($user_id, $list) {
+  pmpromc_queue_subscription( $user_id, $list );
+}
+
+function pmpromc_processSubscriptions($param) {
+  pmpromc_process_audience_member_updates_queue();
+}
+  
+function pmpromc_unsubscribe($list, $user) {
+  pmpromc_queue_unsubscription( $user, $list );
+  pmpromc_process_audience_member_updates_queue();
+}
+
+function pmpromc_queueUserToUnsubscribeFromLists($user_id) {
+  pmpromc_queue_smart_unsubscriptions( $user_id );
+}
+
+function pmpromc_processUnsubscriptions($param) {
+  pmpromc_process_audience_member_updates_queue();
+}
+  
+function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL) {
+  pmpromc_queue_smart_unsubscriptions( $user_id );
+  pmpromc_process_audience_member_updates_queue();
+}

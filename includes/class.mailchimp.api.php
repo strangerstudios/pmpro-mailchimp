@@ -493,4 +493,33 @@ class PMProMailChimp
 		else
 			$msg = $message . " " . $msg;
     }
+
+    /**
+     * DEPRECATED FUNCTIONS BELOW
+     */
+    public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false) {
+      if ( $list === '' || $user_obj === null ) {
+        return;
+      }
+      pmpromc_queue_subscription( $user_obj, $list );
+      pmpromc_process_audience_member_updates_queue();
+    }
+    
+    public function unsubscribe($list = '', WP_User $user_objs = null) {
+      if ( $list === '' || $user_objs === null ) {
+        return;
+      }
+      if ( ! is_array( $user_objs ) ) {
+        $user_objs = array( $user_objs );
+      }
+      foreach ( $user_objs as $user_obj ) {
+        pmpromc_queue_subscription( $user_obj, $list );
+      }
+      pmpromc_process_audience_member_updates_queue();
+    }
+    
+    public function update_list_member($list_id = null, WP_User $old_user = null, WP_User $new_user = null) {
+      pmpromc_queue_user_update( $old_user, $new_user, $list_id );
+      pmpromc_process_audience_member_updates_queue();
+    }
 }
