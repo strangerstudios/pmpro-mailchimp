@@ -98,7 +98,7 @@ class PMProMailChimp
     /**
      * Connect to Mailchimp API services, test the API key & fetch any existing lists.
      *
-     * @return bool - True if able to conenct to MailChimp API services.
+     * @return bool - True if able to conenct to Mailchimp API services.
      * @since 2.0.0
      */
     public function connect() {
@@ -115,7 +115,7 @@ class PMProMailChimp
                 case 401:
                     $this->set_error_msg(                        
                             $response,
-							__('Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')
+							__('Sorry, but Mailchimp was unable to verify your API key. Mailchimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')
                     );
                     return false;
                     break;
@@ -191,7 +191,7 @@ class PMProMailChimp
     public function get_listinfo_for_member($list_id = null, WP_User $user_data = null)
     {
         if (empty($list_id)) {
-            $this->set_error_msg(__("Error: Need to specify the list ID to receive member info", "pmpromc"));
+            $this->set_error_msg(__("Error: Need to specify the audience ID to receive member info", "pmpromc"));
             return false;
         }
 
@@ -320,7 +320,7 @@ class PMProMailChimp
      *
      * @param string $merge_field - The Merge Field Name
      * @param string $type - The Merge Field Type (text, number, date, birthday, address, zip code, phone, website)
-     * @param mixed $public - Whether the field should show on the subscribers MailChimp profile. Defaults to false.
+     * @param mixed $public - Whether the field should show on the subscribers Mailchimp profile. Defaults to false.
      * @param string $list_id - The MC list ID
      *
      * @return mixed - Merge field or false
@@ -428,7 +428,7 @@ class PMProMailChimp
     }
 
     /**
-     * Build an interest object to use for MailChimp API
+     * Build an interest object to use for Mailchimp API
      * @param \WP_User $user - User object
      * @return \stdClass() $interestes - Object containing the required Interests settings for MC-API v3.0
      *
@@ -459,7 +459,7 @@ class PMProMailChimp
 	    if ( !is_string($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
 		    //there is an error and we have some kind of array or response object
 			if(is_array($obj) && !empty($obj['response'])) {
-				//this is the format the MailChimp API returns				
+				//this is the format the Mailchimp API returns				
 								
 				if(!empty($obj['body'])) {
 					//check for details in the body in json format

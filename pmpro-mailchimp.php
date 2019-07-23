@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: Paid Memberships Pro - MailChimp Add On
+Plugin Name: Paid Memberships Pro - Mailchimp Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
-Description: Sync your WordPress users and members with MailChimp lists.
+Description: Sync your WordPress users and members with Mailchimp audiences.
 Version: 2.1.2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
@@ -171,7 +171,7 @@ function pmpromv_wp_ajax_pmpro_mailchimp_export_csv()
 add_action('wp_ajax_pmpro_mailchimp_export_csv', 'pmpromv_wp_ajax_pmpro_mailchimp_export_csv');
 
 /*
-	Load and return an object for the MailChimp API
+	Load and return an object for the Mailchimp API
 */
 function pmpromc_getAPI()
 {
@@ -196,7 +196,7 @@ function pmpromc_getAPI()
 	//log error if API fails to load, each use of $api in the larger code base should catch $api === false and fail quietly
 	if(empty($r)) {
 		if(WP_DEBUG) {
-			error_log('Error loading MailChimp API');
+			error_log('Error loading Mailchimp API');
 		}
 
 		/**
@@ -250,7 +250,7 @@ function pmpromc_add_custom_user_profile_fields($user)
     if (empty($additional_lists_array))
         return;
     ?>
-    <h3><?php _e('Opt-in MailChimp Lists', ''); ?></h3>
+    <h3><?php _e('Opt-in Mailchimp Audiences', ''); ?></h3>
 
     <table class="form-table">
         <tr>
@@ -325,7 +325,7 @@ add_action('personal_options_update', 'pmpromc_save_custom_user_profile_fields')
 add_action('edit_user_profile_update', 'pmpromc_save_custom_user_profile_fields');
 
 /*
-	Update MailChimp lists when users checkout
+	Update Mailchimp lists when users checkout
 */
 function pmpromc_pmpro_after_checkout($user_id)
 {
@@ -392,18 +392,18 @@ function pmpromc_admin_init()
     //setup settings
     register_setting('pmpromc_options', 'pmpromc_options', 'pmpromc_options_validate');
     add_settings_section('pmpromc_section_general', __('General Settings', 'pmpro-mailchimp'), 'pmpromc_section_general', 'pmpromc_options');
-    add_settings_field('pmpromc_option_api_key', __('MailChimp API Key', 'pmpro-mailchimp'), 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');
+    add_settings_field('pmpromc_option_api_key', __('Mailchimp API Key', 'pmpro-mailchimp'), 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');
     add_settings_field('pmpromc_option_users_lists', __('Non-member Users', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
 
     //only if PMPro is installed
     if (function_exists("pmpro_hasMembershipLevel"))
-        add_settings_field('pmpromc_option_additional_lists', __('Opt-in Lists', 'pmpro-mailchimp'), 'pmpromc_option_additional_lists', 'pmpromc_options', 'pmpromc_section_general');
+        add_settings_field('pmpromc_option_additional_lists', __('Opt-in Audiences', 'pmpro-mailchimp'), 'pmpromc_option_additional_lists', 'pmpromc_options', 'pmpromc_section_general');
 
     add_settings_field('pmpromc_option_double_opt_in', __('Require Double Opt-in?', 'pmpro-mailchimp'), 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');
     add_settings_field('pmpromc_option_unsubscribe', __('Unsubscribe on Level Change?', 'pmpro-mailchimp'), 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');
 
     //pmpro-related options
-    add_settings_section('pmpromc_section_levels', __('Membership Levels and Lists', 'pmpro-mailchimp'), 'pmpromc_section_levels', 'pmpromc_options');
+    add_settings_section('pmpromc_section_levels', __('Membership Levels and Audiences', 'pmpro-mailchimp'), 'pmpromc_section_levels', 'pmpromc_options');
 
     //add options for levels
     pmpromc_getPMProLevels();
@@ -443,7 +443,7 @@ function pmpromc_option_additional_lists()
         }
         echo "</select>";
     } else {
-        echo "No lists found.";
+        echo "No audiences found.";
     }
 
 }
@@ -576,11 +576,11 @@ function pmpromc_section_levels()
         //do we have levels?
         if (empty($pmpromc_levels)) {
             ?>
-            <p><?php printf(__("Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign MailChimp lists to them here.", 'pmpro-mailchimp'), 'admin.php?page=pmpro-membershiplevels');?></p>
+            <p><?php printf(__("Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign Mailchimp audiences to them here.", 'pmpro-mailchimp'), 'admin.php?page=pmpro-membershiplevels');?></p>
             <?php
         } else {
             ?>
-            <p><?php _e('For each level below, choose the list(s) that a new user should be subscribed to when they register.', 'pmpro-mailchimp');?></p>
+            <p><?php _e('For each level below, choose the audience(s) that a new user should be subscribed to when they register.', 'pmpro-mailchimp');?></p>
             <?php
         }
     } else {
@@ -588,12 +588,12 @@ function pmpromc_section_levels()
         if (file_exists(dirname(__FILE__) . "/../paid-memberships-pro/paid-memberships-pro.php")) {
             //just deactivated
             ?>
-            <p><?php printf(__('<a href="%s">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your MailChimp lists.', 'pmpro-mailchimp'), 'plugins.php?plugin_status=inactive');?></p>
+            <p><?php printf(__('<a href="%s">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugins.php?plugin_status=inactive');?></p>
             <?php
         } else {
             //needs to be installed
             ?>
-            <p><?php printf(__('<a href="%s">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your MailChimp lists.', 'pmpro-mailchimp'), 'plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins');?></p>
+            <p><?php printf(__('<a href="%s">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins');?></p>
             <?php
         }
     }
@@ -632,7 +632,7 @@ function pmpromc_option_users_lists()
         }
         echo "</select>";
     } else {
-        echo "No lists found.";
+        echo "No audiences found.";
     }
 }
 
@@ -642,7 +642,7 @@ function pmpromc_option_double_opt_in()
     ?>
     <select name="pmpromc_options[double_opt_in]">
         <option value="0" <?php selected($options['double_opt_in'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
-        <option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _e('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
+        <option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _e('Yes (Only old level audiences.)', 'pmpro-mailchimp');?></option>
     </select>
     <?php
 }
@@ -653,10 +653,10 @@ function pmpromc_option_unsubscribe()
     ?>
     <select name="pmpromc_options[unsubscribe]">
         <option value="0" <?php selected($options['unsubscribe'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
-        <option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _e('Yes (Only old level lists.)', 'pmpro-mailchimp');?></option>
-        <option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (All other lists.)', 'pmpro-mailchimp');?></option>
+        <option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _e('Yes (Only old level audiences.)', 'pmpro-mailchimp');?></option>
+        <option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (All other audiences.)', 'pmpro-mailchimp');?></option>
     </select>
-    <small><?php _e("Recommended: Yes. However, if you manage multiple lists in MailChimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.", 'pmpro-mailchimp');?>
+    <small><?php _e("Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site.", 'pmpro-mailchimp');?>
     </small>
     <?php
 }
@@ -672,7 +672,7 @@ function pmpromc_option_level_field()
     ?>
     <input id='pmpromc_level_field' name='pmpromc_options[level_field]' size='20' type='text'
            value='<?php echo esc_attr($level_field); ?>'/>
-    <small><?php _e('To segment your list subscribers by membership level, create a custom field in MailChimp and enter the merge tag here.', 'pmpro-mailchimp');?></small>
+    <small><?php _e('To segment your audience subscribers by membership level, create a custom field in Mailchimp and enter the merge tag here.', 'pmpro-mailchimp');?></small>
     <?php
 }
 
@@ -698,7 +698,7 @@ function pmpromc_option_memberships_lists($level)
         }
         echo "</select>";
     } else {
-        echo "No lists found.";
+        echo "No audiences found.";
     }
 }
 
@@ -746,7 +746,7 @@ function pmpromc_options_validate($input)
 */
 function pmpromc_admin_add_page()
 {
-    add_options_page('PMPro MailChimp Options', 'PMPro MailChimp', 'manage_options', 'pmpromc_options', 'pmpromc_options_page');
+    add_options_page('PMPro Mailchimp Options', 'PMPro Mailchimp', 'manage_options', 'pmpromc_options', 'pmpromc_options_page');
 }
 add_action('admin_menu', 'pmpromc_admin_add_page');
 
@@ -800,26 +800,26 @@ function pmpromc_options_page()
     ?>
     <div class="wrap">
         <div id="icon-options-general" class="icon32"><br></div>
-        <h2><?php _e( 'MailChimp Integration Options and Settings', 'pmpro-mailchimp' );?></h2>
+        <h2><?php _e( 'Mailchimp Integration Options and Settings', 'pmpro-mailchimp' );?></h2>
 
         <?php if (!empty($msg)) { ?>
             <div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
         <?php } ?>
 
         <form action="options.php" method="post">
-            <h3><?php _e('Subscribe users to one or more MailChimp lists when they sign up for your site.', 'pmpro-mailchimp');?></h3>
-            <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more MailChimp lists based on their membership level or specify "Opt-in Lists" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free MailChimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
-            <p><?php _e( 'TIP: To deselect lists use CTRL+Click(PC) or CMD+Click(Mac).', 'pmpro-mailchimp' );?></p>
+            <h3><?php _e('Subscribe users to one or more Mailchimp audiences when they sign up for your site.', 'pmpro-mailchimp');?></h3>
+            <p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify "Opt-in Audiences" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free Mailchimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
+            <p><?php _e( 'TIP: To deselect audiences use CTRL+Click(PC) or CMD+Click(Mac).', 'pmpro-mailchimp' );?></p>
             <?php if (function_exists('pmpro_getAllLevels')) { ?>
                 <hr/>
                 <h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
-                <p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in MailChimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php _e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
-                <p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
+                <p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in Mailchimp. <strong>This will only affect new or updated members.</strong> You must import this data into Mailchimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php _e('Read the documentation on importing existing members into Mailchimp', 'pmpro-mailchimp');?></a>.</p>
+                <p><a class="button" href="javascript:jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to export your members list for a Mailchimp Import', 'pmpro-mailchimp');?></a></p>
                 <hr/>
 
                 <div id="pmpromc_export_instructions" class="postbox" style="display: none;">
                     <div class="inside">
-                        <h3><?php _e('Export a CSV for your MailChimp Import', 'pmpro-mailchimp');?></h3>
+                        <h3><?php _e('Export a CSV for your Mailchimp Import', 'pmpro-mailchimp');?></h3>
                         <p><?php _e('Membership Level', 'pmpro-mailchimp');?>:
                             <select id="pmpromc_export_level" name="l">
                                 <?php
@@ -832,18 +832,18 @@ function pmpromc_options_page()
                                 ?>
                             </select> <a class="button-primary" id="pmpromc_export_link" href="" target="_blank"><?php _e('Download List (.CSV)', 'pmpro-mailchimp');?></a></p>
                         <hr/>
-                        <p><strong><?php _e('MailChimp Import Steps', 'pmpro-mailchimp');?></strong></p>
+                        <p><strong><?php _e('Mailchimp Import Steps', 'pmpro-mailchimp');?></strong></p>
                         <ol>
                             <li><?php _e('Download a CSV of member data for each membership level.', 'pmpro-mailchimp');?></li>
-                            <li><?php _e('Log in to MailChimp.', 'pmpro-mailchimp');?></li>
-                            <li><?php _e('Go to Lists -> Choose a List -> Add Members -> Import Members -> CSV or tab-delimited text file.', 'pmpro-mailchimp');?>
+                            <li><?php _e('Log in to Mailchimp.', 'pmpro-mailchimp');?></li>
+                            <li><?php _e('Go to Audiences -> Choose an Audience -> Add Members -> Import Members -> CSV or tab-delimited text file.', 'pmpro-mailchimp');?>
                             </li>
                             <li><?php _e('Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have those exact names in all uppercase letters.', 'pmpro-mailchimp');?>
                             </li>
-                            <li><?php _e('Check "auto update my existing list". Click "Import".', 'pmpro-mailchimp');?></li>
+                            <li><?php _e('Check "auto update my existing audience". Click "Import".', 'pmpro-mailchimp');?></li>
                         </ol>
 
-                        <p><?php printf(__('For more detailed instructions and screenshots, <a href="%s" target="_blank">click here to read our documentation on importing existing members into MailChimp</a>.', 'pmpro-mailchimp'), 'http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/');?></p>
+                        <p><?php printf(__('For more detailed instructions and screenshots, <a href="%s" target="_blank">click here to read our documentation on importing existing members into Mailchimp</a>.', 'pmpro-mailchimp'), 'http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/');?></p>
 
                     </div>
                 </div>
@@ -1205,7 +1205,7 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 }
 
 /**
- * Change email in MailChimp if a user's email is changed in WordPress
+ * Change email in Mailchimp if a user's email is changed in WordPress
  *
  * @param $user_id (int) -- ID of user
  * @param $old_user_data -- WP_User object
