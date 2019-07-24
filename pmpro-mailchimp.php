@@ -1009,9 +1009,23 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
   
   // Loop through audiences.
   foreach ( $audiences as $audience ) {
-    // TODO: Check validity of audience
+
+    // Check validity of audience
+    $all_audiences = get_option("pmpromc_all_lists");
+    $audience_found = false;
+    foreach ($all_audiences as $index => $temp_audience) {
+      if ( $temp_audience['id'] === $audience ) {
+        $audience_found = true;
+      }
+    }
+    if ( ! $audience_found ) {
+      continue;
+    }
   
-    // TODO: Maybe make sure that user isn't already in audience queue
+    // Make sure that user isn't already in audience's queue
+    if ( isset( $pmpromc_audience_member_updates[ $audience ][$user->ID] ) ) {
+      // TODO: Should we process the queue now? Just overwrite the current value? Continue?
+    }
     
     // Build user profile if not yet built with status
     if ( null === $user_data ) {
@@ -1030,7 +1044,7 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
     if ( ! array_key_exists( $audience, $pmpromc_audience_member_updates ) ) {
       $pmpromc_audience_member_updates[ $audience ] = [];
     }
-    $pmpromc_audience_member_updates[ $audience ][] = $user_data;
+    $pmpromc_audience_member_updates[ $audience ][$user->ID] = $user_data;
   }
 }
 
@@ -1052,9 +1066,14 @@ function pmpromc_process_audience_member_updates_queue() {
   }
   // Loop through queue and call API for each audience
   foreach ( $pmpromc_audience_member_updates as $audience => $updates ) {
+    $updates_simple = array_values( $updates ); // Change associative array to simple array.
     if ( $api ) {
-        // TODO: Process max 500 members at a time
-        $api->update_audience_members( $audience, $updates );
+        // Process max 500 members at a time
+        $index_to_process = 0;
+        while( $index_to_process < count ( $updates_simple ) ) {
+          $api->update_audience_members( $audience, array_slice ( $updates_simple, $index_to_process, 500 ) );
+          $index_to_process += 500;
+        }
     } else {
         wp_die( __('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp') );
     }
