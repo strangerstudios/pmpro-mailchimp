@@ -1070,11 +1070,7 @@ function pmpromc_process_audience_member_updates_queue() {
     if ( $api ) {
         // Process max 500 members at a time
         $index_to_process = 0;
-<<<<<<< HEAD
         while( $index_to_process < count( $updates_simple ) ) {
-=======
-        while( $index_to_process < count ( $updates_simple ) ) {
->>>>>>> 57f7406c3356e405ed20ce583bb988fb6bcf3a6b
           $api->update_audience_members( $audience, array_slice ( $updates_simple, $index_to_process, 500 ) );
           $index_to_process += 500;
         }
