@@ -1290,7 +1290,7 @@ function pmpromc_profile_update($user_id, $old_user_data)
                 $member = $api->get_listinfo_for_member($list->id, $old_user_data);
 
                 //update member's email and other values (only if user is already subscribed - not pending!)
-                if ('subscribed' === $member->status) {
+                if ( !empty($member) && 'subscribed' === $member->status ) {
 
                     $api->update_list_member($list->id, $old_user_data, $new_user_data);
                 }
