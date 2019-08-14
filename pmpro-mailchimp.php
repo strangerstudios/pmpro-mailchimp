@@ -1023,7 +1023,7 @@ function pmpromc_processSubscriptions($param) {
 }
 add_action('template_redirect', 'pmpromc_processSubscriptions', 1);
 add_filter('wp_redirect', 'pmpromc_processSubscriptions', 99);
-
+add_action('pmpro_after_change_membership_level','pmpromc_processSubscriptions',30);
 /**
  * Unsubscribe a user from a specific list
  *
