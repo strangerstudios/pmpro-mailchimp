@@ -136,8 +136,8 @@ function pmpromc_sync_merge_fields_ajax()
                     $list = $api->get_listinfo_for_member($users_list, $user);
 
                     //subscribe again to update merge fields
-                    if (!empty($list) && $list->status == 'subscribed')
-                        pmpromc_queue_subscription( $user, $users_list );
+                    if ( ! empty( $list ) )
+                        pmpromc_add_audience_member_update( $user, $users_list, $list->status );
                 }
             }
 
@@ -149,8 +149,8 @@ function pmpromc_sync_merge_fields_ajax()
 						$list = $api->get_listinfo_for_member($level_list, $user);
 
 						//subscribe again to update merge fields
-						if (!empty($list) && $list->status == 'subscribed')
-              pmpromc_queue_subscription( $user, $level_list );
+						if ( ! empty( $list ) )
+              pmpromc_add_audience_member_update( $user, $users_list, $list->status );
 					}
 				}
 			}
@@ -1186,6 +1186,11 @@ function pmpromc_pmpro_after_change_membership_level($level_id, $user_id)
 
     // Remove? Not being used...
     $all_lists = get_option("pmpromc_all_lists");
+    
+    // Clear opt-in lists on cancellation or expiration
+    if ( $level_id === 0 ) {
+      update_user_meta( $user_id, 'pmpromc_additional_lists', array() );
+    }
 
     //should we add them to any lists?
     if (!empty($options['level_' . $level_id . '_lists']) && !empty($options['api_key'])) {
