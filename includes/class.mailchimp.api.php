@@ -98,7 +98,7 @@ class PMProMailChimp
     /**
      * Connect to Mailchimp API services, test the API key & fetch any existing lists.
      *
-     * @return bool - True if able to conenct to MailChimp API services.
+     * @return bool - True if able to conenct to Mailchimp API services.
      * @since 2.0.0
      */
     public function connect() {
@@ -115,7 +115,7 @@ class PMProMailChimp
                 case 401:
                     $this->set_error_msg(                        
                             $response,
-							__('Sorry, but MailChimp was unable to verify your API key. MailChimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')
+							__('Sorry, but Mailchimp was unable to verify your API key. Mailchimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')
                     );
                     return false;
                     break;
@@ -138,126 +138,45 @@ class PMProMailChimp
         return true;
     }
 
-    /**
-     * Subscribe user's email address to the specified list.
-     *
-     * @param string $list -- MC specific list ID
-     * @param WP_User|null $user_obj - The WP_User object
-     * @param array $merge_fields - Merge fields (see Mailchimp API docs).
-     * @param string $email_type - The type of message to send (text or html)
-     * @param bool $dbl_opt_in - Whether the list should use double opt-in or not
-     * @return bool -- True if successful, false otherwise.
-     *
-     * @since 2.0.0
-     */
-    public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false)
-    {		
-		///echo "(subscribe: " . $list . ")";		
-		
-		// Can't be empty
-        $test = (array)($user_obj);
-
-        if (empty($list) || empty($test)) {
-
-            global $msg;
-            global $msgt;
-
-            $msgt = "error";
-
-            if (empty($list)) {
-                $msg = __("No list ID specified for subscribe operation", "pmpromc");
-            }
-
-            if (empty($test)) {
-                $msg = __("No user specified for subscribe operation", "pmpromc");
-            }
-
-            return false;
-        }
-
-        //make sure merge fields are setup if PMPro is active
-        if (function_exists('pmpro_getMembershipLevelForUser')) {
-            $this->add_pmpro_merge_fields($list);
-        }
-
-        //build request
-        $request = array(
-            'email_type' => $email_type,
-            'email_address' => $user_obj->user_email,
-            'merge_fields' => $merge_fields,
-            'status' => (1 == $dbl_opt_in ? 'pending' : 'subscribed'),
-            // 'interests' => $this->set_interests($user_obj), /** TODO: Incorporate segmentation using membership level */
-        );
-		
-        $args = array(
-            'method' => 'PUT', // Allows us to add or update a user ID
-            'user-agent' => self::$user_agent,
-            'timeout' => $this->url_args['timeout'],
-            'headers' => $this->url_args['headers'],
-            'body' => $this->encode($request),
-        );
-				
-        //hit api
-        $url = self::$api_url . "/lists/{$list}/members/" . $this->subscriber_id($user_obj->user_email);
-        $resp = wp_remote_request($url, $args);			
-				
-	    if (WP_DEBUG) {
-	    	error_log("Subscribe: Response object: " . print_r($resp, true));
-	    }
-
-        //handle response
-        if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
-	        $this->set_error_msg($resp);
-	        return false;
-        }
-
-        return true;
-    }
 
     /**
      * Unsubscribe user from the specified distribution list (MC)
      *
-     * @param string $list - MC distribution list ID
-     * @param \WP_User|null $user_objs - The User's WP_User object
-     * @return bool - True/False depending on whether the operation is successful.
+     * @param string $audience - MC distribution audience ID
+     * @param array $updates - Updates to send
      *
      * @since 2.0.0
      */
-    public function unsubscribe($list = '', WP_User $user_objs = null)
-    {		
-		///echo "(unsubscribe:" . $list . ")";		
+    public function update_audience_members( $audience = '', $updates = [] ) {
 		
-		// Can't be empty
-        if (empty($list) || empty($user_objs)) {
+		    // Can't be empty.
+        if ( empty( $audience ) || empty( $updates ) ) {
             return false;
         }
-
-        // Force the emails into an array
-        if (!is_array($user_objs)) {
-            $user_objs = array($user_objs);
+        
+        //make sure merge fields are setup if PMPro is active
+        if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
+            $this->add_pmpro_merge_fields( $audience) ;
         }
-
-        $url = self::$api_url . "/lists/{$list}/members";
-
-        $args = array(
-            'method' => 'DELETE', // Allows us remove a user ID
-            'user-agent' => self::$user_agent,
-            'timeout' => $this->url_args['timeout'],
-            'headers' => $this->url_args['headers'],
-            'body' => null,
+        
+        $data = (object) array(
+            'members' => $updates,
+            'update_existing' => true,
         );
-
-        foreach ($user_objs as $user) {
-            $user_id = $this->subscriber_id($user->user_email);
-            $user_url = $url . "/{$user_id}";
-
-            $resp = wp_remote_request($user_url, $args);
-						
-	        if ( 204 !== wp_remote_retrieve_response_code( $resp ) ) {
-		        $this->set_error_msg($resp);
-		        return false;
-	        }			
-        }
+        
+        $url = self::$api_url . "/lists/{$audience}";
+        $args = array(
+            'method' => 'POST', // Allows us update a user ID
+            'user-agent' => self::$user_agent,
+            'headers' => $this->url_args['headers'],
+            'timeout' => $this->url_args['timeout'],
+            'body' => json_encode($data),
+        );
+        $resp = wp_remote_post($url, $args);
+	      if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
+		      $this->set_error_msg($resp);
+		      return false;
+	      }			
 		
         return true;
     }
@@ -272,7 +191,7 @@ class PMProMailChimp
     public function get_listinfo_for_member($list_id = null, WP_User $user_data = null)
     {
         if (empty($list_id)) {
-            $this->set_error_msg(__("Error: Need to specify the list ID to receive member info", "pmpromc"));
+            $this->set_error_msg(__("Error: Need to specify the audience ID to receive member info", "pmpromc"));
             return false;
         }
 
@@ -287,69 +206,6 @@ class PMProMailChimp
 
         $member_info = $this->decode_response($resp['body']);
         return $member_info;
-    }
-
-    /**
-     * Update the users information on the Mailchimp servers
-     *
-     * NOTE: if email address gets updated, the user will get unsubscribed and resubscribed!!!
-     *
-     * @param null $list_id - The MC list ID
-     * @param \WP_User|null $old_user - Pre-update WP_User info
-     * @param \WP_User|null $new_user - post-update WP_User Info
-     * @return bool - Success/failure during update operation
-     *
-     * @since 2.0.0
-     */
-    public function update_list_member($list_id = null, WP_User $old_user = null, WP_User $new_user = null)
-    {
-        $url = self::$api_url . "/lists/{$list_id}/members/" . $this->subscriber_id($old_user->user_email);
-
-        $merge_fields = apply_filters(
-            "pmpro_mailchimp_listsubscribe_fields",
-            array(
-                "FNAME" => $new_user->first_name,
-                "LNAME" => $new_user->last_name
-            ),
-            $new_user,
-			$list_id
-        );
-
-        if ($old_user->user_email != $new_user->user_email) {
-            $retval = $this->unsubscribe($list_id, $old_user);
-
-            // Don't use double opt-in since the user is already subscribed.
-            $retval = $retval && $this->subscribe($list_id, $new_user, $merge_fields, 'html', false);
-
-            if (false === $retval) {
-                $this->set_error_msg(__("Error while updating email address for user!", "pmpromc"));
-            }
-
-            return $retval;
-        }
-
-        // Not trying to change the email address of the user, so we'll attempt to update.
-        $request = array(
-            'email_type' => 'html',
-            'merge_fields' => $merge_fields,
-        );
-
-        $args = array(
-            'method' => 'PATCH', // Allows us to add or update a user ID
-            'user-agent' => self::$user_agent,
-            'timeout' => $this->url_args['timeout'],
-            'headers' => $this->url_args['headers'],
-            'body' => $this->encode($request),
-        );
-
-        $resp = wp_remote_request($url, $args);
-
-	    if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
-		    $this->set_error_msg($resp);
-		    return false;
-	    }
-
-        return true;
     }
 
     /**
@@ -464,7 +320,7 @@ class PMProMailChimp
      *
      * @param string $merge_field - The Merge Field Name
      * @param string $type - The Merge Field Type (text, number, date, birthday, address, zip code, phone, website)
-     * @param mixed $public - Whether the field should show on the subscribers MailChimp profile. Defaults to false.
+     * @param mixed $public - Whether the field should show on the subscribers Mailchimp profile. Defaults to false.
      * @param string $list_id - The MC list ID
      *
      * @return mixed - Merge field or false
@@ -572,7 +428,7 @@ class PMProMailChimp
     }
 
     /**
-     * Build an interest object to use for MailChimp API
+     * Build an interest object to use for Mailchimp API
      * @param \WP_User $user - User object
      * @return \stdClass() $interestes - Object containing the required Interests settings for MC-API v3.0
      *
@@ -603,7 +459,7 @@ class PMProMailChimp
 	    if ( !is_string($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
 		    //there is an error and we have some kind of array or response object
 			if(is_array($obj) && !empty($obj['response'])) {
-				//this is the format the MailChimp API returns				
+				//this is the format the Mailchimp API returns				
 								
 				if(!empty($obj['body'])) {
 					//check for details in the body in json format
@@ -636,5 +492,34 @@ class PMProMailChimp
 			$msg = sprintf($message, $msg);
 		else
 			$msg = $message . " " . $msg;
+    }
+
+    /**
+     * DEPRECATED FUNCTIONS BELOW
+     */
+    public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false) {
+      if ( $list === '' || $user_obj === null ) {
+        return;
+      }
+      pmpromc_queue_subscription( $user_obj, $list );
+      pmpromc_process_audience_member_updates_queue();
+    }
+    
+    public function unsubscribe($list = '', WP_User $user_objs = null) {
+      if ( $list === '' || $user_objs === null ) {
+        return;
+      }
+      if ( ! is_array( $user_objs ) ) {
+        $user_objs = array( $user_objs );
+      }
+      foreach ( $user_objs as $user_obj ) {
+        pmpromc_queue_subscription( $user_obj, $list );
+      }
+      pmpromc_process_audience_member_updates_queue();
+    }
+    
+    public function update_list_member($list_id = null, WP_User $old_user = null, WP_User $new_user = null) {
+      pmpromc_queue_user_update( $old_user, $new_user, $list_id );
+      pmpromc_process_audience_member_updates_queue();
     }
 }
