@@ -494,9 +494,51 @@ class PMProMailChimp
 			$msg = $message . " " . $msg;
     }
 
-    /**
-     * DEPRECATED FUNCTIONS BELOW
-     */
+	/**
+	 * Update a single contact.
+	 *
+	 * Used for profile updates.
+	 *
+	 * @param $contact The member info to edit.
+	 * @param $data An array of updated data.
+	 *
+	 * @return bool
+	 *
+	 * @since 2.2.0
+	 */
+    public function update_contact( $contact, $data ) {
+
+    	if ( empty( $contact ) || empty( $data ) ) {
+    		return false;
+	    }
+
+    	$list_id = $contact->list_id;
+    	$member_id = $contact->id;
+
+	    $args = array(
+		    'method' => 'PATCH', // Allows us to add or update a user ID
+		    'user-agent' => self::$user_agent,
+		    'timeout' => $this->url_args['timeout'],
+		    'headers' => $this->url_args['headers'],
+		    'body' => $this->encode( $data ),
+	    );
+
+	    //hit the API
+	    $url = self::$api_url . "/lists/{$list_id}/members/{$member_id}";
+	    $response = wp_remote_request($url, $args);
+
+	    //check response
+	    if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		    $this->set_error_msg($response);
+		    return false;
+	    }
+
+	    return true;
+    }
+
+	/**
+	 * DEPRECATED FUNCTIONS BELOW
+	 */
     public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false) {
       if ( $list === '' || $user_obj === null ) {
         return;

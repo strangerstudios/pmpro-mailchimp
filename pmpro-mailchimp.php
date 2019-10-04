@@ -1269,8 +1269,17 @@ function pmpromc_profile_update($user_id, $old_user_data)
                 $member = $api->get_listinfo_for_member($list->id, $old_user_data);
                 //update member's email and other values (only if user is already subscribed - not pending!)
                 if ('subscribed' === $member->status) {
-                    // TODO: Could do this all at once if we allow passing array of lists
-                    pmpromc_queue_user_update( $old_user_data, $new_user_data, $list->id );
+
+                    $data = array(
+                        'email_address' => $new_user_data->user_email
+                    );
+
+	                /**
+	                 * Filter data to update.
+	                 */
+                    $data = apply_filters( 'pmpromc_profile_update_data', $data, $old_user_data, $new_user_data );
+
+                    $api->update_contact( $member, $data );
                 }
             }
         }
