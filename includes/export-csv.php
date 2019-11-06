@@ -72,15 +72,30 @@
 		$headers[] = 'Content-Disposition: attachment; filename="pmpro_mailchimp_export_level_' . $l . '.csv"';
 	else
 		$headers[] = 'Content-Disposition: attachment; filename="pmpro_mailchimp_export.csv"';
-		
+
 	//set default CSV file headers, using comma as delimiter
-	$csv_file_header = "email,PMPLEVEL,PMPLEVELID";	
+	$csv_file_header = "email";	
+
+	// Add fields CSV file, similar to MailChimp API update request.
+	// Array params are blank because we only need to get CSV headers.
+	$current_user = wp_get_current_user();
+	$merge_fields = apply_filters(
+		'pmpro_mailchimp_listsubscribe_fields',
+		array(
+			'FNAME' => '',
+			'LNAME' => '',
+		),
+		null,
+		null
+	);
+
+	foreach ( $merge_fields as $field_name => $field_value ) {
+		$csv_file_header .= ',' . $field_name;
+	}
 
 	//these are the meta_keys for the fields (arrays are object, property. so e.g. $theuser->ID)
 	$default_columns = array(		
 		array("theuser", "user_email"),		
-		array("theuser", "membership_name"),
-		array("theuser", "membership_id")		
 	);
 	
 	//set the preferred date format:
@@ -247,6 +262,25 @@
 					array_push($csvoutput, pmpro_enclose($val));	//output the value
 				}
 			}			
+
+			$full_user    = get_userdata( $theuser->ID );
+			$merge_fields = apply_filters(
+				'pmpro_mailchimp_listsubscribe_fields',
+				array(
+					'FNAME' => $full_user->first_name,
+					'LNAME' => $full_user->last_name,
+				),
+				$full_user,
+				null
+			);
+
+			if ( ! empty( $merge_fields ) ) {
+				foreach ( $merge_fields as $field ) {
+					// Checking $object->property. note the double $$.
+					$val = isset( $field ) ? $field : null;
+					array_push( $csvoutput, pmpro_enclose( $val ) );
+				}
+			}
 
 			//free memory for user records
 			$metavalues = null;

@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 4
-Tested up to: 5.2.1
-Stable tag: 2.1.2
+Tested up to: 5.2.3
+Stable tag: 2.2.0
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -43,6 +43,15 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+
+= 2.2.0 =
+* BUG FIX: Fixed email address updates via profile.
+* ENHANCEMENT: Using "Audience" instead of "List" in strings throughout the plugin for consistency with Mailchimp's name changes.
+* ENHANCEMENT: Using "Mailchimp" instead of "MailChimp" in strings throughout the plugin for consistency with Mailchimp's name changes.
+* BUG FIX/ENHANCEMENT: Mailchimp subscriber updates are processed using the /lists/ API endpoint to prevent rate limiting by Mailchimp.
+* BUG FIX/ENHANCEMENT: Now using the Mailchimp member "status" property when unsubscribing members instead of deleting them.
+* ENHANCEMENT: Removed default columns besides email from Mailchimp CSV export. Now using the pmpro_mailchimp_listsubscribe_fields filter instead.
+
 = 2.1.2 =
 * BUG FIX: Checking for 204 status when unsubscribing. We were checking for 200 before and throwing an error incorrectly.
 * BUG FIX: Fixed bug where users weren't unsubscribed from MailChimp when they expired. A further refactoring is needed to avoid hitting the MailChimp API limit if many users are processed at once.
