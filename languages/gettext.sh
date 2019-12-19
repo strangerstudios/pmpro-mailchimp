@@ -18,6 +18,6 @@ xgettext -j -o languages/pmpro-mailchimp.pot \
 --keyword=_x \
 --sort-by-file \
 --package-version=1.0 \
---msgid-bugs-address="info@spaidmembershipspro.com" \
+--msgid-bugs-address="info@paidmembershipspro.com" \
 $(find . -name "*.php")
 echo "Done!"
