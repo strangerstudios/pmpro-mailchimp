@@ -58,11 +58,14 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 
 = 2.2 - 2019-12-19 =
 * BUG FIX: Fixed email address updates via profile.
+* BUG FIX: Fixed "Invalid API Key" error that would sometimes occur with newer API keys.
 * ENHANCEMENT: Using "Audience" instead of "List" in strings throughout the plugin for consistency with Mailchimp's name changes.
 * ENHANCEMENT: Using "Mailchimp" instead of "MailChimp" in strings throughout the plugin for consistency with Mailchimp's name changes.
-* BUG FIX/ENHANCEMENT: Mailchimp subscriber updates are processed using the /lists/ API endpoint to prevent rate limiting by Mailchimp.
-* BUG FIX/ENHANCEMENT: Now using the Mailchimp member "status" property when unsubscribing members instead of deleting them.
 * ENHANCEMENT: Removed default columns besides email from Mailchimp CSV export. Now using the pmpro_mailchimp_listsubscribe_fields filter instead.
+* ENHANCEMENT: Users are now unsubscribed from all opt-in audiences when they cancel membership.
+* BUG FIX/ENHANCEMENT: Mailchimp subscriber updates are processed using the /lists/ API endpoint to prevent rate limiting by Mailchimp. This fixes issues that would sometime occur when many members were expired on the same day.
+* BUG FIX/ENHANCEMENT: Users who cancel are now unsubscibed from audiences instead of being deleted from Mailchimp.
+* BUG FIX/ENHANCEMENT: Now using the Mailchimp member "status" property when unsubscribing members instead of deleting them.
 
 = 2.1.2 =
 * BUG FIX: Checking for 204 status when unsubscribing. We were checking for 200 before and throwing an error incorrectly.
