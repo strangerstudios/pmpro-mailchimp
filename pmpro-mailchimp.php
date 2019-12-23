@@ -1081,7 +1081,7 @@ function pmpromc_process_audience_member_updates_queue( $filter_contents = null 
   }
   
   // Unset the global
-  unset( $pmpromc_audience_member_updates);
+  $pmpromc_audience_member_updates = array();
   return $filter_contents;
 }
 add_action('template_redirect', 'pmpromc_process_audience_member_updates_queue', 2);
@@ -1276,21 +1276,22 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 						$user_data = (object) array(
 							'email_address' => $old_user_data->user_email,
 							'status'        => 'unsubscribed',
-							'merge_fields'  => apply_filters( 'pmpro_mailchimp_listsubscribe_fields', array( 'FNAME' => $user->first_name, 'LNAME' => $user->last_name), $user, $audience ),
+							'merge_fields'  => apply_filters( 'pmpro_mailchimp_listsubscribe_fields', array( 'FNAME' => $new_user_data->first_name, 'LNAME' => $new_user_data->last_name), $new_user_data, $audience ),
 						);
 						// Manually add email removal to queue since the user's email has changed.
 						if ( empty( $pmpromc_audience_member_updates ) ) {
 							$pmpromc_audience_member_updates = array();
 						}
 
-						if ( ! array_key_exists( $audience, $pmpromc_audience_member_updates ) ) {
-							$pmpromc_audience_member_updates[ $audience ] = [];
+						if ( ! array_key_exists( $audience->id, $pmpromc_audience_member_updates ) ) {
+							$pmpromc_audience_member_updates[ $audience->id ] = [];
 						}
-						$pmpromc_audience_member_updates[ $audience ][ $user->ID ] = $user_data;
-						pmpromc_process_audience_member_updates_queue();
+						// Set as user id 0 as a special case to avoid conflict with new email being added.
+						$pmpromc_audience_member_updates[ $audience->id ][0] = $user_data;
 					}
 					// Update the user's merge fields.
-					pmpromc_add_audience_member_update( $user_id, $audience->id, $member->status );
+					//pmpromc_add_audience_member_update( $user_id, $audience->id, $member->status );
+					pmpromc_add_audience_member_update( $user_id, $audience->id, 'subscribed' );
 				}
 			}
 		}

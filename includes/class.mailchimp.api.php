@@ -148,8 +148,11 @@ class PMProMailChimp
      * @since 2.0.0
      */
     public function update_audience_members( $audience = '', $updates = [] ) {
-		
 		    // Can't be empty.
+        if (WP_DEBUG) {
+          error_log("Processing update for audience {$audience}: " . print_r( $updates, true ) );
+        }
+
         if ( empty( $audience ) || empty( $updates ) ) {
             return false;
         }
@@ -163,7 +166,6 @@ class PMProMailChimp
             'members' => $updates,
             'update_existing' => true,
         );
-        
         $url = self::$api_url . "/lists/{$audience}";
         $args = array(
             'method' => 'POST', // Allows us update a user ID
@@ -172,9 +174,14 @@ class PMProMailChimp
             'timeout' => $this->url_args['timeout'],
             'body' => json_encode($data),
         );
+
         $resp = wp_remote_post($url, $args);
+
 	      if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 		      $this->set_error_msg($resp);
+          if (WP_DEBUG) {
+	    	        error_log("Mailchimp Error: Response object: " . print_r($resp, true));
+	       }
 		      return false;
 	      }			
 		
