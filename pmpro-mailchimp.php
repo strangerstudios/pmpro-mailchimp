@@ -1290,8 +1290,7 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 						$pmpromc_audience_member_updates[ $audience->id ][0] = $user_data;
 					}
 					// Update the user's merge fields.
-					//pmpromc_add_audience_member_update( $user_id, $audience->id, $member->status );
-					pmpromc_add_audience_member_update( $user_id, $audience->id, 'subscribed' );
+					pmpromc_add_audience_member_update( $user_id, $audience->id, $member->status );
 				}
 			}
 		}
