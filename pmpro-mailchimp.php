@@ -996,7 +996,7 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
   }
   
   // Check for valid status
-  if ( ! in_array( $status, array( 'subscribed', 'unsubscribed', 'pending'  ) ) {
+  if ( ! in_array( $status, array( 'subscribed', 'unsubscribed', 'pending' ) ) ) {
     return;
   }
   
