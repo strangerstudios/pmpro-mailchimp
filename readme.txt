@@ -1,9 +1,9 @@
 === Paid Memberships Pro - Mailchimp Add On ===
-Contributors: strangerstudios
+Contributors: strangerstudios, dlparker1005
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 4
 Tested up to: 5.3.2
-Stable tag: 2.2
+Stable tag: 2.2.1
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -55,6 +55,11 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+
+= 2.2.1 - 2019-12-31 =
+* BUG FIX: Fixed merge fields not being sent during user profile updates
+* BUG FIX: Fixed logging for Mailchimp API calls
+* BUG FIX: Fixed Mailchimp updates not being sent during wp_redirect filter
 
 = 2.2 - 2019-12-19 =
 * BUG FIX: Fixed email address updates via profile.
