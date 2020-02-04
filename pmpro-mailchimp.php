@@ -250,7 +250,7 @@ function pmpromc_add_custom_user_profile_fields($user)
     if (empty($additional_lists_array))
         return;
     ?>
-    <h3><?php _e('Opt-in Mailchimp Audiences', ''); ?></h3>
+    <h3><?php _e('Opt-in Mailchimp Audiences', 'pmpro-mailchimp'); ?></h3>
 
     <table class="form-table">
         <tr>
@@ -499,9 +499,9 @@ function pmpromc_additional_lists_on_checkout()
             <th>
                 <?php
                 if (count($additional_lists_array) > 1)
-                    _e('Join one or more of our mailing lists.', 'pmpro');
+                    _e('Join one or more of our mailing lists.', 'pmpro-mailchimp');
                 else
-                    _e('Join our mailing list.', 'pmpro');
+                    _e('Join our mailing list.', 'pmpro-mailchimp');
                 ?>
             </th>
         </tr>
