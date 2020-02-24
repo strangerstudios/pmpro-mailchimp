@@ -1,6 +1,6 @@
 <?php
 
-class PMProMailChimp
+class PMPromc_Mailchimp_API
 {
     private static $api_key;
     private static $api_url;
