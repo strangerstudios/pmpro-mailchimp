@@ -16,11 +16,6 @@ function pmpromc_init() {
 	// Are we on the checkout page?
 	$is_checkout_page = ( isset( $_REQUEST['submit-checkout'] ) || ( isset( $_REQUEST['confirm'] ) && isset( $_REQUEST['gateway'] ) ) );
 
-	// Setup hooks for user_register.
-	if ( ! empty( $options['users_lists'] ) && ! $is_checkout_page ) {
-		add_action( 'user_register', 'pmpromc_user_register' );
-	}
-
 	// Setup hooks for PMPro levels.
 	pmpromc_getPMProLevels();
 	global $pmpromc_levels;
@@ -66,6 +61,7 @@ function pmpromc_user_register( $user_id ) {
 		}
 	}
 }
+add_action( 'user_register', 'pmpromc_user_register' );
 
 /**
  * Subscribe new members (PMPro) when their membership level changes
@@ -260,21 +256,3 @@ function pmpromc_pmpro_after_checkout($user_id)
 	pmpromc_subscribeToAdditionalLists($user_id);
 }
 
-/*
-	Subscribe a user to any additional opt-in lists selected
-*/
-function pmpromc_subscribeToAdditionalLists($user_id)
-{
-	$options = get_option("pmpromc_options");
-	if (!empty($_REQUEST['additional_lists']))
-		$additional_lists = $_REQUEST['additional_lists'];
-
-	if (!empty($additional_lists)) {
-		update_user_meta($user_id, 'pmpromc_additional_lists', $additional_lists);
-
-		foreach ($additional_lists as $list) {
-			//subscribe them
-			pmpromc_queue_subscription($user_id, $list);
-		}
-	}
-}

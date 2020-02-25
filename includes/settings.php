@@ -150,7 +150,7 @@ function pmpromc_admin_init()
 	register_setting('pmpromc_options', 'pmpromc_options', 'pmpromc_options_validate');
 	add_settings_section('pmpromc_section_general', __('General Settings', 'pmpro-mailchimp'), 'pmpromc_section_general', 'pmpromc_options');
 	add_settings_field('pmpromc_option_api_key', __('Mailchimp API Key', 'pmpro-mailchimp'), 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');
-	add_settings_field('pmpromc_option_users_lists', __('Non-member Users', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
+	add_settings_field('pmpromc_option_users_lists', __('All Users', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
 
 	//only if PMPro is installed
 	if (function_exists("pmpro_hasMembershipLevel"))
@@ -212,14 +212,32 @@ function pmpromc_options_validate($input)
 	return $newinput;
 }
 
-/*
-	options sections
-*/
-function pmpromc_section_general()
-{
-	?>
-	<p></p>
-	<?php
+/**
+ * Show any warnings on PMPromc settings page
+ */
+function pmpromc_section_general() {
+	global $pmpromc_levels;
+	$options = get_option( 'pmpromc_options' );
+	$show_error = false;
+	$lists_seen = empty( $options['users_lists'] ) ? array() : $options['users_lists'];
+	pmpromc_check_additional_audiences_for_user( 1 );
+	if ( ! empty( $options['additional_lists'] ) ) {
+		$show_error = ! empty( array_intersect( $lists_seen, $options['additional_lists'] ) );
+		$lists_seen = array_merge( $lists_seen, $options['additional_lists'] );
+	}
+	foreach ( $pmpromc_levels as $level ) {
+		if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) && ! empty( array_intersect( $lists_seen, $options[ 'level_' . $level->id . '_lists' ] ) ) ) {
+			$show_error = true;
+		}
+	}
+
+	if ( $show_error ) {
+		?>
+		<div class="notice notice-error">
+			<p><strong><?php esc_html_e( 'Each audience should only be set as an All Users audience, an Opt-in audience, or a Levels audience.', 'pmpro-mailchimp' ); ?></strong></p>
+		</div>
+		<?php
+	}
 }
 
 /*
@@ -295,7 +313,7 @@ function pmpromc_option_double_opt_in()
 	?>
 	<select name="pmpromc_options[double_opt_in]">
 		<option value="0" <?php selected($options['double_opt_in'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
-		<option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _e('Yes (Only old level audiences.)', 'pmpro-mailchimp');?></option>
+		<option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _e('Yes (All audiences)', 'pmpro-mailchimp');?></option>
 	</select>
 	<?php
 }
@@ -307,7 +325,7 @@ function pmpromc_option_unsubscribe()
 	<select name="pmpromc_options[unsubscribe]">
 		<option value="0" <?php selected($options['unsubscribe'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
 		<option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _e('Yes (Only old level audiences.)', 'pmpro-mailchimp');?></option>
-		<option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (All other audiences.)', 'pmpro-mailchimp');?></option>
+		<option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (Old level and opt-in audiences.)', 'pmpro-mailchimp');?></option>
 	</select>
 	<small><?php _e("Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site.", 'pmpro-mailchimp');?>
 	</small>
@@ -493,7 +511,7 @@ function pmpromc_sync_merge_fields_ajax()
 */
 function pmpromv_wp_ajax_pmpro_mailchimp_export_csv()
 {
-	require_once(dirname(__FILE__) . "/includes/export-csv.php");
+	require_once PMPROMC_DIR . '/includes/export-csv.php';
 	exit;
 }
 
