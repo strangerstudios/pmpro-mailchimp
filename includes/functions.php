@@ -69,7 +69,7 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	if ( $options['unsubscribe'] != '0' ) {
 		// Get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes.
 		global $wpdb;
-		$sql_query                 = $wpdb->prepare( "SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, implode(',', $user_level_ids) );
+		$sql_query                = $wpdb->prepare( "SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, implode(',', $user_level_ids) );
 		$levels_unsubscribing_from = $wpdb->get_col( $sql_query );
 		foreach ( $levels_unsubscribing_from as $unsub_level_id ) {
 			if ( ! empty( $options[ 'level_' . $unsub_level_id . '_lists' ] ) ) {
@@ -86,6 +86,10 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	// Update opt-in audiences and user audiences.
 	if ( empty( $user_level_ids ) && 'all' === $options['unsubscribe'] ) {
 		pmpromc_set_user_additional_list_meta( $user_id, array() );
+		if ( isset( $_REQUEST['additional_lists'] ) ) {
+			// In case level is changed from profile.
+			$_REQUEST['additional_lists'] = array();
+		}
 	} else {
 		pmpromc_sync_additional_audiences_for_user( $user_id );
 	}
@@ -217,6 +221,7 @@ add_action( 'pmpro_paypalexpress_session_vars', 'pmpromc_pmpro_paypalexpress_ses
  * @param int $user_id of user who checked out.
  */
 function pmpromc_pmpro_after_checkout( $user_id ) {
+	pmpromc_pmpro_after_change_membership_level( $_REQUEST['level'], $user_id );
 	if ( empty( $_REQUEST['additional_lists'] ) ) {
 		$_REQUEST['additional_lists'] = array();
 	}
