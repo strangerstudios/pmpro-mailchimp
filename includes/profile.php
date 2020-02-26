@@ -91,10 +91,30 @@ function pmpromc_save_custom_user_profile_fields( $user_id ) {
 		return;
 	}
 
+	// Get user's new additional lists.
 	if ( empty( $_REQUEST['additional_lists'] ) ) {
 		$_REQUEST['additional_lists'] = array();
 	}
-	pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] );
+
+	// Get user's current additional lists.
+	$current_lists = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
+	if ( empty( $current_lists ) ) {
+		$current_lists = array();
+	}
+
+	$options = get_option( 'pmpromc_options' );
+	if ( ! isset( $options['profile_update'] ) ) {
+		$options['profile_update'] = 0; // Default value.
+	}
+
+	if (
+		1 == $options['profile_update'] ||
+		! empty( array_diff( $current_lists, $_REQUEST['additional_lists'] ) ) ||
+		! empty( array_diff( $_REQUEST['additional_lists'], $current_lists ) )
+	) {
+		// Option set to update MC on every profile save or opt-in lists have changed.
+		pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] );
+	}
 }
 add_action( 'personal_options_update', 'pmpromc_save_custom_user_profile_fields' );
 add_action( 'edit_user_profile_update', 'pmpromc_save_custom_user_profile_fields' );
@@ -111,6 +131,11 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 	// By default only update users if their email has changed.
 	$email_changed = ( $new_user_data->user_email != $old_user_data->user_email );
 	$update_user   = $email_changed;
+
+	$options = get_option( 'pmpromc_options' );
+	if ( isset( $options['profile_update'] ) && isset( $options['profile_update'] ) == 1 ) {
+		$update_user = true;
+	}
 
 	/**
 	 * Filter in case they want to update the user on all updates

@@ -44,6 +44,7 @@ function pmpromc_activation() {
 			'api_key'          => '',
 			'double_opt_in'    => 0,
 			'unsubscribe'      => 1,
+			'profile_update'   => 0,
 			'users_lists'      => array(),
 			'additional_lists' => array(),
 			'level_field'      => '',

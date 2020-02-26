@@ -158,6 +158,7 @@ function pmpromc_admin_init()
 
 	add_settings_field('pmpromc_option_double_opt_in', __('Require Double Opt-in?', 'pmpro-mailchimp'), 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');
 	add_settings_field('pmpromc_option_unsubscribe', __('Unsubscribe on Level Change?', 'pmpro-mailchimp'), 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');
+	add_settings_field('pmpromc_option_profile_update', __('Update on Profile Save?', 'pmpro-mailchimp'), 'pmpromc_option_profile_update', 'pmpromc_options', 'pmpromc_section_general');
 
 	//pmpro-related options
 	add_settings_section('pmpromc_section_levels', __('Membership Levels and Audiences', 'pmpro-mailchimp'), 'pmpromc_section_levels', 'pmpromc_options');
@@ -183,6 +184,7 @@ function pmpromc_options_validate($input)
 	$newinput['api_key'] = isset($input['api_key']) ? trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key'])) : null;
 	$newinput['double_opt_in'] = isset($input['double_opt_in']) ? intval($input['double_opt_in']) : null;
 	$newinput['unsubscribe'] = isset($input['unsubscribe']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']) : null;
+	$newinput['profile_update'] = isset($input['profile_update']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['profile_update']) : null;
 
 	//user lists
 	if (!empty($input['users_lists']) && is_array($input['users_lists'])) {
@@ -327,6 +329,18 @@ function pmpromc_option_unsubscribe()
 		<option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (Old level and opt-in audiences.)', 'pmpro-mailchimp');?></option>
 	</select>
 	<small><?php _e("Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site.", 'pmpro-mailchimp');?>
+	</small>
+	<?php
+}
+
+function pmpromc_option_profile_update() {
+	$options = get_option('pmpromc_options');
+	?>
+	<select name="pmpromc_options[profile_update]">
+		<option value="0" <?php selected($options['profile_update'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
+		<option value="1" <?php selected($options['profile_update'], 1); ?>><?php _e('Yes', 'pmpro-mailchimp');?></option>
+	</select>
+	<small><?php _e("Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed.", 'pmpro-mailchimp');?>
 	</small>
 	<?php
 }
