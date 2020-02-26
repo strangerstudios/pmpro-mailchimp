@@ -220,6 +220,10 @@ function pmpromc_check_additional_audiences_for_user( $user ) {
 		return;
 	}
 
+	if ( ! is_object( $user ) ) {
+		$user = get_userdata( $user );
+	}
+
 	$active_lists = array();
 	foreach ( $options['additional_lists'] as $list ) {
 		// Get user's status in Mailchimp for audience.
@@ -230,6 +234,7 @@ function pmpromc_check_additional_audiences_for_user( $user ) {
 			$active_lists[] = $list;
 		}
 	}
+	d( $active_lists );
 	update_user_meta( $user->ID, 'pmpromc_additional_lists', $active_lists );
 }
 
@@ -239,14 +244,18 @@ function pmpromc_check_additional_audiences_for_user( $user ) {
  * @param WP_USER|int $user to update.
  * @param array       $updated_additional_audiences audiences that user should be subscribed to.
  */
-function pmpromc_set_additional_audiences_for_user( $user, $updated_additional_audiences ) {
+function pmpromc_set_user_additional_list_meta( $user, $updated_additional_audiences ) {
+	if ( ! is_object( $user ) ) {
+		$user = get_userdata( $user );
+	}
+
 	$old_additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
 	if ( ! empty( $old_additional_audiences ) ) {
 		if ( empty( $updated_additional_audiences ) ) {
 			$updated_additional_audiences = array();
 		}
 		$audiences_to_remove = array_diff( $old_additional_audiences, $updated_additional_audiences );
-		pmpromc_queue_unsubscription( $audiences_to_remove );
+		pmpromc_queue_unsubscription( $user, $audiences_to_remove );
 	}
 	update_user_meta( $user->ID, 'pmpromc_additional_lists', $updated_additional_audiences );
 	pmpromc_sync_additional_audiences_for_user( $user );
@@ -258,6 +267,10 @@ function pmpromc_set_additional_audiences_for_user( $user, $updated_additional_a
  * @param WP_USER|int $user to sync.
  */
 function pmpromc_sync_additional_audiences_for_user( $user ) {
+	if ( ! is_object( $user ) ) {
+		$user = get_userdata( $user );
+	}
+
 	$additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
 	if ( ! empty( $additional_audiences ) ) {
 		pmpromc_queue_subscription( $user, $additional_audiences );
@@ -287,14 +300,14 @@ function pmpromc_subscribe_user_to_all_users_audiences( $user ) {
 function pmpromc_get_list_status_for_user( $list, $user ) {
 	$api = pmpromc_getAPI();
 	if ( empty( $api ) ) {
-		return $filter_contents;
+		return;
 	}
 	if ( ! is_object( $user ) ) {
 		$user = get_userdata( $user );
 	}
 	$list_info = $api->get_listinfo_for_member( $list, $user );
-	if ( empty( $list_info ) || empty( $list_info['status'] ) ) {
+	if ( empty( $list_info ) || empty( $list_info->status ) ) {
 		return null;
 	}
-	return $list_info['status'];
+	return $list_info->status;
 }

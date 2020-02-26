@@ -12,20 +12,6 @@ function pmpromc_init() {
 		$GLOBALS['pmpromc_api'] = new PMPromc_Mailchimp_API();
 	}
 	$GLOBALS['pmpromc_api']->set_key();
-
-	// Are we on the checkout page?
-	$is_checkout_page = ( isset( $_REQUEST['submit-checkout'] ) || ( isset( $_REQUEST['confirm'] ) && isset( $_REQUEST['gateway'] ) ) );
-
-	// Setup hooks for PMPro levels.
-	pmpromc_getPMProLevels();
-	global $pmpromc_levels;
-
-	if ( ! empty( $pmpromc_levels ) && ! $is_checkout_page ) {
-		add_action( 'pmpro_after_change_membership_level', 'pmpromc_pmpro_after_change_membership_level', 15, 2 );
-	} elseif ( ! empty( $pmpromc_levels ) ) {
-		// Usermeta is added after membership level changed, so we should wait for additional lists to be added to usermeta before updating.
-		add_action( 'pmpro_after_checkout', 'pmpromc_pmpro_after_checkout', 15 );
-	}
 }
 add_action( 'init', 'pmpromc_init', 0 );
 
@@ -47,80 +33,64 @@ function pmpromc_getPMProLevels() {
  * @param int $user_id that was registered.
  */
 function pmpromc_user_register( $user_id ) {
-	clean_user_cache( $user_id );
-
-	$options = get_option( 'pmpromc_options', array() );
-
-	// Should we add them to any lists?
-	if ( ! empty( $options['users_lists'] ) && ! empty( $options['api_key'] ) ) {
-
-		// Subscribe to each list.
-		foreach ( $options['users_lists'] as $list ) {
-			// Subscribe them.
-			pmpromc_queue_subscription( $user_id, $list );
-		}
-	}
+	pmpromc_subscribe_user_to_all_users_audiences();
 }
 add_action( 'user_register', 'pmpromc_user_register' );
 
 /**
  * Subscribe new members (PMPro) when their membership level changes
  *
- * @param $level_id (int) -- ID of pmpro membership level
- * @param $user_id (int) -- ID for user
- *
+ * @param $level_id (int) -- ID of pmpro membership level.
+ * @param $user_id (int) -- ID for user.
  */
 function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	clean_user_cache( $user_id );
 
-	// Remove? Not being used...
-	global $pmpromc_levels;
+	$options = get_option( 'pmpromc_options' );
 
-	$options = get_option("pmpromc_options");
+	// Find subscribe and unsubscribe audiences for user.
+	$subscribe_audiences   = array();
+	$unsubscribe_audiences = array();
 
-	// Remove? Not being used...
-	$all_lists = get_option("pmpromc_all_lists");
-	
-	// Clear opt-in lists on cancellation or expiration
-	if ( $level_id === 0 ) {
-	  update_user_meta( $user_id, 'pmpromc_additional_lists', array() );
-	}
-
-	//should we add them to any lists?
-	if (!empty($options['level_' . $level_id . '_lists']) && !empty($options['api_key'])) {
-
-		//subscribe to each list
-		foreach ($options['level_' . $level_id . '_lists'] as $list) {
-
-			//subscribe them
-			pmpromc_queue_subscription($user_id, $list);
-		}
-
-		//unsubscribe them from lists not selected, or all lists from their old level
-		pmpromc_queue_smart_unsubscriptions($user_id);
-
-	} elseif (!empty($options['api_key']) && count($options) > 3) {
-
-		//now they are a normal user should we add them to any lists?
-		//Case where PMPro is not installed?
-		if (!empty($options['users_lists']) && !empty($options['api_key'])) {
-
-			//subscribe to each list
-			foreach ($options['users_lists'] as $list) {
-				//subscribe them
-				pmpromc_queue_subscription($user_id, $list);
+	// Calculate subscribe_audiences.
+	$user_levels    = pmpro_getMembershipLevelsForUser( $user_id );
+	$user_level_ids = array();
+	if ( ! empty( $user_levels ) ) {
+		foreach ( $user_levels as $level ) {
+			$user_level_ids[] = $level->id;
+			if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) ) {
+				$subscribe_audiences = array_merge( $subscribe_audiences, $options[ 'level_' . $level->id . '_lists' ] );
 			}
-
-			//unsubscribe from any list not assigned to users
-			pmpromc_queue_smart_unsubscriptions($user_id);
-		} else {
-
-			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
-			pmpromc_queue_smart_unsubscriptions($user_id);
 		}
-
 	}
+	$subscribe_audiences = array_unique( $subscribe_audiences );
+
+	// Calculate unsubscribe audiences.
+	if ( $options['unsubscribe'] != '0' ) {
+		// Get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes.
+		$sql_query                 = $wpdb->prepare( "SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string );
+		$levels_unsubscribing_from = $wpdb->get_col( $sql_query );
+		foreach ( $levels_unsubscribing_from as $unsub_level_id ) {
+			if ( ! empty( $options[ 'level_' . $unsub_level_id . '_lists' ] ) ) {
+				$unsubscribe_audiences = array_merge( $unsubscribe_audiences, $options[ 'level_' . $unsub_level_id . '_lists' ] );
+			}
+		}
+		$unsubscribe_audiences = array_unique( $unsubscribe_audiences );
+	}
+
+	// Subscribe/Unsubscribe user.
+	pmpromc_queue_subscription( $user_id, $subscribe_audiences );
+	pmpromc_queue_unsubscription( $user_id, array_diff( $unsubscribe_audiences, $subscribe_audiences ) );
+
+	// Update opt-in audiences and user audiences.
+	if ( empty( $user_level_ids ) && 'all' === $options['unsubscribe'] ) {
+		pmpromc_set_user_additional_list_meta( $user_id, array() );
+	} else {
+		pmpromc_sync_additional_audiences_for_user( $user_id );
+	}
+	pmpromc_subscribe_user_to_all_users_audiences( $user_id );
 }
+add_action( 'pmpro_after_change_membership_level', 'pmpromc_pmpro_after_change_membership_level', 15, 2 );
 
 /**
  * CHECKOUT FUNCTIONS
@@ -146,6 +116,9 @@ function pmpromc_additional_lists_on_checkout() {
 	} else {
 		return;
 	}
+
+	global $current_user;
+	pmpromc_check_additional_audiences_for_user( $current_user->ID );
 
 	// Okay get through API.
 	$lists = $api->get_all_lists();
@@ -203,15 +176,18 @@ function pmpromc_additional_lists_on_checkout() {
 				} else {
 					$additional_lists_selected = array();
 				}
-
 				$count = 0;
 				foreach ( $additional_lists_array as $key => $additional_list ) {
 					$count++;
 					?>
-					<input type="checkbox" id="additional_lists_<?php echo $count; ?>" name="additional_lists[]"
-						   value="<?php echo $additional_list->id; ?>" <?php if (is_array($additional_lists_selected) && !empty($additional_lists_selected[$count - 1])) checked($additional_lists_selected[$count - 1]->id, $additional_list->id); ?> />
-					<label for="additional_lists_<?php echo $count; ?>"
-						   class="pmpro_normal pmpro_clickable"><?php echo $additional_list->name; ?></label><br/>
+					<input type="checkbox" id="additional_lists_<?php echo( $count ); ?>" name="additional_lists[]" value="<?php echo( $additional_list->id ); ?>" 
+							<?php
+							if ( is_array( $additional_lists_selected ) ) {
+								checked( in_array( $additional_list->id, $additional_lists_selected ) );
+							};
+							?>
+							/>
+					<label for="additional_lists_<?php echo( $count ); ?>" class="pmpro_normal pmpro_clickable"><?php echo( $additional_list->name ); ?></label><br/>
 					<?php
 				}
 				?>
@@ -234,25 +210,16 @@ function pmpromc_pmpro_paypalexpress_session_vars() {
 }
 add_action( 'pmpro_paypalexpress_session_vars', 'pmpromc_pmpro_paypalexpress_session_vars' );
 
-/*
-	Update Mailchimp lists when users checkout
-*/
-function pmpromc_pmpro_after_checkout($user_id)
-{
-	global $pmpro_checkout_levels;
-
-	if(!empty($pmpro_checkout_levels) && is_array($pmpro_checkout_levels)) {
-		// MMPU installed.
-
-		foreach($pmpro_checkout_levels as $level_to_subscribe) {
-
-			pmpromc_pmpro_after_change_membership_level(intval($level_to_subscribe->id), $user_id);
-		}
-	} else {
-
-		pmpromc_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
+/**
+ * Update Mailchimp opt-in audiences when users checkout after usermeta is saved.
+ *
+ * @param int $user_id of user who checked out.
+ */
+function pmpromc_pmpro_after_checkout( $user_id ) {
+	if ( empty( $_REQUEST['additional_lists'] ) ) {
+		$_REQUEST['additional_lists'] = array();
 	}
-
-	pmpromc_subscribeToAdditionalLists($user_id);
+	pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] );
 }
+add_action( 'pmpro_after_checkout', 'pmpromc_pmpro_after_checkout', 15 );
 
