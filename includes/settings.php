@@ -220,7 +220,6 @@ function pmpromc_section_general() {
 	$options = get_option( 'pmpromc_options' );
 	$show_error = false;
 	$lists_seen = empty( $options['users_lists'] ) ? array() : $options['users_lists'];
-	pmpromc_check_additional_audiences_for_user( 1 );
 	if ( ! empty( $options['additional_lists'] ) ) {
 		$show_error = ! empty( array_intersect( $lists_seen, $options['additional_lists'] ) );
 		$lists_seen = array_merge( $lists_seen, $options['additional_lists'] );

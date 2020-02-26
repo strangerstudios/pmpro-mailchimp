@@ -216,7 +216,7 @@ add_filter( 'pmpro_mailchimp_listsubscribe_fields', 'pmpromc_pmpro_mailchimp_lis
  */
 function pmpromc_check_additional_audiences_for_user( $user ) {
 	$options = get_option( 'pmpromc_options' );
-	if ( empty( $options['additional_lists'] ) ) {
+	if ( empty( $options['additional_lists'] ) || empty( $user ) ) {
 		return;
 	}
 
@@ -234,7 +234,6 @@ function pmpromc_check_additional_audiences_for_user( $user ) {
 			$active_lists[] = $list;
 		}
 	}
-	d( $active_lists );
 	update_user_meta( $user->ID, 'pmpromc_additional_lists', $active_lists );
 }
 

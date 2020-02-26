@@ -33,7 +33,7 @@ function pmpromc_getPMProLevels() {
  * @param int $user_id that was registered.
  */
 function pmpromc_user_register( $user_id ) {
-	pmpromc_subscribe_user_to_all_users_audiences();
+	pmpromc_subscribe_user_to_all_users_audiences( $user_id );
 }
 add_action( 'user_register', 'pmpromc_user_register' );
 
@@ -68,7 +68,8 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	// Calculate unsubscribe audiences.
 	if ( $options['unsubscribe'] != '0' ) {
 		// Get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes.
-		$sql_query                 = $wpdb->prepare( "SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string );
+		global $wpdb;
+		$sql_query                 = $wpdb->prepare( "SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, implode(',', $user_level_ids) );
 		$levels_unsubscribing_from = $wpdb->get_col( $sql_query );
 		foreach ( $levels_unsubscribing_from as $unsub_level_id ) {
 			if ( ! empty( $options[ 'level_' . $unsub_level_id . '_lists' ] ) ) {

@@ -150,7 +150,16 @@ class PMPromc_Mailchimp_API
     public function update_audience_members( $audience = '', $updates = [] ) {
 		    // Can't be empty.
         if (WP_DEBUG) {
-          error_log("Processing update for audience {$audience}: " . print_r( $updates, true ) );
+          global $pmpromc_lists;
+          if ( empty( $pmpromc_lists ) ) {
+            $pmpromc_lists = get_option( 'pmpromc_all_lists' );
+          }
+          foreach ( $pmpromc_lists as $list_obj ) {
+            if ( $list_obj['id'] == $audience ) {
+              error_log("Processing update for audience {$list_obj['name']} ({$audience}): " . print_r( $updates, true ) );
+              break;
+            }
+          }
         }
 
         if ( empty( $audience ) || empty( $updates ) ) {
