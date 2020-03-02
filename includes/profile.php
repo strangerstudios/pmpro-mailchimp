@@ -97,7 +97,7 @@ function pmpromc_save_custom_user_profile_fields( $user_id ) {
 	}
 
 	// Get user's current additional lists.
-	$current_lists = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
+	$current_lists = get_user_meta( $user_id, 'pmpromc_additional_lists', true );
 	if ( empty( $current_lists ) ) {
 		$current_lists = array();
 	}
