@@ -33,7 +33,11 @@ function pmpromc_getPMProLevels() {
  * @param int $user_id that was registered.
  */
 function pmpromc_user_register( $user_id ) {
-	pmpromc_subscribe_user_to_all_users_audiences( $user_id );
+	$options = get_option( 'pmpromc_options' );
+	if ( ! empty( $options['users_lists'] ) && ! pmpro_is_checkout() ) {
+		// Registering for site without recieving level. Add to non-member lists.
+		pmpromc_queue_subscription( $user, $options['users_lists'] );
+	}
 }
 add_action( 'user_register', 'pmpromc_user_register' );
 
@@ -63,7 +67,6 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 			}
 		}
 	}
-	$subscribe_audiences = array_unique( $subscribe_audiences );
 
 	// Calculate unsubscribe audiences.
 	if ( $options['unsubscribe'] != '0' ) {
@@ -76,8 +79,29 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 				$unsubscribe_audiences = array_merge( $unsubscribe_audiences, $options[ 'level_' . $unsub_level_id . '_lists' ] );
 			}
 		}
-		$unsubscribe_audiences = array_unique( $unsubscribe_audiences );
 	}
+
+	// Calculate non-member audiences.
+	if ( ! empty( $options['users_lists'] ) && empty( $user_levels ) ) {
+		// Add user to non-member lists.
+		$subscribe_audiences = array_merge( $subscribe_audiences, $options['users_lists'] );
+	} elseif ( ! empty( $options['users_lists'] ) ) {
+		// Remove user from non-member lists.
+		// Additional checks need to be done to prevent unnecessary entries from being created in Mailchimp.
+		// Ex. don't unsubscribe if user is not already in audience.
+		foreach ( $options['users_lists'] as $audience ) {
+			if ( in_array( $audience, $subscribe_audiences ) || in_array( $audience, $unsubscribe_audiences ) ) {
+				// Audience already being updated, so safe to add.
+				$unsubscribe_audiences[] = $audience;
+			} elseif ( in_array( pmpromc_get_list_status_for_user( $audience, $user_id ), array( 'subscribed', 'unsubscribed', 'pending' ) ) ) {
+				// User present in audience, update.
+				$unsubscribe_audiences[] = $audience;
+			}
+		}
+	}
+
+	$subscribe_audiences   = array_unique( $subscribe_audiences );
+	$unsubscribe_audiences = array_unique( $unsubscribe_audiences );
 
 	// Subscribe/Unsubscribe user.
 	pmpromc_queue_subscription( $user_id, $subscribe_audiences );

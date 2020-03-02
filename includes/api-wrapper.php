@@ -277,19 +277,6 @@ function pmpromc_sync_additional_audiences_for_user( $user ) {
 }
 
 /**
- * Subscribes user to all users audiences
- *
- * @param WP_USER|int $user to subscribe.
- */
-function pmpromc_subscribe_user_to_all_users_audiences( $user ) {
-	$options = get_option( 'pmpromc_options' );
-	if ( empty( $options['users_lists'] ) ) {
-		return;
-	}
-	pmpromc_queue_subscription( $user, $options['users_lists'] );
-}
-
-/**
  * Gets the status of a user in a Mailchimp list
  *
  * @param string      $list to check.

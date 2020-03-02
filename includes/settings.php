@@ -150,7 +150,7 @@ function pmpromc_admin_init()
 	register_setting('pmpromc_options', 'pmpromc_options', 'pmpromc_options_validate');
 	add_settings_section('pmpromc_section_general', __('General Settings', 'pmpro-mailchimp'), 'pmpromc_section_general', 'pmpromc_options');
 	add_settings_field('pmpromc_option_api_key', __('Mailchimp API Key', 'pmpro-mailchimp'), 'pmpromc_option_api_key', 'pmpromc_options', 'pmpromc_section_general');
-	add_settings_field('pmpromc_option_users_lists', __('All Users', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
+	add_settings_field('pmpromc_option_users_lists', __('Non-member Audiences', 'pmpro-mailchimp'), 'pmpromc_option_users_lists', 'pmpromc_options', 'pmpromc_section_general');
 
 	//only if PMPro is installed
 	if (function_exists("pmpro_hasMembershipLevel"))
@@ -221,21 +221,25 @@ function pmpromc_section_general() {
 	global $pmpromc_levels;
 	$options = get_option( 'pmpromc_options' );
 	$show_error = false;
-	$lists_seen = empty( $options['users_lists'] ) ? array() : $options['users_lists'];
-	if ( ! empty( $options['additional_lists'] ) ) {
-		$show_error = ! empty( array_intersect( $lists_seen, $options['additional_lists'] ) );
-		$lists_seen = array_merge( $lists_seen, $options['additional_lists'] );
+
+	if ( empty( $options['additional_lists'] ) ) {
+		return;
 	}
+
 	foreach ( $pmpromc_levels as $level ) {
-		if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) && ! empty( array_intersect( $lists_seen, $options[ 'level_' . $level->id . '_lists' ] ) ) ) {
+		if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) && ! empty( array_intersect( $options['additional_lists'], $options[ 'level_' . $level->id . '_lists' ] ) ) ) {
 			$show_error = true;
 		}
+	}
+
+	if ( ! empty( $options['users_lists'] ) && ! empty( array_intersect( $options['additional_lists'], $options['users_lists'] ) ) ) {
+		$show_error = true;
 	}
 
 	if ( $show_error ) {
 		?>
 		<div class="notice notice-error">
-			<p><strong><?php esc_html_e( 'Each audience should only be set as an All Users audience, an Opt-in audience, or a Levels audience.', 'pmpro-mailchimp' ); ?></strong></p>
+			<p><strong><?php esc_html_e( 'Opt-in audiences cannot be set to also be non-member audiences or levels audiences.', 'pmpro-mailchimp' ); ?></strong></p>
 		</div>
 		<?php
 	}
