@@ -117,7 +117,6 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	} else {
 		pmpromc_sync_additional_audiences_for_user( $user_id );
 	}
-	pmpromc_subscribe_user_to_all_users_audiences( $user_id );
 }
 add_action( 'pmpro_after_change_membership_level', 'pmpromc_pmpro_after_change_membership_level', 15, 2 );
 
