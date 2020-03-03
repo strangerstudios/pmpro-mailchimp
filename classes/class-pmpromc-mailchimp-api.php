@@ -231,14 +231,16 @@ class PMPromc_Mailchimp_API
 	/**
 	 * Check if a merge field is in an array of merge fields
 	 */
-	public function in_merge_fields($field_name, $fields)
-	{
-		if (empty($fields))
+	public function in_merge_fields( $field_name, $fields ) {
+		if ( empty( $fields ) ) {
 			return false;
+		}
 
-		foreach ($fields as $field)
-			if ($field->tag == $field_name)
+		foreach ( $fields as $field ) {
+			if ( ! empty( $field->tag ) && $field->tag == $field_name ) {
 				return true;
+			}
+		}
 
 		return false;
 	}
