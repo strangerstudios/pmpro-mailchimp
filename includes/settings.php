@@ -338,13 +338,17 @@ function pmpromc_option_unsubscribe()
 }
 
 function pmpromc_option_profile_update() {
-	$options = get_option('pmpromc_options');
+	$options        = get_option( 'pmpromc_options' );
+	$profile_update = 0;
+	if ( ! empty( $options['profile_update'] ) ) {
+		$profile_update = $options['profile_update'];
+	}
 	?>
 	<select name="pmpromc_options[profile_update]">
-		<option value="0" <?php selected($options['profile_update'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
-		<option value="1" <?php selected($options['profile_update'], 1); ?>><?php _e('Yes', 'pmpro-mailchimp');?></option>
+		<option value="0" <?php selected( $profile_update, 0 ); ?>><?php esc_html_e( 'No', 'pmpro-mailchimp' ); ?></option>
+		<option value="1" <?php selected( $profile_update, 1 ); ?>><?php esc_html_e( 'Yes', 'pmpro-mailchimp' ); ?></option>
 	</select>
-	<small><?php _e("Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed.", 'pmpro-mailchimp');?>
+	<small><?php esc_html_e( "Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed.", 'pmpro-mailchimp' ); ?>
 	</small>
 	<?php
 }
