@@ -117,6 +117,10 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	} else {
 		pmpromc_sync_additional_audiences_for_user( $user_id );
 	}
+
+	// Update all audiences on profile save in case usermeta
+	// is changed after this level change.
+	add_filter( 'pmpromc_profile_update', '__return_true' );
 }
 add_action( 'pmpro_after_change_membership_level', 'pmpromc_pmpro_after_change_membership_level', 15, 2 );
 
@@ -237,6 +241,15 @@ function pmpromc_pmpro_paypalexpress_session_vars() {
 	}
 }
 add_action( 'pmpro_paypalexpress_session_vars', 'pmpromc_pmpro_paypalexpress_session_vars' );
+
+/**
+ * Delay the call to pmpromc_pmpro_after_change_membership_level() during checkout until
+ * after usermeta is saved. Function call re-added in pmpromc_pmpro_after_checkout().
+ */
+function pmpromc_pmpro_checkout_before_change_membership_level() {
+	remove_action( 'pmpro_after_change_membership_level', 'pmpromc_pmpro_after_change_membership_level', 15, 2 );
+}
+add_action( 'pmpro_checkout_before_change_membership_level', 'pmpromc_pmpro_checkout_before_change_membership_level' );
 
 /**
  * Update Mailchimp opt-in audiences when users checkout after usermeta is saved.
