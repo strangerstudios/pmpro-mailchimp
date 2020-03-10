@@ -133,7 +133,7 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 	$update_user   = $email_changed;
 
 	$options = get_option( 'pmpromc_options' );
-	if ( isset( $options['profile_update'] ) && isset( $options['profile_update'] ) == 1 ) {
+	if ( isset( $options['profile_update'] ) && $options['profile_update'] == 1 ) {
 		$update_user = true;
 	}
 
