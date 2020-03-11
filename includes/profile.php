@@ -172,10 +172,10 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 						$data = array(
 							'email_address' => $new_user_data->user_email,
 						);
-						$api->update_contact( $member, $data );
 						if ( WP_DEBUG ) {
-							error_log( "Updated user's email address from {$old_user_data->user_email} to {$new_user_data->user_email} for audience {$audience->name} ({$audience->id})." );
+							error_log( "Updating user's email address from {$old_user_data->user_email} to {$new_user_data->user_email} for audience {$audience->name} ({$audience->id})." );
 						}
+						$api->update_contact( $member, $data );
 					}
 					// Update the user's merge fields.
 					pmpromc_add_audience_member_update( $user_id, $audience->id, $member->status );
