@@ -548,6 +548,14 @@ class PMPromc_Mailchimp_API
 		//hit the API
 		$url = self::$api_url . "/lists/{$list_id}/members/{$member_id}";
 		$response = wp_remote_request($url, $args);
+		if ( WP_DEBUG ) {
+			if ( $response['response']['code'] == '200' ) {
+				error_log( 'Mailchimp Response: No errors detected.' );
+			} else {
+				$response_body = self::decode_response( $response['body'] );
+				error_log( 'Mailchimp Response: Error status ' . $response_body->status . '. ' . print_r( $response_body->errors, true ) );
+			}
+		}
 
 		//check response
 		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
