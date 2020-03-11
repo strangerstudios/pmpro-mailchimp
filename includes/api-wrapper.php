@@ -109,7 +109,15 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
 			$user_data = (object) array(
 				'email_address' => $user->user_email,
 				'status'        => $status,
-				'merge_fields'  => apply_filters( 'pmpro_mailchimp_listsubscribe_fields', array('FNAME' => $user->first_name, 'LNAME' => $user->last_name), $user, $audience ),
+				'merge_fields'  => apply_filters(
+					'pmpro_mailchimp_listsubscribe_fields',
+					array(
+						'FNAME' => wp_specialchars_decode( $user->first_name ),
+						'LNAME' => wp_specialchars_decode( $user->last_name ),
+					),
+					$user,
+					$audience
+				),
 			);
 		}
 
