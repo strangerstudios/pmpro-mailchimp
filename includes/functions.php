@@ -34,7 +34,7 @@ function pmpromc_getPMProLevels() {
  */
 function pmpromc_user_register( $user_id ) {
 	$options = get_option( 'pmpromc_options' );
-	if ( ! empty( $options['users_lists'] ) && ! pmpro_is_checkout() ) {
+	if ( ! empty( $options['users_lists'] ) && ( ! function_exists( 'pmpro_is_checkout' ) || ! pmpro_is_checkout() ) ) {
 		// Registering for site without recieving level. Add to non-member lists.
 		pmpromc_queue_subscription( $user, $options['users_lists'] );
 	}
