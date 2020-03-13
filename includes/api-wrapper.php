@@ -228,6 +228,10 @@ function pmpromc_check_additional_audiences_for_user( $user ) {
 		return;
 	}
 
+	if ( apply_filters( 'pmpromc_disable_automatic_additional_audiences_updates', false ) ) {
+		return;
+	}
+
 	if ( ! is_object( $user ) ) {
 		$user = get_userdata( $user );
 	}
