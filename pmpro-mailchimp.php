@@ -21,6 +21,7 @@ require_once PMPROMC_DIR . '/includes/api-wrapper.php'; // Simplify API interact
 require_once PMPROMC_DIR . '/includes/functions.php';
 require_once PMPROMC_DIR . '/includes/profile.php'; // Set up fields on user profile.
 require_once PMPROMC_DIR . '/includes/settings.php'; // Set up settings page.
+require_once PMPROMC_DIR . '/includes/deprecated.php'; // Set up settings page.
 
 /**
  * Load the languages folder for translations.

@@ -159,3 +159,4 @@ function pmpromc_get_unsubscribe_audiences( $user_id ) {
 	//merge
 	$dont_unsubscribe_lists = array_merge($user_additional_lists, $level_lists);
 	return array_diff($unsubscribe_lists, $dont_unsubscribe_lists);
+}
