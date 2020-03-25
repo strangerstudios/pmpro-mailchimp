@@ -3,7 +3,7 @@ Contributors: strangerstudios, dlparker1005
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 4
 Tested up to: 5.3.2
-Stable tag: 2.2.1
+Stable tag: 2.3
 
 Sync WordPress Users and PMPro Members with MailChimp lists.
 
@@ -25,7 +25,7 @@ This plugin works with and without Paid Memberships Pro installed.
 Enter your Mailchimp API key. If you don't have a Mailchimp account, you can create one here http://eepurl.com/k4aAH
 
 = Non-member Users =
-Choose which lists to add new non-member users to. Note this is only users who register through the default WP process or are added in the admin with no membership level selected.
+Choose which lists to add non-members to. Note this is only users who register through the default WP process, are added in the admin with no membership level selected, or lose their membership level.
 
 = Opt-in Audiences =
 Choose lists to be added to the bottom of the PMPro checkout page. Users can check to opt into those lists at checkout.
@@ -35,6 +35,9 @@ Select Yes or No to require/not require Mailchimp's double opt-in.
 
 = Unsubscribe on Level Change? =
 This setting allows you to move members from list to list based on membership level. It is important to note that with this setting active the member will be unsubscribed from ALL other lists on membership level change and will ONLY be subscribed to the list(s) set for their active membership level.
+
+= Update on Profile Save? =
+Select Yes or No to update Mailchimp whenever a user's profile is saved.
 
 = Membership Levels and Audiences =
 Choose the lists members of each level should be added to when gaining that level.
@@ -55,6 +58,17 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 2.3 - 2020-03-25 =
+* FEATURE: Subscriptions/unsubscriptions in Mailchimp now carry over to PMPro for opt-in audiences
+* ENHANCEMENT: Added setting to update contact in Mailchimp whenever profile is saved
+* ENHANCEMENT: Included audience names in debug logs and improved error reporting
+* BUG FIX: Fixed issue where contacts may be created in an unsubscribed status in opt-in audiences they had not subscribed to
+* BUG FIX: Fixed issue where contacts would not be removed from non-member audiences when they are given a level
+* BUG FIX: Fixed strings using the incorrect text domain
+* BUG FIX: Fixed ampersands in names being encoded when sent to Mailchimp
+* BUG FIX: Resolved PHP warning in API function in_merge_fields()
+* BUG FIX/ENHANCEMENT: Contacts in Mailchimp are now updated when a user’s email is changed instead of being replaced
+* REFACTOR: Organized code into different files
 
 = 2.2.1 - 2019-12-31 =
 * BUG FIX: Fixed merge fields not being sent during user profile updates
