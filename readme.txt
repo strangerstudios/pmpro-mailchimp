@@ -5,13 +5,28 @@ Requires at least: 4
 Tested up to: 5.3.2
 Stable tag: 2.3
 
-Sync WordPress Users and PMPro Members with MailChimp lists.
+Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
 
 == Description ==
 
-Specify the subscripiton list(s) for your site's WordPress Users and PMPro Members. If Paid Memberships Pro is installed you can specify additional list settings by membership level.
+Subscribe WordPress users and members to your Mailchimp audiences.
 
-The plugin has a setting to require/not require Mailchimp's double opt-in, as well as a setting to unsubscribe members on level change. This allows you to move members from list to list based on membership level. It is important to note that with this setting active the member will be unsubscribed from ALL other lists on membership level change and will only be subscribed to the list(s) set for their active membership level.
+This plugin offers extended functionality for [membership websites using the Paid Memberships Pro plugin](https://wordpress.org/plugins/paid-memberships-pro/) available for free in the WordPress plugin repository. 
+
+With Paid Memberships Pro installed, you can specify unique audiences for each membership level, as well as opt-in audiences that a member can join as part of checkout or by editing their user profile. By default, the integration will merge the user's email address and membership level information. You can send additional user profile details to Mailchimp [using the method described here](https://www.paidmembershipspro.com/send-additional-user-information-fields-mailchimp/).
+
+The settings page allows the site admin to specify which audience lists to assign users and members to plus additional features  you may wish to adjust. The first step is to connect your website to Mailchimp using your account's API Key. Here's how to find the API key in Mailchimp:
+
+https://www.youtube.com/watch?v=ctcy1_npmRE
+
+= Additional Settings =
+
+* **Non-member Audiences:** These are the audiences that users will be added to if they do not have a membership level. They will also be removed from these audiences when they gain a membership level (assuming the audiences are not also set in the “Membership Levels and Audiences” option for their new level).
+* **Opt-in Audiences:** These are the audiences that users will have the option to subscribe to during the PMPro checkout process. Users are later able to update their choice from their profile. Audiences set as Opt-in Audiences should not also be set as a Non-member Audience nor a Level Audience.
+* **Require Double Opt-in?:** If set to “Yes (All audiences)”, users will be set to “Pending” status in Mailchimp when they are added to an audience instead of being subscribed right away. They will then receive an email from Mailchimp to opt-in to the audience.
+* **Unsubscribe on Level Change?:** If set to “No”, users will not be automatically unsubscribed from any audiences when they lose a membership level. If set to “Yes (Only old level audiences.)”, users will be unsubscribed from any level audiences they are subscribed to when they lose that level, assuming that audience is not a Non-Member audience as well. If set to “Yes (Old level and opt-in audiences.)”, users will also be unsubscribed from opt-in audiences when they lose their membership level (though they can re-subscribe by updating the setting on their profile).
+* **Update on Profile Save:** If set to “Yes”, PMPro will update Mailchimp audiences whenever a user’s profile page is saved. If set to “No”, PMPro will only update Mailchimp when a user’s membership level is changed, email is changed, or chosen opt-in audiences are changed.
+* **Membership Levels and Audiences:** These are the audiences that users will automatically be subscribed to when they receive a membership level.
 
 == Installation ==
 This plugin works with and without Paid Memberships Pro installed.
@@ -19,43 +34,32 @@ This plugin works with and without Paid Memberships Pro installed.
 = Download, Install and Activate! =
 1. Upload the `pmpro-mailchimp` directory to the `/wp-content/plugins/` directory of your site.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. The settings page is at Settings --> PMPro Mailchimp in the WP dashboard.
+1. Navigate to Settings > PMPro Mailchimp to proceed with setup.
 
-= Mailchimp API Key =
-Enter your Mailchimp API key. If you don't have a Mailchimp account, you can create one here http://eepurl.com/k4aAH
+= Configuration and Settings =
 
-= Non-member Users =
-Choose which lists to add non-members to. Note this is only users who register through the default WP process, are added in the admin with no membership level selected, or lose their membership level.
+**Enter your Mailchimp API Key:** Your Mailchimp API key can be found within your Mailchimp account under Account > Extras > API keys. If you don't have a Mailchimp account, [you can create one here](http://eepurl.com/k4aAH). Read our documentation for a [video demonstrating how to locate your Mailchimp API key](https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/#api-key).
 
-= Opt-in Audiences =
-Choose lists to be added to the bottom of the PMPro checkout page. Users can check to opt into those lists at checkout.
+After entering your API Key, continue with the setup by assigning User or Member Audiences and reviewing the additional settings.
 
-= Double Opt-in Required? =
-Select Yes or No to require/not require Mailchimp's double opt-in.
+For full documentation on all settings, please visit the [Mailchimp Integration Add On documentation page at Paid Memberships Pro](https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/). 
 
-= Unsubscribe on Level Change? =
-This setting allows you to move members from list to list based on membership level. It is important to note that with this setting active the member will be unsubscribed from ALL other lists on membership level change and will ONLY be subscribed to the list(s) set for their active membership level.
-
-= Update on Profile Save? =
-Select Yes or No to update Mailchimp whenever a user's profile is saved.
-
-= Membership Levels and Audiences =
-Choose the lists members of each level should be added to when gaining that level.
+Several action and filter hooks are available for developers that need to customize specific aspects of the integration. [Please explore the plugin's action and filter hooks here](https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/#hooks).
 
 == Frequently Asked Questions ==
 
 = I found a bug in the plugin. =
 
-Please post it in the issues section of GitHub and we'll fix it as soon as we can. Thanks for helping. https://github.com/strangerstudios/pmpro-mailchimp/issues
+Please post it in the issues section of GitHub and we'll fix it as soon as we can. Thanks for helping. [https://github.com/strangerstudios/pmpro-mailchimp/issues](https://github.com/strangerstudios/pmpro-mailchimp/issues)
 
 = I need help installing, configuring, or customizing the plugin. =
 
-Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
+Please visit [our support site at https://www.paidmembershipspro.com](http://www.paidmembershipspro.com/) for more documentation and our support forums.
 
 == Screenshots ==
 
-1. General settings for all members/subscribers list, opt-in rules, and unsubscribe rules.
-2. Membership-level specific list subscription settings.
+1. General Settings for plugin, including the non-member audiences opt-in rules, and unsubscribe rules.
+2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
 = 2.3 - 2020-03-25 =

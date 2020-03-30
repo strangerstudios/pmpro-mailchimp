@@ -332,8 +332,8 @@ function pmpromc_option_unsubscribe()
 		<option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _e('Yes (Only old level audiences.)', 'pmpro-mailchimp');?></option>
 		<option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (Old level and opt-in audiences.)', 'pmpro-mailchimp');?></option>
 	</select>
-	<small><?php _e("Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site.", 'pmpro-mailchimp');?>
-	</small>
+	<p class="description"><?php _e("Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site.", 'pmpro-mailchimp');?>
+	</p>
 	<?php
 }
 
@@ -348,8 +348,8 @@ function pmpromc_option_profile_update() {
 		<option value="0" <?php selected( $profile_update, 0 ); ?>><?php esc_html_e( 'No', 'pmpro-mailchimp' ); ?></option>
 		<option value="1" <?php selected( $profile_update, 1 ); ?>><?php esc_html_e( 'Yes', 'pmpro-mailchimp' ); ?></option>
 	</select>
-	<small><?php esc_html_e( "Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed.", 'pmpro-mailchimp' ); ?>
-	</small>
+	<p class="description"><?php esc_html_e( "Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed.", 'pmpro-mailchimp' ); ?>
+	</p>
 	<?php
 }
 
