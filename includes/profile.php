@@ -4,6 +4,8 @@
 	Add opt-in Lists to the user profile/edit user page.
 */
 function pmpromc_add_custom_user_profile_fields( $user ) {
+	global $pmpro_pages;
+
 	$options = get_option( 'pmpromc_options' );
 
 	$additional_audiences = array();
@@ -47,42 +49,75 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 	// Get user's MC subscription status for additional audiences from MC.
 	pmpromc_check_additional_audiences_for_user( $user->ID );
 
+
+	if ( ! is_page( $pmpro_pages['member_profile_edit'] ) ) {
 	?>
-	<h3><?php esc_html_e( 'Opt-in Mailchimp Audiences', 'pmpro-mailchimp' ); ?></h3>
+		<h3><?php esc_html_e( 'Opt-in Mailchimp Audiences', 'pmpro-mailchimp' ); ?></h3>
 
-	<table class="form-table">
-		<tr>
-			<th>
-				<label for="address"><?php esc_html_e( 'Mailing Lists', 'pmpro-mailchimp' ); ?>
-				</label></th>
-			<td>
-				<?php
-				$user_additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
+		<table class="form-table">
+			<tr>
+				<th>
+					<label for="address"><?php esc_html_e( 'Mailing Lists', 'pmpro-mailchimp' ); ?>
+					</label></th>
+				<td>
+					<?php
+					$user_additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
 
-				if ( isset( $user_additional_audiences ) ) {
-					$selected_audiences = $user_additional_audiences;
-				} else {
-					$selected_audiences = array();
-				}
-
-				echo '<input type="hidden" name="additional_lists_profile" value="1" />';
-				echo "<select multiple='yes' name=\"additional_lists[]\">";
-				foreach ( $additional_audiences_info as $audience_arr ) {
-					echo "<option value='" . esc_attr( $audience_arr['id'] ) . "' ";
-					if ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) {
-						echo "selected='selected'";
+					if ( isset( $user_additional_audiences ) ) {
+						$selected_audiences = $user_additional_audiences;
+					} else {
+						$selected_audiences = array();
 					}
-					echo '>' . esc_html( $audience_arr['name'] ) . '</option>';
-				}
-				echo '</select>';
-				?>
-			</td>
-		</tr>
-	</table>
+
+					echo '<input type="hidden" name="additional_lists_profile" value="1" />';
+					echo "<select multiple='yes' name=\"additional_lists[]\">";
+					foreach ( $additional_audiences_info as $audience_arr ) {
+						echo "<option value='" . esc_attr( $audience_arr['id'] ) . "' ";
+						if ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) {
+							echo "selected='selected'";
+						}
+						echo '>' . esc_html( $audience_arr['name'] ) . '</option>';
+					}
+					echo '</select>';
+					?>
+				</td>
+			</tr>
+		</table>
 	<?php
+	} else { // Show on front-end profile page.
+	?>
+
+	<div class="pmpro_member_profile_edit-field pmpro_member_profile_edit-field-pmpromc_opt_in_list">
+	<label for="address">
+		<?php esc_html_e( 'Opt-in Mailchimp Mailing Lists', 'pmpro-mailchimp' );?>
+	</label>
+	<?php
+	$user_additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
+
+			if ( isset( $user_additional_audiences ) ) {
+				$selected_audiences = $user_additional_audiences;
+			} else {
+				$selected_audiences = array();
+			}
+
+			echo '<input type="hidden" name="additional_lists_profile" value="1" />';
+			echo "<select multiple='yes' name=\"additional_lists[]\">";
+			foreach ( $additional_audiences_info as $audience_arr ) {
+				echo "<option value='" . esc_attr( $audience_arr['id'] ) . "' ";
+				if ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) {
+					echo "selected='selected'";
+				}
+				echo '>' . esc_html( $audience_arr['name'] ) . '</option>';
+			}
+			echo '</select>'; ?>
+			<p><small><em><?php _e( 'To select more than one list, please use CMD (Mac) or CTRL (Windows)', 'pmpro-mailchimp' ); ?></em></small></p>
+	</div> <!-- end pmpro_member_profile_edit-field-first_name -->
+	<?php
+	}
 }
 add_action( 'show_user_profile', 'pmpromc_add_custom_user_profile_fields', 12 );
 add_action( 'edit_user_profile', 'pmpromc_add_custom_user_profile_fields', 12 );
+add_action( 'pmpro_show_user_profile', 'pmpromc_add_custom_user_profile_fields', 12 );
 
 // Saving additional lists on profile save.
 function pmpromc_save_custom_user_profile_fields( $user_id ) {
@@ -118,6 +153,7 @@ function pmpromc_save_custom_user_profile_fields( $user_id ) {
 }
 add_action( 'personal_options_update', 'pmpromc_save_custom_user_profile_fields' );
 add_action( 'edit_user_profile_update', 'pmpromc_save_custom_user_profile_fields' );
+add_action( 'pmpro_personal_options_update', 'pmpromc_save_custom_user_profile_fields' );
 
 /**
  * Change email in Mailchimp if a user's email is changed in WordPress
@@ -213,3 +249,4 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 	}
 }
 add_action( 'profile_update', 'pmpromc_profile_update', 20, 2 );
+
