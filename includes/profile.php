@@ -70,7 +70,7 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 					}
 
 					echo '<input type="hidden" name="additional_lists_profile" value="1" />';
-					echo "<select multiple='yes' name=\"additional_lists[]\">";
+					echo "<select multiple='yes' name=\"additional_lists[]\" style=\"min-height: 75px;\">";
 					foreach ( $additional_audiences_info as $audience_arr ) {
 						echo "<option value='" . esc_attr( $audience_arr['id'] ) . "' ";
 						if ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) {
@@ -101,7 +101,7 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 			}
 
 			echo '<input type="hidden" name="additional_lists_profile" value="1" />';
-			echo "<select multiple='yes' name=\"additional_lists[]\">";
+			echo "<select multiple='yes' name=\"additional_lists[]\" style=\"min-height: 75px;\">";
 			foreach ( $additional_audiences_info as $audience_arr ) {
 				echo "<option value='" . esc_attr( $audience_arr['id'] ) . "' ";
 				if ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) {

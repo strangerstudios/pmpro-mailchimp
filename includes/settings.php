@@ -269,7 +269,7 @@ function pmpromc_option_users_lists()
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
-		echo "<select multiple='yes' name=\"pmpromc_options[users_lists][]\">";
+		echo "<select multiple='yes' name=\"pmpromc_options[users_lists][]\" style=\"min-height: 75px;\">";
 		foreach ($pmpromc_lists as $list) {
 			echo "<option value='" . $list->id . "' ";
 			if (in_array($list->id, $selected_lists))
@@ -298,7 +298,7 @@ function pmpromc_option_additional_lists()
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
-		echo "<select multiple='yes' name=\"pmpromc_options[additional_lists][]\">";
+		echo "<select multiple='yes' name=\"pmpromc_options[additional_lists][]\" style=\"min-height: 75px;\">";
 		foreach ($pmpromc_lists as $list) {
 			echo "<option value='" . $list->id . "' ";
 			if (in_array($list->id, $selected_lists))
@@ -404,7 +404,7 @@ function pmpromc_option_memberships_lists($level)
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
-		echo "<select multiple='yes' name=\"pmpromc_options[level_" . $level->id . "_lists][]\">";
+		echo "<select multiple='yes' name=\"pmpromc_options[level_" . $level->id . "_lists][]\" style=\"min-height: 75px;\">";
 		foreach ($pmpromc_lists as $list) {
 			echo "<option value='" . $list->id . "' ";
 			if (in_array($list->id, $selected_lists))
