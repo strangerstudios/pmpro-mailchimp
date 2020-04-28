@@ -68,7 +68,6 @@ function pmpromc_options_page()
 		<form action="options.php" method="post">
 			<h3><?php _e('Subscribe users to one or more Mailchimp audiences when they sign up for your site.', 'pmpro-mailchimp');?></h3>
 			<p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify "Opt-in Audiences" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free Mailchimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
-			<p><?php _e( 'TIP: To deselect audiences use CTRL+Click(PC) or CMD+Click(Mac).', 'pmpro-mailchimp' );?></p>
 			<?php if (function_exists('pmpro_getAllLevels')) { ?>
 				<hr/>
 				<h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
@@ -269,12 +268,10 @@ function pmpromc_option_users_lists()
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
-		echo "<select multiple='yes' name=\"pmpromc_options[users_lists][]\">";
 		foreach ($pmpromc_lists as $list) {
-			echo "<option value='" . $list->id . "' ";
-			if (in_array($list->id, $selected_lists))
-				echo "selected='selected'";
-			echo ">" . $list->name . "</option>";
+			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
+			echo( "<input type='checkbox' name='pmpromc_options[users_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_user_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
+			echo( "<label for='pmpromc_user_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo "</select>";
 	} else {
@@ -298,12 +295,10 @@ function pmpromc_option_additional_lists()
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
-		echo "<select multiple='yes' name=\"pmpromc_options[additional_lists][]\">";
 		foreach ($pmpromc_lists as $list) {
-			echo "<option value='" . $list->id . "' ";
-			if (in_array($list->id, $selected_lists))
-				echo "selected='selected'";
-			echo ">" . $list->name . "</option>";
+			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
+			echo( "<input type='checkbox' name='pmpromc_options[additional_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_additional_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
+			echo( "<label for='pmpromc_additional_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo "</select>";
 	} else {
@@ -404,12 +399,10 @@ function pmpromc_option_memberships_lists($level)
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
-		echo "<select multiple='yes' name=\"pmpromc_options[level_" . $level->id . "_lists][]\">";
 		foreach ($pmpromc_lists as $list) {
-			echo "<option value='" . $list->id . "' ";
-			if (in_array($list->id, $selected_lists))
-				echo "selected='selected'";
-			echo ">" . $list->name . "</option>";
+			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
+			echo( "<input type='checkbox' name='pmpromc_options[level_" . $level->id . "_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
+			echo( "<label for='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo "</select>";
 	} else {
