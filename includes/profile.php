@@ -70,15 +70,11 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 					}
 
 					echo '<input type="hidden" name="additional_lists_profile" value="1" />';
-					echo "<select multiple='yes' name=\"additional_lists[]\" style=\"min-height: 75px;\">";
 					foreach ( $additional_audiences_info as $audience_arr ) {
-						echo "<option value='" . esc_attr( $audience_arr['id'] ) . "' ";
-						if ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) {
-							echo "selected='selected'";
-						}
-						echo '>' . esc_html( $audience_arr['name'] ) . '</option>';
+						$checked_modifier = ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) ? ' checked' : '';
+						echo( "<input type='checkbox' name='additional_lists[]' value='" . esc_attr( $audience_arr['id'] ) . "' id='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) . "'" . $checked_modifier . ">" );
+						echo( "<label for='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) .  "'>" . $audience_arr['name'] .  "</label><br>" );
 					}
-					echo '</select>';
 					?>
 				</td>
 			</tr>
@@ -101,16 +97,11 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 			}
 
 			echo '<input type="hidden" name="additional_lists_profile" value="1" />';
-			echo "<select multiple='yes' name=\"additional_lists[]\" style=\"min-height: 75px;\">";
 			foreach ( $additional_audiences_info as $audience_arr ) {
-				echo "<option value='" . esc_attr( $audience_arr['id'] ) . "' ";
-				if ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) {
-					echo "selected='selected'";
-				}
-				echo '>' . esc_html( $audience_arr['name'] ) . '</option>';
-			}
-			echo '</select>'; ?>
-			<p><small><em><?php _e( 'To select more than one list, please use CMD (Mac) or CTRL (Windows)', 'pmpro-mailchimp' ); ?></em></small></p>
+				$checked_modifier = ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) ? ' checked' : '';
+				echo( "<input type='checkbox' name='additional_lists[]' value='" . esc_attr( $audience_arr['id'] ) . "' id='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) . "'" . $checked_modifier . ">" );
+				echo( "<label for='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) .  "'>" . $audience_arr['name'] .  "</label><br>" );
+			} ?>
 	</div> <!-- end pmpro_member_profile_edit-field-first_name -->
 	<?php
 	}
