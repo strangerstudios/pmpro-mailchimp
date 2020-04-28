@@ -2,8 +2,8 @@
 Contributors: strangerstudios, dlparker1005
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 4
-Tested up to: 5.3.2
-Stable tag: 2.3
+Tested up to: 5.4
+Stable tag: 2.3.1
 
 Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
 
@@ -62,6 +62,10 @@ Please visit [our support site at https://www.paidmembershipspro.com](http://www
 2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
+= 2.3.1 - 2020-04-28 =
+* ENHANCEMENT: Added support for Paid Memberships Pro v2.3+ front-end profile edit page.
+* ENHANCEMENT: Now using checkboxes to select audiences instead of <select> fields
+
 = 2.3 - 2020-03-25 =
 * FEATURE: Subscriptions/unsubscriptions in Mailchimp now carry over to PMPro for opt-in audiences
 * ENHANCEMENT: Added setting to update contact in Mailchimp whenever profile is saved
