@@ -50,7 +50,7 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 	pmpromc_check_additional_audiences_for_user( $user->ID );
 
 
-	if ( ! is_page( $pmpro_pages['member_profile_edit'] ) ) {
+	if ( ! isset( $pmpro_pages['member_profile_edit'] ) || ! is_page( $pmpro_pages['member_profile_edit'] ) ) {
 	?>
 		<h3><?php esc_html_e( 'Opt-in Mailchimp Audiences', 'pmpro-mailchimp' ); ?></h3>
 
