@@ -268,12 +268,15 @@ function pmpromc_option_users_lists()
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
+		?>
+		<div <?php if(count($pmpromc_lists) > 5) { ?>style="height: 100px; width: 300px; background: #FFFFFF; border: 1px solid #CCC; overflow: auto;"<?php } ?>>
+		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
 			echo( "<input type='checkbox' name='pmpromc_options[users_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_user_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
 			echo( "<label for='pmpromc_user_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
-		echo "</select>";
+		echo '</div>';
 	} else {
 		echo "No audiences found.";
 	}
@@ -295,12 +298,15 @@ function pmpromc_option_additional_lists()
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
+		?>
+		<div <?php if(count($pmpromc_lists) > 5) { ?>style="height: 100px; width: 300px; background: #FFFFFF; border: 1px solid #CCC; overflow: auto;"<?php } ?>>
+		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
 			echo( "<input type='checkbox' name='pmpromc_options[additional_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_additional_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
 			echo( "<label for='pmpromc_additional_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
-		echo "</select>";
+		echo '</div>';
 	} else {
 		echo "No audiences found.";
 	}
@@ -399,12 +405,15 @@ function pmpromc_option_memberships_lists($level)
 		$selected_lists = array();
 
 	if (!empty($pmpromc_lists)) {
+		?>
+		<div <?php if(count($pmpromc_lists) > 5) { ?>style="height: 100px; width: 300px; background: #FFFFFF; border: 1px solid #CCC; overflow: auto;"<?php } ?>>
+		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
 			echo( "<input type='checkbox' name='pmpromc_options[level_" . $level->id . "_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
 			echo( "<label for='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
-		echo "</select>";
+		echo "</div>";
 	} else {
 		echo "No audiences found.";
 	}
