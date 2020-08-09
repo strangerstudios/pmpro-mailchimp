@@ -85,7 +85,7 @@
 			'FNAME' => '',
 			'LNAME' => '',
 		),
-		null,
+		$current_user,
 		null
 	);
 
