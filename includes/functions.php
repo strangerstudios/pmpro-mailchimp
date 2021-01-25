@@ -36,7 +36,7 @@ function pmpromc_user_register( $user_id ) {
 	$options = get_option( 'pmpromc_options' );
 	if ( ! empty( $options['users_lists'] ) && ( ! function_exists( 'pmpro_is_checkout' ) || ! pmpro_is_checkout() ) ) {
 		// Registering for site without recieving level. Add to non-member lists.
-		pmpromc_queue_subscription( $user, $options['users_lists'] );
+		pmpromc_queue_subscription( $user_id, $options['users_lists'] );
 	}
 }
 add_action( 'user_register', 'pmpromc_user_register' );
