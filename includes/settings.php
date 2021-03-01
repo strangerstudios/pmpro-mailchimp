@@ -274,7 +274,7 @@ function pmpromc_option_users_lists()
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
 			echo( "<input type='checkbox' name='pmpromc_options[users_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_user_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
-			echo( "<label for='pmpromc_user_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
+			echo( "<label for='pmpromc_user_lists_" . esc_attr( $list->id ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo '</div>';
 	} else {
@@ -304,7 +304,7 @@ function pmpromc_option_additional_lists()
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
 			echo( "<input type='checkbox' name='pmpromc_options[additional_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_additional_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
-			echo( "<label for='pmpromc_additional_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
+			echo( "<label for='pmpromc_additional_lists_" . esc_attr( $list->id ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo '</div>';
 	} else {
@@ -411,7 +411,7 @@ function pmpromc_option_memberships_lists($level)
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
 			echo( "<input type='checkbox' name='pmpromc_options[level_" . $level->id . "_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
-			echo( "<label for='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) .  "'>" . esc_html( $list->name ) .  "</label><br>" );
+			echo( "<label for='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo "</div>";
 	} else {

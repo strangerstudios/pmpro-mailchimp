@@ -219,7 +219,7 @@ function pmpromc_additional_lists_on_checkout() {
 							};
 							?>
 							/>
-					<label for="additional_lists_<?php echo( $count ); ?>" class="pmpro_normal pmpro_clickable"><?php echo( $additional_list->name ); ?></label><br/>
+					<label for="additional_lists_<?php echo( $count ); ?>" class="pmpromc-checkbox-label"><?php echo( $additional_list->name ); ?></label><br/>
 					<?php
 				}
 				?>
