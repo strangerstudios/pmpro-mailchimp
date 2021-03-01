@@ -87,7 +87,7 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
 	}
 
 	// Build empty user data.
-	$user_data = null;
+	$mc_user_data = null;
 
 	// Loop through audiences.
 	foreach ( $audiences as $audience ) {
@@ -105,8 +105,8 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
 		}
 
 		// Build user profile if not yet built for previous audience update.
-		if ( null === $user_data ) {
-			$user_data = (object) array(
+		if ( null === $mc_user_data ) {
+			$mc_user_data = (object) array(
 				'email_address' => $user->user_email,
 				'status'        => $status,
 				'merge_fields'  => apply_filters(
@@ -119,6 +119,7 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
 					$audience
 				),
 			);
+			$mc_user_data = apply_filters( 'pmpromc_user_data', $mc_user_data, $user );
 		}
 
 		// Add user to $pmpromc_audience_member_updates for list.
@@ -129,7 +130,7 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
 		if ( ! array_key_exists( $audience, $pmpromc_audience_member_updates ) ) {
 			$pmpromc_audience_member_updates[ $audience ] = array();
 		}
-		$pmpromc_audience_member_updates[ $audience ][ $user->ID ] = $user_data;
+		$pmpromc_audience_member_updates[ $audience ][ $user->ID ] = $mc_user_data;
 	}
 }
 
