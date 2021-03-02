@@ -271,7 +271,7 @@ function pmpromc_option_users_lists()
 
 	if (!empty($pmpromc_lists)) {
 		?>
-		<div <?php if(count($pmpromc_lists) > 5) { ?>style="height: 100px; width: 300px; background: #FFFFFF; border: 1px solid #CCC; overflow: auto;"<?php } ?>>
+		<div <?php if(count($pmpromc_lists) > 5) { ?>class="pmpromc-checkbox-list-scrollable"<?php } ?>>
 		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
@@ -301,7 +301,7 @@ function pmpromc_option_additional_lists()
 
 	if (!empty($pmpromc_lists)) {
 		?>
-		<div <?php if(count($pmpromc_lists) > 5) { ?>style="height: 100px; width: 300px; background: #FFFFFF; border: 1px solid #CCC; overflow: auto;"<?php } ?>>
+		<div <?php if(count($pmpromc_lists) > 5) { ?>class="pmpromc-checkbox-list-scrollable"<?php } ?>>
 		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
@@ -424,7 +424,7 @@ function pmpromc_option_memberships_lists($level)
 
 	if (!empty($pmpromc_lists)) {
 		?>
-		<div <?php if(count($pmpromc_lists) > 5) { ?>style="height: 100px; width: 300px; background: #FFFFFF; border: 1px solid #CCC; overflow: auto;"<?php } ?>>
+		<div <?php if(count($pmpromc_lists) > 5) { ?>class="pmpromc-checkbox-list-scrollable"<?php } ?>>
 		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
