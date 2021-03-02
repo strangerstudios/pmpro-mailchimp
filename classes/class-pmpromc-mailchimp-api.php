@@ -346,7 +346,10 @@ class PMPromc_Mailchimp_API
 	 */
 	public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id = '' )
 	{
-		///echo "(add merge field: $merge_field)";
+		if ( empty( $list_id ) ) {
+			// We need a list_id to update merge fields for.
+			return false;
+		}
 		
 		//default type to text
 		if (empty($type)) {
