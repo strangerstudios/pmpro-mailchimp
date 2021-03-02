@@ -344,7 +344,7 @@ class PMPromc_Mailchimp_API
 	 * @return mixed - Merge field or false
 	 * @since 2.0.0
 	 */
-	public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id)
+	public function add_merge_field($merge_field, $type = NULL, $public = false, $list_id = '' )
 	{
 		///echo "(add merge field: $merge_field)";
 		
