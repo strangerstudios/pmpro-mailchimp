@@ -145,17 +145,16 @@ class PMPromc_Mailchimp_API
 	 * @since 2.0.0
 	 */
 	public function update_audience_members( $audience = '', $updates = [] ) {
-			// Can't be empty.
-		if (WP_DEBUG) {
-			global $pmpromc_lists;
-			if ( empty( $pmpromc_lists ) ) {
-				$pmpromc_lists = get_option( 'pmpromc_all_lists' );
-			}
-			foreach ( $pmpromc_lists as $audience_arr ) {
-				if ( $audience_arr['id'] == $audience ) {
-					error_log("Processing update for audience {$audience_arr['name']} ({$audience}): " . print_r( $updates, true ) );
-					break;
-				}
+
+		// Log action.
+		global $pmpromc_lists;
+		if ( empty( $pmpromc_lists ) ) {
+			$pmpromc_lists = get_option( 'pmpromc_all_lists' );
+		}
+		foreach ( $pmpromc_lists as $audience_arr ) {
+			if ( $audience_arr['id'] == $audience ) {
+				pmpromc_log("Processing update for audience {$audience_arr['name']} ({$audience}): " . print_r( $updates, true ) );
+				break;
 			}
 		}
 
@@ -185,18 +184,15 @@ class PMPromc_Mailchimp_API
 
 		if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 			$this->set_error_msg($resp);
-			if (WP_DEBUG) {
-				error_log("Mailchimp Error: Response object: " . print_r($resp, true));
-			}
+			pmpromc_log("Mailchimp Error: Response object: " . print_r($resp, true));
 			return false;
 		}
-		if ( WP_DEBUG ) {
-			$response_body = self::decode_response( $resp['body'] );
-			if ( $response_body->error_count == 0 ) {
-				error_log( 'Mailchimp Response: No errors detected.' );
-			} else {
-				error_log( 'Mailchimp Response: ' . $response_body->error_count . ' error(s). ' . print_r( $response_body->errors, true ) );
-			}
+
+		$response_body = self::decode_response( $resp['body'] );
+		if ( $response_body->error_count == 0 ) {
+			pmpromc_log( 'Mailchimp Response: No errors detected.' );
+		} else {
+			pmpromc_log( 'Mailchimp Response: ' . $response_body->error_count . ' error(s). ' . print_r( $response_body->errors, true ) );
 		}
 		return true;
 	}
@@ -548,13 +544,11 @@ class PMPromc_Mailchimp_API
 		//hit the API
 		$url = self::$api_url . "/lists/{$list_id}/members/{$member_id}";
 		$response = wp_remote_request($url, $args);
-		if ( WP_DEBUG ) {
-			if ( $response['response']['code'] == '200' ) {
-				error_log( 'Mailchimp Response: No errors detected.' );
-			} else {
-				$response_body = self::decode_response( $response['body'] );
-				error_log( 'Mailchimp Response: Error status ' . $response_body->status . '. ' . print_r( $response_body->errors, true ) );
-			}
+		if ( $response['response']['code'] == '200' ) {
+			pmpromc_log( 'Mailchimp Response: No errors detected.' );
+		} else {
+			$response_body = self::decode_response( $response['body'] );
+			pmpromc_log( 'Mailchimp Response: Error status ' . $response_body->status . '. ' . print_r( $response_body->errors, true ) );
 		}
 
 		//check response
