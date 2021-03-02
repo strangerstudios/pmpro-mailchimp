@@ -158,6 +158,7 @@ function pmpromc_admin_init()
 	add_settings_field('pmpromc_option_double_opt_in', __('Require Double Opt-in?', 'pmpro-mailchimp'), 'pmpromc_option_double_opt_in', 'pmpromc_options', 'pmpromc_section_general');
 	add_settings_field('pmpromc_option_unsubscribe', __('Unsubscribe on Level Change?', 'pmpro-mailchimp'), 'pmpromc_option_unsubscribe', 'pmpromc_options', 'pmpromc_section_general');
 	add_settings_field('pmpromc_option_profile_update', __('Update on Profile Save?', 'pmpro-mailchimp'), 'pmpromc_option_profile_update', 'pmpromc_options', 'pmpromc_section_general');
+	add_settings_field('pmpromc_option_logging_enabled', __('Log API Calls?', 'pmpro-mailchimp'), 'pmpromc_option_logging_enabled', 'pmpromc_options', 'pmpromc_section_general');
 
 	//pmpro-related options
 	add_settings_section('pmpromc_section_levels', __('Membership Levels and Audiences', 'pmpro-mailchimp'), 'pmpromc_section_levels', 'pmpromc_options');
@@ -184,6 +185,7 @@ function pmpromc_options_validate($input)
 	$newinput['double_opt_in'] = isset($input['double_opt_in']) ? intval($input['double_opt_in']) : null;
 	$newinput['unsubscribe'] = isset($input['unsubscribe']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']) : null;
 	$newinput['profile_update'] = isset($input['profile_update']) ? preg_replace("[^a-zA-Z0-9\-]", "", $input['profile_update']) : null;
+	$newinput['logging_enabled'] = isset($input['logging_enabled']) ? intval($input['logging_enabled']) : null;
 
 	//user lists
 	if (!empty($input['users_lists']) && is_array($input['users_lists'])) {
@@ -350,6 +352,22 @@ function pmpromc_option_profile_update() {
 		<option value="1" <?php selected( $profile_update, 1 ); ?>><?php esc_html_e( 'Yes', 'pmpro-mailchimp' ); ?></option>
 	</select>
 	<p class="description"><?php esc_html_e( "Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed.", 'pmpro-mailchimp' ); ?>
+	</p>
+	<?php
+}
+
+function pmpromc_option_logging_enabled() {
+	$options         = get_option( 'pmpromc_options' );
+	$logging_enabled = 0;
+	if ( ! empty( $options['logging_enabled'] ) ) {
+		$logging_enabled = $options['logging_enabled'];
+	}
+	?>
+	<select name="pmpromc_options[logging_enabled]">
+		<option value="0" <?php selected( $logging_enabled, 0 ); ?>><?php esc_html_e( 'No', 'pmpro-mailchimp' ); ?></option>
+		<option value="1" <?php selected( $logging_enabled, 1 ); ?>><?php esc_html_e( 'Yes', 'pmpro-mailchimp' ); ?></option>
+	</select>
+	<p class="description"><?php printf( esc_html__( "Debug log can be found at %s", 'pmpro-mailchimp' ), '<code>/wp-content/plugins/pmpro-mailchimp/logs/pmpromc-log.txt</code>' ); ?>
 	</p>
 	<?php
 }

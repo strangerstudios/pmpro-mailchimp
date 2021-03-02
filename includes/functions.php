@@ -265,3 +265,19 @@ function pmpromc_pmpro_after_checkout( $user_id ) {
 }
 add_action( 'pmpro_after_checkout', 'pmpromc_pmpro_after_checkout', 15 );
 
+function pmpromc_log( $entry ) {
+	$options = get_option( 'pmpromc_options' );
+	if ( empty( $options['logging_enabled'] ) ) {
+		// Logging is not enabled.
+		return;
+	}
+
+	$logstr = "Logged On: " . date_i18n("m/d/Y H:i:s") . "\n";
+	$logstr .= $entry;
+	$logstr .= "\n-------------\n";
+	
+	$loghandle = fopen(PMPROMC_DIR . "/logs/pmpromc-log.txt", "a+");
+	fwrite($loghandle, $logstr);
+	fclose($loghandle);
+}
+
