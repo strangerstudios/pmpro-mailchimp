@@ -2,8 +2,8 @@
 Contributors: strangerstudios, dlparker1005
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 4
-Tested up to: 5.4
-Stable tag: 2.3.1
+Tested up to: 5.6
+Stable tag: 2.3.2
 
 Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
 
@@ -26,6 +26,7 @@ https://www.youtube.com/watch?v=ctcy1_npmRE
 * **Require Double Opt-in?:** If set to “Yes (All audiences)”, users will be set to “Pending” status in Mailchimp when they are added to an audience instead of being subscribed right away. They will then receive an email from Mailchimp to opt-in to the audience.
 * **Unsubscribe on Level Change?:** If set to “No”, users will not be automatically unsubscribed from any audiences when they lose a membership level. If set to “Yes (Only old level audiences.)”, users will be unsubscribed from any level audiences they are subscribed to when they lose that level, assuming that audience is not a Non-Member audience as well. If set to “Yes (Old level and opt-in audiences.)”, users will also be unsubscribed from opt-in audiences when they lose their membership level (though they can re-subscribe by updating the setting on their profile).
 * **Update on Profile Save:** If set to “Yes”, PMPro will update Mailchimp audiences whenever a user’s profile page is saved. If set to “No”, PMPro will only update Mailchimp when a user’s membership level is changed, email is changed, or chosen opt-in audiences are changed.
+* **Log API Calls?:** If set to “Yes”, API calls to Mailchimp will be logged in the `/pmpro-mailchimp/logs` folder.
 * **Membership Levels and Audiences:** These are the audiences that users will automatically be subscribed to when they receive a membership level.
 
 == Installation ==
@@ -62,6 +63,17 @@ Please visit [our support site at https://www.paidmembershipspro.com](http://www
 2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
+= 2.3.2 - 2021-03-02 =
+* ENHANCEMENT: Added setting to log API calls sent to Mailchimp in the `pmpro-mailchimp/logs` folder.
+* ENHANCEMENT: Added a pmpromc_user_data filter to filter user data taht is sent to Mailchimp.
+* ENHANCEMENT: Audience checkboxes are now shown as scrollable list on settings page if there are more than 5.
+* BUG FIX/ENHANCEMENT: Added CSS class for checkbox labels.
+* BUG FIX/ENHANCEMENT: Now passing a valid user object when generating CSV export file headers.
+* BUG FIX: Fixed undefined variable in pmpromc_user_register() (Thanks, x140l31 on GitHub).
+* BUG FIX: Fixed required parameter being included after optional parameters in add_merge_field().
+* BUG FIX: Fixed URL to PMPro support page (Thanks, majerus1223 on GitHub).
+
+
 = 2.3.1 - 2020-04-28 =
 * ENHANCEMENT: Added support for Paid Memberships Pro v2.3+ front-end profile edit page.
 * ENHANCEMENT: Now using checkboxes to select audiences instead of <select> fields
