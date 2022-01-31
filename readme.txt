@@ -2,7 +2,7 @@
 Contributors: strangerstudios, dlparker1005
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 4
-Tested up to: 5.7
+Tested up to: 5.9
 Stable tag: 2.3.2
 
 Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
