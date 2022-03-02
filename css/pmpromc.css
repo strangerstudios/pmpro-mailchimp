@@ -1,4 +1,4 @@
-.pmpromc-checkbox-label {
+input[type=checkbox] + label.pmpromc-checkbox-label {
     cursor: pointer;
 	display: inline-block;
 	width: auto;
