@@ -1,17 +1,18 @@
 <?php
-/*
-Plugin Name: Paid Memberships Pro - Mailchimp Add On
-Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
-Description: Sync your WordPress users and members with Mailchimp audiences.
-Version: 2.3.2
-Author: Stranger Studios
-Author URI: http://www.strangerstudios.com
-Text Domain: pmpro-mailchimp
-*/
-/*
-	Copyright 2011-2019	Stranger Studios	(email : jason@strangerstudios.com)
-	GPLv2 Full license details in license.txt
-*/
+/**
+ * Plugin Name: Paid Memberships Pro - Mailchimp Add On
+ * Plugin URI: http://www.paidmembershipspro.com/pmpro-mailchimp/
+ * Description: Sync your WordPress users and members with Mailchimp audiences.
+ * Version: 2.3.2
+ * Author: Paid Memberships Pro
+ * Author URI: https://www.paidmembershipspro.com
+ * Text Domain: pmpro-mailchimp
+ */
+/**
+ * Copyright 2011-2022	Stranger Studios
+ * (email : info@paidmembershipspro.com)
+ * GPLv2 Full license details in license.txt
+ */
 
 define( 'PMPROMC_BASE_FILE', __FILE__ );
 define( 'PMPROMC_DIR', dirname( __FILE__ ) );
