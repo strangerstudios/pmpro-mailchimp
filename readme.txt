@@ -1,8 +1,8 @@
 === Paid Memberships Pro - Mailchimp Add On ===
-Contributors: strangerstudios, dlparker1005
+Contributors: strangerstudios, dlparker1005, paidmembershipspro
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
-Requires at least: 4
-Tested up to: 5.9
+Requires at least: 5.2
+Tested up to: 6.1
 Stable tag: 2.3.2
 
 Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
