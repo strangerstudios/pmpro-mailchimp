@@ -271,17 +271,17 @@ function pmpromc_log( $entry ) {
 	$logstr .= "\n-------------\n";
 	
 	/**
-	 * Filter the debug log file. 
-	 * By default this points to /plugins/pmpro-mailchimp/logs/log.txt
+	 * Filter the debug log file path. 
+	 * By default this points to /plugins/pmpro-mailchimp/logs/pmpromc-log.txt
 	 * 
 	 * @param string $path
 	 *
 	 * @since TBD
 	 *		 
 	 */
-	$pmpromc_log_file = apply_filters( 'pmpromc_logfile', PMPROMC_DIR . "/logs/pmpromc-log.txt" );
+	$pmpromc_log_path = apply_filters( 'pmpromc_log_path', PMPROMC_DIR . "/logs/pmpromc-log.txt" );
 
-	$loghandle = fopen( $pmpromc_log_file, "a+" );
+	$loghandle = fopen( $pmpromc_log_path, "a+" );
 	fwrite($loghandle, $logstr);
 	fclose($loghandle);
 }
