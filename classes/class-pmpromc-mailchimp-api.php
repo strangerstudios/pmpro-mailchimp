@@ -454,11 +454,11 @@ class PMPromc_Mailchimp_API
 	 * @return \stdClass() $interestes - Object containing the required Interests settings for MC-API v3.0
 	 *
 	 * @since 2.0.0
-	 * @deprecated TBD
+	 * @deprecated 2.3.3
 	 */
 	private function set_user_interest($user, $list_id) {
 		// Add deprecation message.
-		_deprecated_function( __METHOD__, 'TBD' );
+		_deprecated_function( __METHOD__, '2.3.3' );
 
 		$level = pmpro_getMembershipLevelForUser($user->ID);
 		$interests = new stdClass();

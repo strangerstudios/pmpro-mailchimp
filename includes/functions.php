@@ -276,7 +276,7 @@ function pmpromc_log( $entry ) {
 	 * 
 	 * @param string $path
 	 *
-	 * @since TBD
+	 * @since 2.3.3
 	 *		 
 	 */
 	$pmpromc_log_path = apply_filters( 'pmpromc_log_path', PMPROMC_DIR . "/logs/pmpromc-log.txt" );
