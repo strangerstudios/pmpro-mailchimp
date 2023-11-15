@@ -153,13 +153,7 @@ class PMPromc_Mailchimp_API
 		}
 		foreach ( $pmpromc_lists as $audience_arr ) {
 			if ( $audience_arr['id'] == $audience ) {
-				$scrub_log_data = $updates;
-				// Scrub email address from the update data to obfuscate it a bit.
-				if ( ! empty( $scrub_log_data[0]->email_address ) ) {
-					$scrub_log_data[0]->email_address = preg_replace( '/(?<=.).(?=.*@)/u', '*', $scrub_log_data[0]->email_address );
-				}
-
-				pmpromc_log("Processing update for audience {$audience_arr['name']} ({$audience}): " . print_r( $scrub_log_data, true ) );
+				pmpromc_log("Processing update for audience {$audience_arr['name']} ({$audience}): " . print_r( $updates, true ) );
 				break;
 			}
 		}
