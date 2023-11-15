@@ -181,8 +181,8 @@ function pmpromc_additional_lists_on_checkout() {
 	?>
     <div id="pmpro_mailing_lists" class="pmpro_checkout" <?php echo( $display_modifier ); ?>>
         <hr />
-        <h3>
-            <span class="pmpro_checkout-h3-name">
+        <h2>
+            <span class="pmpro_checkout-h2-name">
                 <?php
                 if ( count( $additional_lists_array ) > 1 ) {
                     esc_html_e( 'Join one or more of our mailing lists.', 'pmpro-mailchimp' );
@@ -191,7 +191,7 @@ function pmpromc_additional_lists_on_checkout() {
                 }
                 ?>
             </span>
-        </h3>
+        </h2>
         <div class="pmpro_checkout-fields">
             <?php
             global $current_user;

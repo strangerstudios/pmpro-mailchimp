@@ -66,18 +66,18 @@ function pmpromc_options_page()
 		<?php } ?>
 
 		<form action="options.php" method="post">
-			<h3><?php _e('Subscribe users to one or more Mailchimp audiences when they sign up for your site.', 'pmpro-mailchimp');?></h3>
+			<h2><?php _e('Subscribe users to one or more Mailchimp audiences when they sign up for your site.', 'pmpro-mailchimp');?></h2>
 			<p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify "Opt-in Audiences" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free Mailchimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
 			<?php if (function_exists('pmpro_getAllLevels')) { ?>
 				<hr/>
-				<h3><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h3>
+				<h2><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h2>
 				<p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in Mailchimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php _e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
 				<p><a class="button" onclick="jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
 				<hr/>
 
 				<div id="pmpromc_export_instructions" class="postbox" style="display: none;">
 					<div class="inside">
-						<h3><?php _e('Export a CSV for your Mailchimp Import', 'pmpro-mailchimp');?></h3>
+						<h2><?php _e('Export a CSV for your Mailchimp Import', 'pmpro-mailchimp');?></h2>
 						<p><?php _e('Membership Level', 'pmpro-mailchimp');?>:
 							<select id="pmpromc_export_level" name="l">
 								<?php
