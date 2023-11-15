@@ -250,14 +250,14 @@ add_action( 'pmpro_checkout_before_change_membership_level', 'pmpromc_pmpro_chec
  *
  * @param int $user_id of user who checked out.
  */
-function pmpromc_pmpro_after_checkout( $user_id ) {
-	pmpromc_pmpro_after_change_membership_level( $_REQUEST['level'], $user_id );
+function pmpromc_pmpro_after_checkout( $user_id, $order ) {
+	pmpromc_pmpro_after_change_membership_level( $order->membership_id, $user_id );
 	if ( empty( $_REQUEST['additional_lists'] ) ) {
 		$_REQUEST['additional_lists'] = array();
 	}
 	pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] );
 }
-add_action( 'pmpro_after_checkout', 'pmpromc_pmpro_after_checkout', 15 );
+add_action( 'pmpro_after_checkout', 'pmpromc_pmpro_after_checkout', 15, 2 );
 
 function pmpromc_log( $entry ) {
 	$options = get_option( 'pmpromc_options' );
