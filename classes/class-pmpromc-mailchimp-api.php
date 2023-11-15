@@ -170,6 +170,7 @@ class PMPromc_Mailchimp_API
 		$data = (object) array(
 			'members' => $updates,
 			'update_existing' => true,
+			'sync_tags' => true,
 		);
 		$url = self::$api_url . "/lists/{$audience}";
 		$args = array(
