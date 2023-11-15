@@ -266,6 +266,10 @@ function pmpromc_log( $entry ) {
 		return;
 	}
 
+	// Define a regular expression pattern to match email addresses
+	$pattern = '/(?<=@)([a-zA-Z0-9._%+-]+)(?=\.[a-zA-Z]{2,})/';
+	$entry = preg_replace( $pattern, '****', $entry );
+
 	$logstr = "Logged On: " . date_i18n("m/d/Y H:i:s") . "\n";
 	$logstr .= $entry;
 	$logstr .= "\n-------------\n";
