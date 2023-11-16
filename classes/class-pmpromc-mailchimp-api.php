@@ -167,10 +167,10 @@ class PMPromc_Mailchimp_API
 			$this->add_pmpro_merge_fields( $audience) ;
 		}
 
-		$data = (object) array(
+		$data = (object) apply_filters( 'pmpromc_body_parameters', array(
 			'members' => $updates,
 			'update_existing' => true,
-		);
+		), $audience );
 		$url = self::$api_url . "/lists/{$audience}";
 		$args = array(
 			'method' => 'POST', // Allows us update a user ID
