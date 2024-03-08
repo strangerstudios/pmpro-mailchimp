@@ -273,7 +273,30 @@ function pmpromc_log( $entry ) {
 	$logstr = "Logged On: " . date_i18n("m/d/Y H:i:s") . "\n";
 	$logstr .= $entry;
 	$logstr .= "\n-------------\n";
-	
+
+	$loghandle = fopen( pmpromc_get_log_file_path(), "a+" );
+	fwrite($loghandle, $logstr);
+	fclose($loghandle);
+}
+
+/**
+ * Get the file path for the debug log file.
+ *
+ * @since TBD
+ *
+ * @return string
+ */
+function pmpromc_get_log_file_path() {
+	// Check if we have a unique file name saved already.
+	$pmpromc_file_name = get_option( 'pmpromc_log_file_name' );
+	if ( empty( $pmpromc_file_name ) ) {
+		$pmpromc_file_name = 'pmpromc-log-' . uniqid() . '.txt';
+		update_option( 'pmpromc_log_file_name', $pmpromc_file_name );
+	}
+
+	// Build the debug log file path.
+	$pmpromc_log_path = PMPROMC_DIR . "/logs/" . $pmpromc_file_name;
+
 	/**
 	 * Filter the debug log file path. 
 	 * By default this points to /plugins/pmpro-mailchimp/logs/pmpromc-log.txt
@@ -281,12 +304,9 @@ function pmpromc_log( $entry ) {
 	 * @param string $path
 	 *
 	 * @since 2.3.3
-	 *		 
 	 */
-	$pmpromc_log_path = apply_filters( 'pmpromc_log_path', PMPROMC_DIR . "/logs/pmpromc-log.txt" );
+	$pmpromc_log_path = apply_filters( 'pmpromc_log_path', $pmpromc_log_path );
 
-	$loghandle = fopen( $pmpromc_log_path, "a+" );
-	fwrite($loghandle, $logstr);
-	fclose($loghandle);
+	return $pmpromc_log_path;
 }
 

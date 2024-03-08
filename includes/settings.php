@@ -367,7 +367,7 @@ function pmpromc_option_logging_enabled() {
 		<option value="0" <?php selected( $logging_enabled, 0 ); ?>><?php esc_html_e( 'No', 'pmpro-mailchimp' ); ?></option>
 		<option value="1" <?php selected( $logging_enabled, 1 ); ?>><?php esc_html_e( 'Yes', 'pmpro-mailchimp' ); ?></option>
 	</select>
-	<p class="description"><?php printf( esc_html__( "Debug log can be found at %s", 'pmpro-mailchimp' ), '<code>/wp-content/plugins/pmpro-mailchimp/logs/pmpromc-log.txt</code>' ); ?>
+	<p class="description"><?php printf( esc_html__( "Debug log can be found at %s", 'pmpro-mailchimp' ), '<code>' . esc_html( pmpromc_get_log_file_path() ) . '</code>' ); ?>
 	</p>
 	<?php
 }
