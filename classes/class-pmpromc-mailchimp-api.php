@@ -174,7 +174,7 @@ class PMPromc_Mailchimp_API
 		/**
 		 * Filter the body parameter sent to the "update audience members" endpoint.
 		 *
-		 * @since TBD
+		 * @since 2.3.5
 		 *
 		 * @param object $data The data to send to the Mailchimp API.
 		 * @param string $audience The audience ID being updated.

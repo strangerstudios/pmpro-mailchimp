@@ -3,7 +3,7 @@ Contributors: strangerstudios, dlparker1005, paidmembershipspro
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 5.2
 Tested up to: 6.4
-Stable tag: 2.3.4
+Stable tag: 2.3.5
 
 Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
 
@@ -63,6 +63,11 @@ Please visit [our support site at https://www.paidmembershipspro.com](http://www
 2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
+= 2.3.5 - 2024-03-08 =
+* SECURITY: Now adding a randomized suffix to the log file name to prevent unauthorized access. #138 (@dparker1005)
+* SECURITY: Now preventing access to the `/log/` directory listing. #138 (@dparker1005)
+* ENHANCEMENT: Added a filter `pmpromc_update_audience_members_data` to allow modifying data sent to the `/lists/{$audience}` Mailchimp endpoint. #137 (@efc)
+
 = 2.3.4 - 2023-11-15 =
 * SECURITY: Now obfuscating email domains in debug logs. #135 (@andrewlimaza)
 * ENHANCEMENT: Updating `<h3>` tags to `<h2>` tags for better accessibility. #133 (@kimwhite)

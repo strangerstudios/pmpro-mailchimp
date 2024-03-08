@@ -282,7 +282,7 @@ function pmpromc_log( $entry ) {
 /**
  * Get the file path for the debug log file.
  *
- * @since TBD
+ * @since 2.3.5
  *
  * @return string
  */
