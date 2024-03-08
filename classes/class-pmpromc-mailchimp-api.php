@@ -167,10 +167,21 @@ class PMPromc_Mailchimp_API
 			$this->add_pmpro_merge_fields( $audience) ;
 		}
 
-		$data = (object) apply_filters( 'pmpromc_body_parameters', array(
+		$data = (object) array(
 			'members' => $updates,
 			'update_existing' => true,
-		), $audience );
+		);
+		/**
+		 * Filter the body parameter sent to the "update audience members" endpoint.
+		 *
+		 * @since TBD
+		 *
+		 * @param object $data The data to send to the Mailchimp API.
+		 * @param string $audience The audience ID being updated.
+		 *
+		 * @return object The data to send to the Mailchimp API.
+		 */
+		$data = apply_filters( 'pmpromc_update_audience_members_data', $data, $audience );
 		$url = self::$api_url . "/lists/{$audience}";
 		$args = array(
 			'method' => 'POST', // Allows us update a user ID
