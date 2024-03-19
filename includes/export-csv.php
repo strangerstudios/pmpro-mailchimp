@@ -2,7 +2,7 @@
 
 	if(!function_exists("current_user_can") || (!current_user_can("manage_options") && !current_user_can("pmpro_memberslistcsv")))
 	{
-		die(__("You do not have permissions to perform this action.", "pmpro"));
+		die( esc_html__( "You do not have permissions to perform this action.", "pmpro-mailchimp" ) );
 	}
 
 	if (!defined('PMPRO_BENCHMARK'))
@@ -372,12 +372,12 @@
 		//did we accidentally send errors/warnings to browser?
 		if (headers_sent())
 		{
-			echo str_repeat('-', 75) . "<br/>\n";
+			echo esc_html( str_repeat('-', 75 ) ) . "<br/>\n";
 			echo 'Please open a support case and paste in the warnings/errors you see above this text to\n ';
 			echo 'the <a href="http://paidmembershipspro.com/support/" target="_blank">Paid Memberships Pro support forum</a><br/>\n';
-			echo str_repeat("=", 75) . "<br/>\n";
-			echo file_get_contents($filename);
-			echo str_repeat("=", 75) . "<br/>\n";
+			echo esc_html( str_repeat("=", 75) ) . "<br/>\n";
+			echo esc_html( file_get_contents($filename) );
+			echo esc_html( str_repeat("=", 75) ) . "<br/>\n";
 		}
 
 		//transmission

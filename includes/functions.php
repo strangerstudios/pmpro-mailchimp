@@ -179,7 +179,7 @@ function pmpromc_additional_lists_on_checkout() {
 
 	$display_modifier = empty( $pmpro_review ) ? '' : 'style="display: none;"';
 	?>
-    <div id="pmpro_mailing_lists" class="pmpro_checkout" <?php echo( $display_modifier ); ?>>
+    <div id="pmpro_mailing_lists" class="pmpro_checkout" <?php echo esc_html( $display_modifier ); ?>>
         <hr />
         <h2>
             <span class="pmpro_checkout-h2-name">
@@ -208,14 +208,14 @@ function pmpromc_additional_lists_on_checkout() {
             foreach ( $additional_lists_array as $key => $additional_list ) {
                 $count++;
                 ?>
-                <input type="checkbox" id="additional_lists_<?php echo( $count ); ?>" name="additional_lists[]" value="<?php echo( $additional_list->id ); ?>"
+                <input type="checkbox" id="additional_lists_<?php echo esc_attr( $count ); ?>" name="additional_lists[]" value="<?php echo esc_attr( $additional_list->id ); ?>"
                     <?php
                     if ( is_array( $additional_lists_selected ) ) {
                         checked( in_array( $additional_list->id, $additional_lists_selected ) );
                     };
                     ?>
                 />
-                <label for="additional_lists_<?php echo( $count ); ?>" class="pmpromc-checkbox-label"><?php echo( $additional_list->name ); ?></label><br/>
+                <label for="additional_lists_<?php echo esc_attr( $count ); ?>" class="pmpromc-checkbox-label"><?php echo esc_html( $additional_list->name ); ?></label><br/>
                 <?php
             }
             ?>

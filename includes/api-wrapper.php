@@ -163,7 +163,7 @@ function pmpromc_process_audience_member_updates_queue( $filter_contents = null 
 				$index_to_process += 500;
 			}
 		} else {
-			wp_die( __('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp') );
+			wp_die( esc_html__('Error during unsubscribe operation. Please report this error to the administrator', 'pmpro-mailchimp') );
 		}
 	}
 

@@ -72,8 +72,8 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 					echo '<input type="hidden" name="additional_lists_profile" value="1" />';
 					foreach ( $additional_audiences_info as $audience_arr ) {
 						$checked_modifier = ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) ? ' checked' : '';
-						echo( "<input type='checkbox' name='additional_lists[]' value='" . esc_attr( $audience_arr['id'] ) . "' id='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) . "'" . $checked_modifier . ">" );
-						echo( "<label for='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) .  "' class='pmpromc-checkbox-label'>" . $audience_arr['name'] .  "</label><br>" );
+						echo( "<input type='checkbox' name='additional_lists[]' value='" . esc_attr( $audience_arr['id'] ) . "' id='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) . "'" . esc_attr( $checked_modifier ) . ">" );
+						echo( "<label for='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $audience_arr['name'] ) .  "</label><br>" );
 					}
 					?>
 				</td>
@@ -99,8 +99,8 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 			echo '<input type="hidden" name="additional_lists_profile" value="1" />';
 			foreach ( $additional_audiences_info as $audience_arr ) {
 				$checked_modifier = ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) ? ' checked' : '';
-				echo( "<input type='checkbox' name='additional_lists[]' value='" . esc_attr( $audience_arr['id'] ) . "' id='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) . "'" . $checked_modifier . ">" );
-				echo( "<label for='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) .  "' class='pmpromc-checkbox-label'>" . $audience_arr['name'] .  "</label><br>" );
+				echo( "<input type='checkbox' name='additional_lists[]' value='" . esc_attr( $audience_arr['id'] ) . "' id='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) . "'" . esc_attr( $checked_modifier ) . ">" );
+				echo( "<label for='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $audience_arr['name'] ) .  "</label><br>" );
 			} ?>
 	</div> <!-- end pmpro_member_profile_edit-field-first_name -->
 	<?php

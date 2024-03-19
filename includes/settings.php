@@ -59,57 +59,57 @@ function pmpromc_options_page()
 	?>
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br></div>
-		<h2><?php _e( 'Mailchimp Integration Options and Settings', 'pmpro-mailchimp' );?></h2>
+		<h2><?php esc_html_e( 'Mailchimp Integration Options and Settings', 'pmpro-mailchimp' );?></h2>
 
 		<?php if (!empty($msg)) { ?>
-			<div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
+			<div class="message <?php echo esc_attr( $msgt ); ?>"><p><?php echo esc_html( $msg ); ?></p></div>
 		<?php } ?>
 
 		<form action="options.php" method="post">
-			<h2><?php _e('Subscribe users to one or more Mailchimp audiences when they sign up for your site.', 'pmpro-mailchimp');?></h2>
+			<h2><?php esc_html_e('Subscribe users to one or more Mailchimp audiences when they sign up for your site.', 'pmpro-mailchimp');?></h2>
 			<p>
 				<?php
 				/* translators: %1$s - link to Paid Memberships Pro, %2$s - link to Mailchimp */
-				printf(__('If you have <a href="%1$s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify "Opt-in Audiences" that members can select at membership checkout. <a href="%2$s" target="_blank">Get a Free Mailchimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');
+				echo wp_kses_post( sprintf( __('If you have <a href="%1$s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify "Opt-in Audiences" that members can select at membership checkout. <a href="%2$s" target="_blank">Get a Free Mailchimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH' ) );
 				?>
 			</p>
 			<?php if (function_exists('pmpro_getAllLevels')) { ?>
 				<hr/>
-				<h2><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h2>
-				<p><?php _e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in Mailchimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php _e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
-				<p><a class="button" onclick="jQuery('#pmpromc_export_instructions').show();"><?php _e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
+				<h2><?php esc_html_e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h2>
+				<p><?php esc_html_e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in Mailchimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php esc_html_e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
+				<p><a class="button" onclick="jQuery('#pmpromc_export_instructions').show();"><?php esc_html_e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
 				<hr/>
 
 				<div id="pmpromc_export_instructions" class="postbox" style="display: none;">
 					<div class="inside">
-						<h2><?php _e('Export a CSV for your Mailchimp Import', 'pmpro-mailchimp');?></h2>
-						<p><?php _e('Membership Level', 'pmpro-mailchimp');?>:
+						<h2><?php esc_html_e('Export a CSV for your Mailchimp Import', 'pmpro-mailchimp');?></h2>
+						<p><?php esc_html_e('Membership Level', 'pmpro-mailchimp');?>:
 							<select id="pmpromc_export_level" name="l">
 								<?php
 								$levels = pmpro_getAllLevels(true, true);
 								foreach ($levels as $level) {
 									?>
-									<option value="<?php echo $level->id ?>"><?php echo $level->name ?></option>
+									<option value="<?php echo esc_attr( $level->id ) ?>"><?php echo esc_html( $level->name ) ?></option>
 									<?php
 								}
 								?>
-							</select> <a class="button-primary" id="pmpromc_export_link" href="" target="_blank"><?php _e('Download List (.CSV)', 'pmpro-mailchimp');?></a></p>
+							</select> <a class="button-primary" id="pmpromc_export_link" href="" target="_blank"><?php esc_html_e('Download List (.CSV)', 'pmpro-mailchimp');?></a></p>
 						<hr/>
-						<p><strong><?php _e('Mailchimp Import Steps', 'pmpro-mailchimp');?></strong></p>
+						<p><strong><?php esc_html_e('Mailchimp Import Steps', 'pmpro-mailchimp');?></strong></p>
 						<ol>
-							<li><?php _e('Download a CSV of member data for each membership level.', 'pmpro-mailchimp');?></li>
-							<li><?php _e('Log in to Mailchimp.', 'pmpro-mailchimp');?></li>
-							<li><?php _e('Go to Audiences -> Choose an Audience -> Add Members -> Import Members -> CSV or tab-delimited text file.', 'pmpro-mailchimp');?>
+							<li><?php esc_html_e('Download a CSV of member data for each membership level.', 'pmpro-mailchimp');?></li>
+							<li><?php esc_html_e('Log in to Mailchimp.', 'pmpro-mailchimp');?></li>
+							<li><?php esc_html_e('Go to Audiences -> Choose an Audience -> Add Members -> Import Members -> CSV or tab-delimited text file.', 'pmpro-mailchimp');?>
 							</li>
-							<li><?php _e('Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have those exact names in all uppercase letters.', 'pmpro-mailchimp');?>
+							<li><?php esc_html_e('Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have those exact names in all uppercase letters.', 'pmpro-mailchimp');?>
 							</li>
-							<li><?php _e('Check "auto update my existing audience". Click "Import".', 'pmpro-mailchimp');?></li>
+							<li><?php esc_html_e('Check "auto update my existing audience". Click "Import".', 'pmpro-mailchimp');?></li>
 						</ol>
 
 						<p>
 							<?php
 							/* translators: %s - link to documentation */
-							printf(__('For more detailed instructions and screenshots, <a href="%s" target="_blank">click here to read our documentation on importing existing members into Mailchimp</a>.', 'pmpro-mailchimp'), 'http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/');
+							echo wp_kses_post( sprintf( __('For more detailed instructions and screenshots, <a href="%s" target="_blank">click here to read our documentation on importing existing members into Mailchimp</a>.', 'pmpro-mailchimp'), 'http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/' ) );
 							?>
 						</p>
 
@@ -117,7 +117,7 @@ function pmpromc_options_page()
 				</div>
 				<script>
 					jQuery(document).ready(function () {
-						var exporturl = '<?php echo admin_url('admin-ajax.php?action=pmpro_mailchimp_export_csv');?>';
+						var exporturl = '<?php echo esc_url( admin_url('admin-ajax.php?action=pmpro_mailchimp_export_csv') );?>';
 
 						//function to update export link
 						function pmpromc_update_export_link() {
@@ -285,7 +285,7 @@ function pmpromc_option_users_lists()
 		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
-			echo( "<input type='checkbox' name='pmpromc_options[users_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_user_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
+			echo( "<input type='checkbox' name='pmpromc_options[users_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_user_lists_" . esc_attr( $list->id ) . "'" . esc_attr( $checked_modifier ) . ">" );
 			echo( "<label for='pmpromc_user_lists_" . esc_attr( $list->id ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo '</div>';
@@ -315,7 +315,7 @@ function pmpromc_option_additional_lists()
 		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
-			echo( "<input type='checkbox' name='pmpromc_options[additional_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_additional_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
+			echo( "<input type='checkbox' name='pmpromc_options[additional_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_additional_lists_" . esc_attr( $list->id ) . "'" . esc_attr( $checked_modifier ) . ">" );
 			echo( "<label for='pmpromc_additional_lists_" . esc_attr( $list->id ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo '</div>';
@@ -330,8 +330,8 @@ function pmpromc_option_double_opt_in()
 	$options = get_option('pmpromc_options');
 	?>
 	<select name="pmpromc_options[double_opt_in]">
-		<option value="0" <?php selected($options['double_opt_in'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
-		<option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php _e('Yes (All audiences)', 'pmpro-mailchimp');?></option>
+		<option value="0" <?php selected($options['double_opt_in'], 0); ?>><?php esc_html_e('No', 'pmpro-mailchimp');?></option>
+		<option value="1" <?php selected($options['double_opt_in'], 1); ?>><?php esc_html_e('Yes (All audiences)', 'pmpro-mailchimp');?></option>
 	</select>
 	<?php
 }
@@ -341,11 +341,11 @@ function pmpromc_option_unsubscribe()
 	$options = get_option('pmpromc_options');
 	?>
 	<select name="pmpromc_options[unsubscribe]">
-		<option value="0" <?php selected($options['unsubscribe'], 0); ?>><?php _e('No', 'pmpro-mailchimp');?></option>
-		<option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php _e('Yes (Only old level audiences.)', 'pmpro-mailchimp');?></option>
-		<option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php _e('Yes (Old level and opt-in audiences.)', 'pmpro-mailchimp');?></option>
+		<option value="0" <?php selected($options['unsubscribe'], 0); ?>><?php esc_html_e('No', 'pmpro-mailchimp');?></option>
+		<option value="1" <?php selected($options['unsubscribe'], 1); ?>><?php esc_html_e('Yes (Only old level audiences.)', 'pmpro-mailchimp');?></option>
+		<option value="all" <?php selected($options['unsubscribe'], "all"); ?>><?php esc_html_e('Yes (Old level and opt-in audiences.)', 'pmpro-mailchimp');?></option>
 	</select>
-	<p class="description"><?php _e("Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site.", 'pmpro-mailchimp');?>
+	<p class="description"><?php esc_html_e("Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site.", 'pmpro-mailchimp');?>
 	</p>
 	<?php
 }
@@ -396,7 +396,7 @@ function pmpromc_section_levels()
 	//do we have PMPro installed?
 	if (defined('PMPRO_VERSION')) {
 		?>
-		<p><?php _e('PMPro is installed.', 'pmpro-mailchimp');?></p>
+		<p><?php esc_html_e('PMPro is installed.', 'pmpro-mailchimp');?></p>
 		<?php
 		//do we have levels?
 		if (empty($pmpromc_levels)) {
@@ -404,13 +404,13 @@ function pmpromc_section_levels()
 			<p>
 				<?php
 				/* translators: %s - link to create levels */
-				printf(__("Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign Mailchimp audiences to them here.", 'pmpro-mailchimp'), 'admin.php?page=pmpro-membershiplevels');
+				echo wp_kses_post( sprintf(__("Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign Mailchimp audiences to them here.", 'pmpro-mailchimp'), 'admin.php?page=pmpro-membershiplevels') );
 				?>
 			</p>
 			<?php
 		} else {
 			?>
-			<p><?php _e('For each level below, choose the audience(s) that a new user should be subscribed to when they register.', 'pmpro-mailchimp');?></p>
+			<p><?php esc_html_e('For each level below, choose the audience(s) that a new user should be subscribed to when they register.', 'pmpro-mailchimp');?></p>
 			<?php
 		}
 	} else {
@@ -421,7 +421,7 @@ function pmpromc_section_levels()
 			<p>
 				<?php
 				/* translators: %s - link to activate PMPro */
-				printf(__('<a href="%s">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugins.php?plugin_status=inactive');
+				echo wp_kses_post( sprintf( __('<a href="%s">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugins.php?plugin_status=inactive' ) );
 				?>
 			</p>
 			<?php
@@ -431,7 +431,7 @@ function pmpromc_section_levels()
 			<p>
 				<?php
 				/* translators: %s - link to install PMPro */
-				printf(__('<a href="%s">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins');
+				echo wp_kses_post( sprintf( __('<a href="%s">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins' ) );
 				?>
 			</p>
 			<?php
@@ -457,8 +457,8 @@ function pmpromc_option_memberships_lists($level)
 		<?php
 		foreach ($pmpromc_lists as $list) {
 			$checked_modifier = in_array($list->id, $selected_lists) ? ' checked' : '';
-			echo( "<input type='checkbox' name='pmpromc_options[level_" . $level->id . "_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) . "'" . $checked_modifier . ">" );
-			echo( "<label for='pmpromc_level_" . $level->id . "_lists_" . esc_attr( $list->id ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $list->name ) .  "</label><br>" );
+			echo( "<input type='checkbox' name='pmpromc_options[level_" . esc_attr( $level->id ) . "_lists][]' value='" . esc_attr( $list->id ) . "' id='pmpromc_level_" . esc_attr( $level->id ) . "_lists_" . esc_attr( $list->id ) . "'" . esc_attr( $checked_modifier ) . ">" );
+			echo( "<label for='pmpromc_level_" . esc_attr( $level->id ) . "_lists_" . esc_attr( $list->id ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $list->name ) .  "</label><br>" );
 		}
 		echo "</div>";
 	} else {
