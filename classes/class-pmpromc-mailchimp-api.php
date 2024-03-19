@@ -190,7 +190,7 @@ class PMPromc_Mailchimp_API
 			'user-agent' => self::$user_agent,
 			'headers' => $this->url_args['headers'],
 			'timeout' => $this->url_args['timeout'],
-			'body' => json_encode($data),
+			'body' => wp_json_encode($data),
 		);
 
 		$resp = wp_remote_post($url, $args);
@@ -441,7 +441,7 @@ class PMPromc_Mailchimp_API
 	 */
 	private function encode($data)
 	{
-		if (false !== ($json = json_encode($data))) {
+		if (false !== ($json = wp_json_encode($data))) {
 			return $json;
 		}
 
