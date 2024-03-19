@@ -103,28 +103,6 @@
 	
 	$csv_file_header .= "\n";
 
-	//generate SQL for list of users to process
-	$sqlQuery = "
-		SELECT
-			DISTINCT u.ID
-		FROM $wpdb->users u ";	
-
-	$sqlQuery .= "LEFT JOIN {$wpdb->pmpro_memberships_users} mu ON u.ID = mu.user_id ";
-	$sqlQuery .= "LEFT JOIN {$wpdb->pmpro_membership_levels} m ON mu.membership_id = m.id ";
-	
-	$sqlQuery .= "WHERE mu.membership_id > 0 ";
-	
-	$filter = " AND mu.status = 'active' AND mu.membership_id = " . esc_sql($l) . " ";	
-
-	//add the filter
-	$sqlQuery .= $filter;
-
-	//process based on limit value(s).
-	$sqlQuery .= "ORDER BY u.ID ";
-
-	if(!empty($limit))
-		$sqlQuery .= "LIMIT {$start}, {$limit}";
-
 	// Generate a temporary file to store the data in.
 	$tmp_dir = sys_get_temp_dir();
 	$filename = tempnam( $tmp_dir, 'pmpro_ml_');
@@ -136,7 +114,29 @@
 	fprintf($csv_fh, '%s', $csv_file_header );
 
 	//get users
-	$theusers = $wpdb->get_col($sqlQuery);
+	$sqlQuery = "
+		SELECT DISTINCT u.ID,
+		FROM {$wpdb->users} u
+			LEFT JOIN {$wpdb->pmpro_memberships_users} mu ON u.ID = mu.user_id
+			LEFT JOIN {$wpdb->pmpro_membership_levels} m ON mu.membership_id = m.id			
+		WHERE mu.membership_id > 0
+			AND mu.status = 'active' 
+			AND mu.membership_id = %d
+		ORDER BY u.ID ";
+	$prepare_args = array($l);
+
+	if ( ! empty( $limit ) ) {
+		$sqlQuery .= "LIMIT %d, %d";
+		$prepare_args[] = $start;
+		$prepare_args[] = $limit;
+	}
+
+	$theusers = $wpdb->get_col(
+		$wpdb->prepare(
+			$sqlQuery, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$prepare_args
+		)
+	);
 	
 	//if no records just transmit file with only CSV header as content
 	if (empty($theusers)) {
@@ -215,27 +215,27 @@
 		{
 			$i_start += $max_users_per_loop;
 		}
-
-		$userSql = $wpdb->prepare("
-	        SELECT
-				DISTINCT u.ID,				
-				u.user_email,				
-				mu.membership_id as membership_id,				
-				m.name as membership_name			
-			FROM {$wpdb->users} u
-			LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-			LEFT JOIN {$wpdb->pmpro_memberships_users} mu ON u.ID = mu.user_id
-			LEFT JOIN {$wpdb->pmpro_membership_levels} m ON mu.membership_id = m.id			
-			WHERE u.ID BETWEEN %d AND %d AND mu.membership_id > 0 {$filter}
-			GROUP BY u.ID
-			ORDER BY u.ID",
-				$first_uid,
-				$last_uid
-		);
-
-		// TODO: Only return the latest record for the user(s) current (and prior) levels IDs?
 		
-		$usr_data = $wpdb->get_results($userSql);
+		$usr_data = $wpdb->get_results(
+			$wpdb->prepare("
+				SELECT
+					DISTINCT u.ID,				
+					u.user_email,				
+					mu.membership_id as membership_id,				
+					m.name as membership_name			
+				FROM {$wpdb->users} u
+				LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+				LEFT JOIN {$wpdb->pmpro_memberships_users} mu ON u.ID = mu.user_id
+				LEFT JOIN {$wpdb->pmpro_membership_levels} m ON mu.membership_id = m.id			
+				WHERE u.ID BETWEEN %d AND %d AND mu.membership_id > 0
+				AND mu.status = 'active' AND mu.membership_id = %d
+				GROUP BY u.ID
+				ORDER BY u.ID",
+					$first_uid,
+					$last_uid,
+					$l
+			)
+		);
 		$userSql = null;
 
 		if (PMPRO_BENCHMARK)

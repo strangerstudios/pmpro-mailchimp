@@ -121,8 +121,7 @@ function pmpromc_get_unsubscribe_audiences( $user_id ) {
 	$user_level_ids_string = '0';
 
 	//get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes
-	$sqlQuery = $wpdb->prepare("SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string);
-	$levels_unsubscribing_from = $wpdb->get_col($sqlQuery);
+	$levels_unsubscribing_from = $wpdb->get_col( $wpdb->prepare("SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string) );
 
 	//figure out which lists to unsubscribe from
 	$unsubscribe_lists = array();

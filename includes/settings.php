@@ -507,15 +507,25 @@ function pmpromc_sync_merge_fields_ajax()
 	$last_user_id = get_option('pmpromc_sync_merge_fields_last_user_id', 0);
 	$limit = 3;
 	$options = get_option("pmpromc_options");
-	$all_lists = get_option("pmpromc_all_lists");
 
 	//get next batch of users
-	$user_ids = $wpdb->get_col("SELECT DISTINCT(user_id) FROM $wpdb->pmpro_memberships_users WHERE status = 'active' AND user_id > $last_user_id ORDER BY user_id LIMIT $limit");
+	$user_ids = $wpdb->get_col(
+		$wpdb->prepare(
+			"SELECT DISTINCT(user_id) FROM $wpdb->pmpro_memberships_users WHERE status = 'active' AND user_id > %d ORDER BY user_id LIMIT %d",
+			$last_user_id,
+			$limit
+		)
+	);
 
 	//track progress
 	$first_load = get_transient('pmpro_updates_first_load');
 	if ($first_load) {
-		$total_users = $wpdb->get_var("SELECT COUNT(DISTINCT(user_id)) FROM $wpdb->pmpro_memberships_users WHERE user_id > $last_user_id");
+		$total_users = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT(user_id)) FROM $wpdb->pmpro_memberships_users WHERE status = 'active' AND user_id > %d",
+				$last_user_id
+			)
+		);
 		update_option('pmpromc_sync_merge_fields_total', $total_users, 'no');
 		$progress = 0;
 	} else {
