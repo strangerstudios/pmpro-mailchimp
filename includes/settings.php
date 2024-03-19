@@ -67,7 +67,12 @@ function pmpromc_options_page()
 
 		<form action="options.php" method="post">
 			<h2><?php _e('Subscribe users to one or more Mailchimp audiences when they sign up for your site.', 'pmpro-mailchimp');?></h2>
-			<p><?php printf(__('If you have <a href="%s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify "Opt-in Audiences" that members can select at membership checkout. <a href="%s" target="_blank">Get a Free Mailchimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');?></p>
+			<p>
+				<?php
+				/* translators: %1$s - link to Paid Memberships Pro, %2$s - link to Mailchimp */
+				printf(__('If you have <a href="%1$s" target="_blank">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify "Opt-in Audiences" that members can select at membership checkout. <a href="%2$s" target="_blank">Get a Free Mailchimp account</a>.', 'pmpro-mailchimp'), 'https://www.paidmembershipspro.com', 'http://eepurl.com/k4aAH');
+				?>
+			</p>
 			<?php if (function_exists('pmpro_getAllLevels')) { ?>
 				<hr/>
 				<h2><?php _e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h2>
@@ -101,7 +106,12 @@ function pmpromc_options_page()
 							<li><?php _e('Check "auto update my existing audience". Click "Import".', 'pmpro-mailchimp');?></li>
 						</ol>
 
-						<p><?php printf(__('For more detailed instructions and screenshots, <a href="%s" target="_blank">click here to read our documentation on importing existing members into Mailchimp</a>.', 'pmpro-mailchimp'), 'http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/');?></p>
+						<p>
+							<?php
+							/* translators: %s - link to documentation */
+							printf(__('For more detailed instructions and screenshots, <a href="%s" target="_blank">click here to read our documentation on importing existing members into Mailchimp</a>.', 'pmpro-mailchimp'), 'http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/');
+							?>
+						</p>
 
 					</div>
 				</div>
@@ -132,7 +142,7 @@ function pmpromc_options_page()
 
 			<div class="bottom-buttons">
 				<input type="hidden" name="pmpromc_options[set]" value="1"/>
-				<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e(__('Save Settings', 'pmpro-mailchimp')); ?>">
+				<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e( 'Save Settings', 'pmpro-mailchimp' ); ?>">
 			</div>
 
 		</form>
@@ -367,7 +377,11 @@ function pmpromc_option_logging_enabled() {
 		<option value="0" <?php selected( $logging_enabled, 0 ); ?>><?php esc_html_e( 'No', 'pmpro-mailchimp' ); ?></option>
 		<option value="1" <?php selected( $logging_enabled, 1 ); ?>><?php esc_html_e( 'Yes', 'pmpro-mailchimp' ); ?></option>
 	</select>
-	<p class="description"><?php printf( esc_html__( "Debug log can be found at %s", 'pmpro-mailchimp' ), '<code>' . esc_html( pmpromc_get_log_file_path() ) . '</code>' ); ?>
+	<p class="description">
+		<?php
+		/* translators: %s - path to log file */
+		printf( esc_html__( "Debug log can be found at %s", 'pmpro-mailchimp' ), '<code>' . esc_html( pmpromc_get_log_file_path() ) . '</code>' );
+		?>
 	</p>
 	<?php
 }
@@ -387,7 +401,12 @@ function pmpromc_section_levels()
 		//do we have levels?
 		if (empty($pmpromc_levels)) {
 			?>
-			<p><?php printf(__("Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign Mailchimp audiences to them here.", 'pmpro-mailchimp'), 'admin.php?page=pmpro-membershiplevels');?></p>
+			<p>
+				<?php
+				/* translators: %s - link to create levels */
+				printf(__("Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign Mailchimp audiences to them here.", 'pmpro-mailchimp'), 'admin.php?page=pmpro-membershiplevels');
+				?>
+			</p>
 			<?php
 		} else {
 			?>
@@ -399,12 +418,22 @@ function pmpromc_section_levels()
 		if (file_exists(dirname(__FILE__) . "/../paid-memberships-pro/paid-memberships-pro.php")) {
 			//just deactivated
 			?>
-			<p><?php printf(__('<a href="%s">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugins.php?plugin_status=inactive');?></p>
+			<p>
+				<?php
+				/* translators: %s - link to activate PMPro */
+				printf(__('<a href="%s">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugins.php?plugin_status=inactive');
+				?>
+			</p>
 			<?php
 		} else {
 			//needs to be installed
 			?>
-			<p><?php printf(__('<a href="%s">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins');?></p>
+			<p>
+				<?php
+				/* translators: %s - link to install PMPro */
+				printf(__('<a href="%s">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences.', 'pmpro-mailchimp'), 'plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins');
+				?>
+			</p>
 			<?php
 		}
 	}

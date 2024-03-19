@@ -112,6 +112,7 @@ class PMPromc_Mailchimp_API
 				case 401:
 					$this->set_error_msg(						
 							$response,
+							/* translators: %s - Mailchimp API response message */
 							__('Sorry, but Mailchimp was unable to verify your API key. Mailchimp gave this response: <p><em>%s</em></p> Please try entering your API key again.', 'pmpro-mailchimp')
 					);
 					return false;
@@ -120,6 +121,7 @@ class PMPromc_Mailchimp_API
 				default:
 					$this->set_error_msg(						
 							$response,
+							/* translators: %s - Mailchimp API response message */
 							__('Error while communicating with the Mailchimp servers: <p><em>%s</em></p>', 'pmpro-mailchimp')
 					);
 					return false;
