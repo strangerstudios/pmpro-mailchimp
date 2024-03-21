@@ -1,13 +1,16 @@
 <?php
 
-/*
-	Subscribe a user to any additional opt-in lists selected
-*/
-function pmpromc_subscribeToAdditionalLists($user_id)
-{
-	$options = get_option("pmpromc_options");
-	if (!empty($_REQUEST['additional_lists']))
-		$additional_lists = $_REQUEST['additional_lists'];
+/**
+ * Subscribe a user to any additional opt-in lists selected
+ *
+ * @deprecated TBD Use pmpromc_set_user_additional_list_meta() instead
+ */
+function pmpromc_subscribeToAdditionalLists($user_id){
+	_deprecated_function( __FUNCTION__, 'TBD', 'pmpromc_set_user_additional_list_meta' );
+
+	// Nonce checks not needed as this function is not used anymore and is deprecated.
+	if (!empty($_REQUEST['additional_lists'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$additional_lists = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 	if (!empty($additional_lists)) {
 		update_user_meta($user_id, 'pmpromc_additional_lists', $additional_lists);
@@ -24,8 +27,11 @@ function pmpromc_subscribeToAdditionalLists($user_id)
  * all levels that they should unsubscribe from
  *
  * @param WP_User|int $user - The WP_User object or user_id for the user.
+ *
+ * @deprecated TBD
  */
 function pmpromc_queue_smart_unsubscriptions( $user ) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	// Get the user object if user_id is passed.
 	if( ! is_object( $user ) ) {
 		$user = get_userdata($user);
@@ -41,42 +47,72 @@ function pmpromc_queue_smart_unsubscriptions( $user ) {
 /**
  * Update a user's Mailchimp information when profile is updated
  *
+ * @deprecated TBD
+ *
  * @param WP_User $old_user - The old WP_User object being changed
  * @param WP_User $old_user - The new WP_User object being added
  * @param Array|string $audiences - The id(s) of the audience(s) to remove the user from
  */
 function pmpromc_queue_user_update( $old_user, $new_user, $audiences ) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	pmpromc_queue_unsubscription( $old_user, $audiences );
 	pmpromc_queue_subscription( $new_user, $audiences );
 }
 
+/**
+ * @deprecated TBD
+ */
 function pmpromc_subscribe( $list, $user ) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	pmpromc_queue_subscription( $user, $list );
 	pmpromc_process_audience_member_updates_queue();
 }
 
+/**
+ * @deprecated TBD
+ */
 function pmpromc_queueUserToSubscribeToList($user_id, $list) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	pmpromc_queue_subscription( $user_id, $list );
 }
 
+/**
+ * @deprecated TBD
+ */
 function pmpromc_processSubscriptions($param) {
 	pmpromc_process_audience_member_updates_queue();
 }
-	
+
+/**
+ * @deprecated TBD
+ */
 function pmpromc_unsubscribe($list, $user) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	pmpromc_queue_unsubscription( $user, $list );
 	pmpromc_process_audience_member_updates_queue();
 }
 
+/**
+ * @deprecated TBD
+ */
 function pmpromc_queueUserToUnsubscribeFromLists($user_id) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	pmpromc_queue_smart_unsubscriptions( $user_id );
 }
 
+/**
+ * @deprecated TBD
+ */
 function pmpromc_processUnsubscriptions($param) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	pmpromc_process_audience_member_updates_queue();
 }
-	
+
+/**
+ * @deprecated TBD
+ */
 function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	pmpromc_queue_smart_unsubscriptions( $user_id );
 	pmpromc_process_audience_member_updates_queue();
 }
@@ -84,9 +120,12 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL) {
 /**
  * Get array of lists to unsubscribe a user from
  *
+ * @deprecated TBD
+ *
  * @param $user_id (int) - User Id
  */
 function pmpromc_get_unsubscribe_audiences( $user_id ) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
 	global $wpdb;
 	$options = get_option("pmpromc_options");
 	$all_lists = get_option("pmpromc_all_lists");

@@ -471,7 +471,8 @@ function pmpromc_option_memberships_lists($level)
 */
 function pmpromc_admin_init_sync()
 {
-	if (is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] == 'pmpromc_options' && !empty($_REQUEST['sync'])) {
+	// Nonce check not needed as we are not changing any data.
+	if (is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] == 'pmpromc_options' && !empty($_REQUEST['sync'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if (!current_user_can('manage_options'))
 			wp_die('You do not have sufficient permission to access this page.');
 		else {

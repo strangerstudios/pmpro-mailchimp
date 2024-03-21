@@ -112,13 +112,14 @@ add_action( 'pmpro_show_user_profile', 'pmpromc_add_custom_user_profile_fields',
 
 // Saving additional lists on profile save.
 function pmpromc_save_custom_user_profile_fields( $user_id ) {
+	// Nonce checks not needed as nonces would already be checked whenever this function is called.
 	// Only if additional lists is set.
-	if ( ! isset( $_REQUEST['additional_lists_profile'] ) ) {
+	if ( ! isset( $_REQUEST['additional_lists_profile'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return;
 	}
 
 	// Get user's new additional lists.
-	if ( empty( $_REQUEST['additional_lists'] ) ) {
+	if ( empty( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$_REQUEST['additional_lists'] = array();
 	}
 
@@ -135,11 +136,11 @@ function pmpromc_save_custom_user_profile_fields( $user_id ) {
 
 	if (
 		1 == $options['profile_update'] ||
-		! empty( array_diff( $current_lists, $_REQUEST['additional_lists'] ) ) ||
-		! empty( array_diff( $_REQUEST['additional_lists'], $current_lists ) )
+		! empty( array_diff( $current_lists, $_REQUEST['additional_lists'] ) ) || // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		! empty( array_diff( $_REQUEST['additional_lists'], $current_lists ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	) {
 		// Option set to update MC on every profile save or opt-in lists have changed.
-		pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] );
+		pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 }
 add_action( 'personal_options_update', 'pmpromc_save_custom_user_profile_fields' );

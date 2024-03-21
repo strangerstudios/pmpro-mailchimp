@@ -115,7 +115,8 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	// Update opt-in audiences and user audiences.
 	if ( empty( $user_level_ids ) && 'all' === $options['unsubscribe'] ) {
 		pmpromc_set_user_additional_list_meta( $user_id, array() );
-		if ( isset( $_REQUEST['additional_lists'] ) ) {
+		// Nonce not needed as we only want to make sure that this REQUEST variable is empty, not process it as form data.
+		if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			// In case level is changed from profile.
 			$_REQUEST['additional_lists'] = array();
 		}
@@ -200,8 +201,9 @@ function pmpromc_additional_lists_on_checkout() {
         <div class="pmpro_checkout-fields">
             <?php
             global $current_user;
-            if ( isset( $_REQUEST['additional_lists'] ) ) {
-                $additional_lists_selected = $_REQUEST['additional_lists'];
+			// Nonce not needed as this is only setting the default value for the checkbox, not processing form data.
+            if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $additional_lists_selected = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             } elseif ( isset( $_SESSION['additional_lists'] ) ) {
                 $additional_lists_selected = $_SESSION['additional_lists'];
             } elseif ( ! empty( $current_user->ID ) ) {
@@ -235,8 +237,9 @@ add_action( 'pmpro_checkout_after_tos_fields', 'pmpromc_additional_lists_on_chec
  * Sets Session variables.
  */
 function pmpromc_pmpro_paypalexpress_session_vars() {
-	if ( isset( $_REQUEST['additional_lists'] ) ) {
-		$_SESSION['additional_lists'] = $_REQUEST['additional_lists'];
+	// Nonce not needed as this only runs within the PMPro checkout process.
+	if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$_SESSION['additional_lists'] = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 }
 add_action( 'pmpro_paypalexpress_session_vars', 'pmpromc_pmpro_paypalexpress_session_vars' );
@@ -257,10 +260,11 @@ add_action( 'pmpro_checkout_before_change_membership_level', 'pmpromc_pmpro_chec
  */
 function pmpromc_pmpro_after_checkout( $user_id, $order ) {
 	pmpromc_pmpro_after_change_membership_level( $order->membership_id, $user_id );
-	if ( empty( $_REQUEST['additional_lists'] ) ) {
-		$_REQUEST['additional_lists'] = array();
+	// Nonce not needed as this only runs within the PMPro checkout process.
+	if ( empty( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$_REQUEST['additional_lists'] = array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
-	pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] );
+	pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 }
 add_action( 'pmpro_after_checkout', 'pmpromc_pmpro_after_checkout', 15, 2 );
 

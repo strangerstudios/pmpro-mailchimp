@@ -34,20 +34,21 @@
 
 	global $wpdb;
 	
+	// Nonce check not needed as we are not making changes to the website.
 	// requested a level id
-	if(isset($_REQUEST['l']))
-		$l = sanitize_text_field($_REQUEST['l']);
+	if(isset($_REQUEST['l'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$l = sanitize_text_field($_REQUEST['l']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	else
 		$l = false;
 
 	//some vars for the search
-	if(!empty($_REQUEST['pn']))
-		$pn = intval($_REQUEST['pn']);
+	if(!empty($_REQUEST['pn'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$pn = intval($_REQUEST['pn']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	else
 		$pn = 1;
 
-	if(!empty($_REQUEST['limit']))
-		$limit = intval($_REQUEST['limit']);
+	if(!empty($_REQUEST['limit'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$limit = intval($_REQUEST['limit']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	else
 		$limit = false;
 
