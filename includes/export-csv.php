@@ -116,7 +116,7 @@
 
 	//get users
 	$sqlQuery = "
-		SELECT DISTINCT u.ID,
+		SELECT DISTINCT u.ID
 		FROM {$wpdb->users} u
 			LEFT JOIN {$wpdb->pmpro_memberships_users} mu ON u.ID = mu.user_id
 			LEFT JOIN {$wpdb->pmpro_membership_levels} m ON mu.membership_id = m.id			
