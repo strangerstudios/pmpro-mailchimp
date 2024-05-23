@@ -85,8 +85,14 @@ class PMPromc_Mailchimp_API
 			),
 		);
 
-		// the datacenter that the key belongs to.
-		list(, self::$dc) = explode('-', self::$api_key);
+		// Get the datacenter that the key belongs to.
+		if ( strpos( self::$api_key, '-' ) !== false ) {
+			// Get from API key.
+			list(, self::$dc) = explode('-', self::$api_key);
+		} else {
+			// Default to us1 for old style API keys.
+			self::$dc = 'us1';
+		}
 
 		// Build the URL based on the datacenter
 		self::$api_url = "https://" . self::$dc . ".api.mailchimp.com/3.0";
