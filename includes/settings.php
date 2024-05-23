@@ -62,7 +62,16 @@ function pmpromc_options_page()
 		<h2><?php esc_html_e( 'Mailchimp Integration Options and Settings', 'pmpro-mailchimp' );?></h2>
 
 		<?php if (!empty($msg)) { ?>
-			<div class="message <?php echo esc_attr( $msgt ); ?>"><p><?php echo esc_html( $msg ); ?></p></div>
+			<div class="message <?php echo esc_attr( $msgt ); ?>"><p>
+				<?php
+					$allowed_html = array(
+						'p' => array(),
+						'em' => array(),
+						'br' => array(),
+					);
+					echo wp_kses( $msg, $allowed_html );
+				?>
+			</p></div>
 		<?php } ?>
 
 		<form action="options.php" method="post">
