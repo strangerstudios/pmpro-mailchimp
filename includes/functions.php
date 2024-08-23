@@ -185,49 +185,54 @@ function pmpromc_additional_lists_on_checkout() {
 
 	$display_modifier = empty( $pmpro_review ) ? '' : 'style="display: none;"';
 	?>
-    <div id="pmpro_mailing_lists" class="pmpro_checkout" <?php echo esc_html( $display_modifier ); ?>>
-        <hr />
-        <h2>
-            <span class="pmpro_checkout-h2-name">
-                <?php
-                if ( count( $additional_lists_array ) > 1 ) {
-                    esc_html_e( 'Join one or more of our mailing lists.', 'pmpro-mailchimp' );
-                } else {
-                    esc_html_e( 'Join our mailing list.', 'pmpro-mailchimp' );
-                }
-                ?>
-            </span>
-        </h2>
-        <div class="pmpro_checkout-fields">
-            <?php
-            global $current_user;
-			// Nonce not needed as this is only setting the default value for the checkbox, not processing form data.
-            if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                $additional_lists_selected = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            } elseif ( isset( $_SESSION['additional_lists'] ) ) {
-                $additional_lists_selected = $_SESSION['additional_lists'];
-            } elseif ( ! empty( $current_user->ID ) ) {
-                $additional_lists_selected = get_user_meta( $current_user->ID, 'pmpromc_additional_lists', true );
-            } else {
-                $additional_lists_selected = array();
-            }
-            $count = 0;
-            foreach ( $additional_lists_array as $key => $additional_list ) {
-                $count++;
-                ?>
-                <input type="checkbox" id="additional_lists_<?php echo esc_attr( $count ); ?>" name="additional_lists[]" value="<?php echo esc_attr( $additional_list->id ); ?>"
-                    <?php
-                    if ( is_array( $additional_lists_selected ) ) {
-                        checked( in_array( $additional_list->id, $additional_lists_selected ) );
-                    };
-                    ?>
-                />
-                <label for="additional_lists_<?php echo esc_attr( $count ); ?>" class="pmpromc-checkbox-label"><?php echo esc_html( $additional_list->name ); ?></label><br/>
-                <?php
-            }
-            ?>
-        </div>
-    </div>
+	<fieldset id="pmpro_form_fieldset-mailchimp-opt-in" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_fieldset' ) ); ?>">
+		<div id="pmpro_mailing_lists" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_card' ) ); ?>" <?php echo esc_html( $display_modifier ); ?>>
+			<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_card_content' ) ); ?>">
+				<legend class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_legend' ) ); ?>">
+					<h2 class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_heading pmpro_font-large', 'pmpro_mailchimp_opt_in_header' ) ); ?>">
+						<?php
+						if ( count( $additional_lists_array ) > 1 ) {
+							esc_html_e( 'Join one or more of our mailing lists.', 'pmpro-mailchimp' );
+						} else {
+							esc_html_e( 'Join our mailing list.', 'pmpro-mailchimp' );
+						}
+						?>
+					</h2>
+				</legend>
+				<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_fields' ) ); ?>">
+					<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_checkout-field pmpro_checkout-field-checkbox' ) ); ?>">
+						<?php
+						global $current_user;
+						// Nonce not needed as this is only setting the default value for the checkbox, not processing form data.
+						if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+							$additional_lists_selected = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+						} elseif ( isset( $_SESSION['additional_lists'] ) ) {
+							$additional_lists_selected = $_SESSION['additional_lists'];
+						} elseif ( ! empty( $current_user->ID ) ) {
+							$additional_lists_selected = get_user_meta( $current_user->ID, 'pmpromc_additional_lists', true );
+						} else {
+							$additional_lists_selected = array();
+						}
+						$count = 0;
+						foreach ( $additional_lists_array as $key => $additional_list ) {
+							$count++;
+							?>
+							<input type="checkbox" id="additional_lists_<?php echo esc_attr( $count ); ?>" name="additional_lists[]" value="<?php echo esc_attr( $additional_list->id ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_input pmpro_form_input-checkbox' ) ); ?>"
+								<?php
+								if ( is_array( $additional_lists_selected ) ) {
+									checked( in_array( $additional_list->id, $additional_lists_selected ) );
+								};
+								?>
+							/>
+							<label for="additional_lists_<?php echo esc_attr( $count ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_label pmpro_form_label-inline pmpro_clickable' ) ); ?>"><?php echo esc_html( $additional_list->name ); ?></label><br/>
+							<?php
+						}
+						?>
+					</div>
+				</div>
+			</div>
+		</div>
+	</fieldset>
     <?php
 }
 add_action( 'pmpro_checkout_after_tos_fields', 'pmpromc_additional_lists_on_checkout' );
