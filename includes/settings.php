@@ -76,7 +76,7 @@ function pmpromc_options_page()
 			<?php if (function_exists('pmpro_getAllLevels')) { ?>
 				<hr/>
 				<h2><?php esc_html_e("Synchronize a Member's Level Name and ID", 'pmpro-mailchimp');?></h2>
-				<p><?php esc_html_e("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in Mailchimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp');?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php esc_html_e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
+				<p><?php echo wp_kses_post( __("Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in Mailchimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members.", 'pmpro-mailchimp') ) ;?> <a href="http://www.paidmembershipspro.com/import-level-name-id-existing-members-using-new-merge-fields-pmpro-mailchimp-v2-0/" target="_blank"><?php esc_html_e('Read the documentation on importing existing members into MailChimp', 'pmpro-mailchimp');?></a>.</p>
 				<p><a class="button" onclick="jQuery('#pmpromc_export_instructions').show();"><?php esc_html_e('Click here to export your members list for a MailChimp Import', 'pmpro-mailchimp');?></a></p>
 				<hr/>
 
