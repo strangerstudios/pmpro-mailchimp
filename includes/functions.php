@@ -235,7 +235,7 @@ function pmpromc_additional_lists_on_checkout() {
 	</fieldset>
     <?php
 }
-add_action( 'pmpro_checkout_after_tos_fields', 'pmpromc_additional_lists_on_checkout' );
+add_action( 'pmpro_checkout_boxes', 'pmpromc_additional_lists_on_checkout' );
 
 /**
  * Preserve info when going off-site for payment w/offsite payment gateway (PayPal Express).
