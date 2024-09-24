@@ -2,7 +2,7 @@
 Contributors: strangerstudios, dlparker1005, paidmembershipspro
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 5.2
-Tested up to: 6.4
+Tested up to: 6.5
 Stable tag: 2.3.6
 
 Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
@@ -55,7 +55,7 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 
 = I need help installing, configuring, or customizing the plugin. =
 
-Please visit [our support site at https://www.paidmembershipspro.com](http://www.paidmembershipspro.com/) for more documentation and our support forums.
+Please visit [our support site at https://www.paidmembershipspro.com](https://www.paidmembershipspro.com/) for more documentation and our support forums.
 
 == Screenshots ==
 
