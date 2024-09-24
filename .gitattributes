@@ -1,0 +1,5 @@
+# Items to ignore when downloading a zip
+.gitattributes export-ignore
+.github export-ignore
+pmpro-mailchimp-banner.jpg export-ignore
+README.md export-ignore
