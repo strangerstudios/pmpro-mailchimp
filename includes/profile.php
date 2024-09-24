@@ -81,29 +81,61 @@ function pmpromc_add_custom_user_profile_fields( $user ) {
 		</table>
 	<?php
 	} else { // Show on front-end profile page.
-	?>
+		?>
+		<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_spacer' ) ); ?>"></div>
+		<fieldset id="pmpro_form_fieldset-mailchimp-opt-in" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_fieldset' ) ); ?>">
+			<legend class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_legend' ) ); ?>">
+				<h2 class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_heading pmpro_font-large' ) ); ?>">
+				<?php
+						if ( count( $additional_audiences_info ) > 1 ) {
+							esc_html_e( 'Opt-In Mailing Lists', 'pmpro-mailchimp' );
+						} else {
+							esc_html_e( 'Opt-In Mailing List', 'pmpro-mailchimp' );
+						}
+					?>
+				</h2>
+			</legend>
+			<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_fields' ) ); ?>">
+				<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_fields-description' ) ); ?>">
+					<p>
+						<?php
+							if ( count( $additional_audiences_info ) > 1 ) {
+								esc_html_e( 'Join one or more of our mailing lists.', 'pmpro-mailchimp' );
+							} else {
+								esc_html_e( 'Join our mailing list.', 'pmpro-mailchimp' );
+							}
+						?>
+					</p>
+				</div>
+				<div id="pmpro_mailchimp_opt_in_lists_div" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_field pmpro_form_field-checkbox-grouped' ) ); ?>">
+					<ul class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_list pmpro_list-plain' ) ); ?>">
+					<?php
+						$user_additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
 
-	<div class="pmpro_member_profile_edit-field pmpro_member_profile_edit-field-pmpromc_opt_in_list">
-	<label for="address">
-		<?php esc_html_e( 'Opt-in Mailchimp Mailing Lists', 'pmpro-mailchimp' );?>
-	</label>
-	<?php
-	$user_additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
+						if ( isset( $user_additional_audiences ) ) {
+							$selected_audiences = $user_additional_audiences;
+						} else {
+							$selected_audiences = array();
+						}
 
-			if ( isset( $user_additional_audiences ) ) {
-				$selected_audiences = $user_additional_audiences;
-			} else {
-				$selected_audiences = array();
-			}
-
-			echo '<input type="hidden" name="additional_lists_profile" value="1" />';
-			foreach ( $additional_audiences_info as $audience_arr ) {
-				$checked_modifier = ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) ? ' checked' : '';
-				echo( "<input type='checkbox' name='additional_lists[]' value='" . esc_attr( $audience_arr['id'] ) . "' id='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) . "'" . esc_attr( $checked_modifier ) . ">" );
-				echo( "<label for='pmpromc_additional_lists_" . esc_attr( $audience_arr['id'] ) .  "' class='pmpromc-checkbox-label'>" . esc_html( $audience_arr['name'] ) .  "</label><br>" );
-			} ?>
-	</div> <!-- end pmpro_member_profile_edit-field-first_name -->
-	<?php
+						echo '<input type="hidden" name="additional_lists_profile" value="1" />';
+						foreach ( $additional_audiences_info as $audience_arr ) {
+							$checked_modifier = ( is_array( $selected_audiences ) && in_array( $audience_arr['id'], $selected_audiences ) ) ? ' checked' : '';
+							?>
+							<li class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_list_item' ) ); ?>">
+								<span class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_field-checkbox-grouped-item' ) ); ?>">
+									<input type="checkbox" name="additional_lists[]" value="<?php echo esc_attr( $audience_arr['id'] ); ?>" id="pmpromc_additional_lists_<?php echo esc_attr( $audience_arr['id'] ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_input pmpro_form_input-checkbox' ) ); ?>" <?php echo esc_attr( $checked_modifier ); ?>>
+									<label for="pmpromc_additional_lists_<?php echo esc_attr( $audience_arr['id'] ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_label pmpro_form_label-inline pmpro_clickable' ) ); ?>"><?php echo esc_html( $audience_arr['name'] ); ?></label>
+								</span>
+							</li>
+							<?php
+						}
+					?>
+					</ul>
+				</div> <!-- end pmpro_mailchimp_opt_in_lists_div -->
+			</div> <!-- end pmpro_form_fields -->
+		</fieldset> <!-- end pmpro_form_fieldset-mailchimp-opt-in -->
+		<?php
 	}
 }
 add_action( 'show_user_profile', 'pmpromc_add_custom_user_profile_fields', 12 );

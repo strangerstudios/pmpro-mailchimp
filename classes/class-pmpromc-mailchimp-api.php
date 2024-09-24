@@ -86,7 +86,9 @@ class PMPromc_Mailchimp_API
 		);
 
 		// the datacenter that the key belongs to.
-		list(, self::$dc) = explode('-', self::$api_key);
+		if ( strpos( self::$api_key, '-' ) != false ) {
+			list(, self::$dc) = explode('-', self::$api_key);
+		}
 
 		// Build the URL based on the datacenter
 		self::$api_url = "https://" . self::$dc . ".api.mailchimp.com/3.0";
@@ -492,7 +494,7 @@ class PMPromc_Mailchimp_API
 		global $msg;
 
 		$msgt = 'error';
-		
+
 		if ( !is_string($obj) && ( 200 !== wp_remote_retrieve_response_code( $obj )) ) {
 			//there is an error and we have some kind of array or response object
 			if(is_array($obj) && !empty($obj['response'])) {
