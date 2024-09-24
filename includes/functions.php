@@ -189,18 +189,30 @@ function pmpromc_additional_lists_on_checkout() {
 		<div id="pmpro_mailing_lists" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_card' ) ); ?>" <?php echo esc_html( $display_modifier ); ?>>
 			<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_card_content' ) ); ?>">
 				<legend class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_legend' ) ); ?>">
-					<h2 class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_heading pmpro_font-large', 'pmpro_mailchimp_opt_in_header' ) ); ?>">
-						<?php
-						if ( count( $additional_lists_array ) > 1 ) {
-							esc_html_e( 'Join one or more of our mailing lists.', 'pmpro-mailchimp' );
-						} else {
-							esc_html_e( 'Join our mailing list.', 'pmpro-mailchimp' );
-						}
+					<h2 class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_heading pmpro_font-large' ) ); ?>">
+					<?php
+							if ( count( $additional_lists_array ) > 1 ) {
+								esc_html_e( 'Opt-In Mailing Lists', 'pmpro-mailchimp' );
+							} else {
+								esc_html_e( 'Opt-In Mailing List', 'pmpro-mailchimp' );
+							}
 						?>
 					</h2>
 				</legend>
 				<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_fields' ) ); ?>">
-					<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_checkout-field pmpro_checkout-field-checkbox' ) ); ?>">
+					<div class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_fields-description' ) ); ?>">
+						<p>
+							<?php
+								if ( count( $additional_lists_array ) > 1 ) {
+									esc_html_e( 'Join one or more of our mailing lists.', 'pmpro-mailchimp' );
+								} else {
+									esc_html_e( 'Join our mailing list.', 'pmpro-mailchimp' );
+								}
+							?>
+						</p>
+					</div>
+					<div id="pmpro_mailchimp_opt_in_lists_div" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_field pmpro_form_field-checkbox-grouped' ) ); ?>">
+						<ul class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_list pmpro_list-plain' ) ); ?>">
 						<?php
 						global $current_user;
 						// Nonce not needed as this is only setting the default value for the checkbox, not processing form data.
@@ -217,25 +229,30 @@ function pmpromc_additional_lists_on_checkout() {
 						foreach ( $additional_lists_array as $key => $additional_list ) {
 							$count++;
 							?>
-							<input type="checkbox" id="additional_lists_<?php echo esc_attr( $count ); ?>" name="additional_lists[]" value="<?php echo esc_attr( $additional_list->id ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_input pmpro_form_input-checkbox' ) ); ?>"
-								<?php
-								if ( is_array( $additional_lists_selected ) ) {
-									checked( in_array( $additional_list->id, $additional_lists_selected ) );
-								};
-								?>
-							/>
-							<label for="additional_lists_<?php echo esc_attr( $count ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_label pmpro_form_label-inline pmpro_clickable' ) ); ?>"><?php echo esc_html( $additional_list->name ); ?></label><br/>
+							<li class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_list_item' ) ); ?>">
+								<span class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_field-checkbox-grouped-item' ) ); ?>">
+									<input type="checkbox" id="additional_lists_<?php echo esc_attr( $count ); ?>" name="additional_lists[]" value="<?php echo esc_attr( $additional_list->id ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_input pmpro_form_input-checkbox' ) ); ?>"
+									<?php
+										if ( is_array( $additional_lists_selected ) ) {
+											checked( in_array( $additional_list->id, $additional_lists_selected ) );
+										};
+									?>
+									/>
+									<label for="additional_lists_<?php echo esc_attr( $count ); ?>" class="<?php echo esc_attr( pmpro_get_element_class( 'pmpro_form_label pmpro_form_label-inline pmpro_clickable' ) ); ?>"><?php echo esc_html( $additional_list->name ); ?></label>
+								</span>
+							</li>
 							<?php
 						}
 						?>
-					</div>
-				</div>
-			</div>
-		</div>
-	</fieldset>
+						</ul>
+					</div> <!-- end pmpro_mailchimp_opt_in_lists_div -->
+				</div> <!-- end pmpro_form_fields -->
+			</div> <!-- end pmpro_card_content -->
+		</div> <!-- end pmpro_card -->
+	</fieldset> <!-- end pmpro_form_fieldset-mailchimp-opt-in -->
     <?php
 }
-add_action( 'pmpro_checkout_after_tos_fields', 'pmpromc_additional_lists_on_checkout' );
+add_action( 'pmpro_checkout_boxes', 'pmpromc_additional_lists_on_checkout' );
 
 /**
  * Preserve info when going off-site for payment w/offsite payment gateway (PayPal Express).

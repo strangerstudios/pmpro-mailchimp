@@ -55,7 +55,7 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 
 = I need help installing, configuring, or customizing the plugin. =
 
-Please visit [our support site at https://www.paidmembershipspro.com](http://www.paidmembershipspro.com/) for more documentation and our support forums.
+Please visit [our support site at https://www.paidmembershipspro.com](https://www.paidmembershipspro.com/) for more documentation and our support forums.
 
 == Screenshots ==
 

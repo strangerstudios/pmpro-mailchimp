@@ -375,7 +375,7 @@
 		{
 			echo esc_html( str_repeat('-', 75 ) ) . "<br/>\n";
 			echo 'Please open a support case and paste in the warnings/errors you see above this text to\n ';
-			echo 'the <a href="http://paidmembershipspro.com/support/" target="_blank">Paid Memberships Pro support forum</a><br/>\n';
+			echo 'the <a href="https://www.paidmembershipspro.com/support/" target="_blank">Paid Memberships Pro support forum</a><br/>\n';
 			echo esc_html( str_repeat("=", 75) ) . "<br/>\n";
 			echo esc_html( file_get_contents($filename) );
 			echo esc_html( str_repeat("=", 75) ) . "<br/>\n";
