@@ -1,4 +1,4 @@
-![](pmpro-mailchimp-banner.png)
+![](pmpro-mailchimp-banner.jpg)
 
 # [Paid Memberships Pro - Mailchimp Add On](https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/) #
 [comment]: # (Generate badges from shields.io, only works for .org plugins to get other stats etc. We'd have to create our own endpoints for Premium plugins)
