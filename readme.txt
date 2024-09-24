@@ -1,9 +1,11 @@
 === Paid Memberships Pro - Mailchimp Add On ===
 Contributors: strangerstudios, dlparker1005, paidmembershipspro
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
-Requires at least: 5.2
-Tested up to: 6.5
-Stable tag: 2.3.6
+Requires at least: 5.4
+Tested up to: 6.6
+Stable tag: 2.3.7
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Add users and members to Mailchimp audiences based on their membership level and allow members to opt-in to specific audiences.
 
@@ -63,6 +65,12 @@ Please visit [our support site at https://www.paidmembershipspro.com](https://ww
 2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
+= 2.3.7 - 2024-09-24 =
+* ENHANCEMENT: Updated UI for compatibility with PMPro v3.1. #145 (@andrewlimaza, @kimcoleman)
+* BUG FIX: Fixed over-escaping in settings. #144 (@dparker1005)
+* BUG FIX: Fixed issue with exporting CSV of members for Mailchimp Import. #139 (@dparker1005)
+* BUG FIX: Fixed warning when site admin enters an improperly formatted Mailchimp API Key. #146 (@kimcoleman)
+
 = 2.3.6 - 2024-03-27 =
 * SECURITY: Now preparing SQL statements.
 * SECURITY: Improved escaping of strings.
