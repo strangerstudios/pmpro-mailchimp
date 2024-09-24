@@ -40,7 +40,9 @@ class PMPromc_Mailchimp_API
 			);
 
 			// the datacenter that the key belongs to.
-			list(, self::$dc) = explode('-', $api_key);
+			if ( strpos( self::$api_key, '-' ) != false ) {
+				list(, self::$dc) = explode('-', self::$api_key);
+			}
 
 			// Build the URL based on the datacenter
 			self::$api_url = "https://" . self::$dc . ".api.mailchimp.com/3.0";
