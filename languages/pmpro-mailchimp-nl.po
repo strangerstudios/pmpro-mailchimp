@@ -1,0 +1,286 @@
+# Translation of Plugins - Paid Memberships Pro &#8211; Mailchimp Add On - Stable (latest release) in Dutch
+# This file is distributed under the same license as the Plugins - Paid Memberships Pro &#8211; Mailchimp Add On - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2024-09-24 17:11:45+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/4.0.1\n"
+"Language: nl\n"
+"Project-Id-Version: Plugins - Paid Memberships Pro &#8211; Mailchimp Add On - Stable (latest release)\n"
+
+#: includes/functions.php:197 includes/profile.php:93
+msgid "Opt-In Mailing List"
+msgstr "Opt-In mailinglijst"
+
+#: includes/functions.php:195 includes/profile.php:91
+msgid "Opt-In Mailing Lists"
+msgstr "Opt-In mailinglijsten"
+
+#. Author URI of the plugin
+#: pmpro-mailchimp.php
+msgid "https://www.paidmembershipspro.com"
+msgstr "https://www.paidmembershipspro.com"
+
+#. Author of the plugin
+#: pmpro-mailchimp.php
+msgid "Paid Memberships Pro"
+msgstr "Paid Memberships Pro"
+
+#. Plugin URI of the plugin
+#: pmpro-mailchimp.php
+msgid "https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/"
+msgstr "https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/"
+
+#. translators: %s - path to log file
+#: includes/settings.php:383
+msgid "Debug log can be found at %s"
+msgstr "Debug log is te vinden op %s"
+
+#: includes/settings.php:171
+msgid "Log API Calls?"
+msgstr "Log API aanroepen?"
+
+#: includes/settings.php:364
+msgid "Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed."
+msgstr "Als je 'nee' kiest, wordt Mailchimp nog steeds bijgewerkt wanneer het gebruikersniveau wordt gewijzigd, e-mail wordt gewijzigd of gekozen opt-in doelgroepen worden gewijzigd."
+
+#: includes/settings.php:362 includes/settings.php:378
+msgid "Yes"
+msgstr "Ja"
+
+#: includes/settings.php:346
+msgid "Yes (Old level and opt-in audiences.)"
+msgstr "Ja (oud niveau en opt-in doelgroepen.)"
+
+#: includes/settings.php:334
+msgid "Yes (All audiences)"
+msgstr "Ja (alle doelgroepen)"
+
+#: includes/settings.php:253
+msgid "Opt-in audiences cannot be set to also be non-member audiences or levels audiences."
+msgstr "Opt-in doelgroepen kunnen niet worden ingesteld als ook niet-leden of niveaus doelgroepen."
+
+#: includes/settings.php:170
+msgid "Update on Profile Save?"
+msgstr "Update bij profiel opslaan?"
+
+#: includes/settings.php:162
+msgid "Non-member Audiences"
+msgstr "Niet-aangesloten doelgroepen"
+
+#: includes/settings.php:345
+msgid "Yes (Only old level audiences.)"
+msgstr "Ja (alleen oude doelgroepen.)"
+
+#: includes/settings.php:174
+msgid "Membership Levels and Audiences"
+msgstr "Lidmaatschapsniveaus en doelgroepen"
+
+#: includes/settings.php:166
+msgid "Opt-in Audiences"
+msgstr "Opt-in doelgroepen"
+
+#: includes/profile.php:55
+msgid "Opt-in Mailchimp Audiences"
+msgstr "Opt-in Mailchimp doelgroepen"
+
+#: includes/settings.php:145
+msgid "Save Settings"
+msgstr "Instellingen opslaan"
+
+#: includes/settings.php:62
+msgid "Mailchimp Integration Options and Settings"
+msgstr "MailChimp integratie opties en instellingen"
+
+#: classes/class-pmpromc-mailchimp-api.php:510
+msgid "Detail"
+msgstr "Detail"
+
+#: classes/class-pmpromc-mailchimp-api.php:137
+msgid "Error while communicating with the Mailchimp servers."
+msgstr "Fout bij het communiceren met de Mailchimp servers."
+
+#. Description of the plugin
+#: pmpro-mailchimp.php
+msgid "Sync your WordPress users and members with Mailchimp audiences."
+msgstr "Synchroniseer je WordPress gebruikers en leden met MailChimp lijsten."
+
+#. Plugin Name of the plugin
+#: pmpro-mailchimp.php
+msgid "Paid Memberships Pro - Mailchimp Add On"
+msgstr "Paid Memberships Pro - MailChimp Add On"
+
+#: pmpro-mailchimp.php:97
+msgid "Support"
+msgstr "Support"
+
+#: pmpro-mailchimp.php:97
+msgid "Visit Customer Support Forum"
+msgstr "Bezoek het klant ondersteuningsforum"
+
+#: pmpro-mailchimp.php:96
+msgid "Docs"
+msgstr "Documentatie"
+
+#: pmpro-mailchimp.php:96
+msgid "View Documentation"
+msgstr "Bekijk documentatie"
+
+#: pmpro-mailchimp.php:79
+msgid "Settings"
+msgstr "Instellingen"
+
+#: includes/api-wrapper.php:166
+msgid "Error during unsubscribe operation. Please report this error to the administrator"
+msgstr "Fout tijdens uitschrijven. Rapporteer deze fout aan de beheerder"
+
+#. translators: %s - link to documentation
+#: includes/settings.php:112
+msgid "For more detailed instructions and screenshots, <a href=\"%s\" target=\"_blank\">click here to read our documentation on importing existing members into Mailchimp</a>."
+msgstr "Voor meer gedetailleerde instructies en schermafbeeldingen, <a href=\"%s\" target=\"_blank\">klik hier om onze documentatie over het importeren van bestaande leden in MailChimp</a> te lezen."
+
+#: includes/settings.php:106
+msgid "Check \"auto update my existing audience\". Click \"Import\"."
+msgstr "Vink \"automatisch bijwerken van mijn bestaande lijst\" aan. Klik op \"Importeren\"."
+
+#: includes/settings.php:104
+msgid "Import columns <code>PMPLEVEL</code> and <code>PMPLEVELID</code>. The fields should have those exact names in all uppercase letters."
+msgstr "Kolommen importeren <code>PMPLEVEL</code> en <code>PMPLEVELID</code>. De velden moeten die exacte namen in hoofdletters hebben."
+
+#: includes/settings.php:102
+msgid "Go to Audiences -> Choose an Audience -> Add Members -> Import Members -> CSV or tab-delimited text file."
+msgstr "Ga naar lijsten -> kies een lijst -> Leden toevoegen -> Leden importeren -> CSV of door tabs gescheiden tekst bestand."
+
+#: includes/settings.php:101
+msgid "Log in to Mailchimp."
+msgstr "Inloggen bij MailChimp."
+
+#: includes/settings.php:100
+msgid "Download a CSV of member data for each membership level."
+msgstr "Download een CSV met leden gegevens voor elk lidmaatschapsniveau."
+
+#: includes/settings.php:98
+msgid "Mailchimp Import Steps"
+msgstr "MailChimp Import stappen"
+
+#: includes/settings.php:96
+msgid "Download List (.CSV)"
+msgstr "Lijst downloaden als CSV"
+
+#: includes/settings.php:86
+msgid "Membership Level"
+msgstr "Lidmaatschapsniveau"
+
+#: includes/settings.php:85
+msgid "Export a CSV for your Mailchimp Import"
+msgstr "Exporteer een CSV voor je MailChimp Import"
+
+#: includes/settings.php:80
+msgid "Click here to export your members list for a MailChimp Import"
+msgstr "Klik hier om je ledenlijst voor een MailChimp Import te exporteren"
+
+#: includes/settings.php:79
+msgid "Read the documentation on importing existing members into MailChimp"
+msgstr "Lees de documentatie over het importeren van bestaande leden in MailChimp"
+
+#: includes/settings.php:79
+msgid "Since v2.0, this plugin creates and synchronizes the <code>PMPLEVEL</code> and <code>PMPLEVELID</code> merge field in Mailchimp. <strong>This will only affect new or updated members.</strong> You must import this data into MailChimp for existing members."
+msgstr "Sinds v2.0 maakt en synchroniseert deze plugin het <code>PMPLEVEL</code> en <code>PMPLEVELID</code> samenvoeg veld in MailChimp. <strong>Dit is alleen van invloed op nieuwe of bijgewerkte leden.</strong> Je moet deze gegevens importeren in MailChimp voor bestaande leden."
+
+#: includes/settings.php:78
+msgid "Synchronize a Member's Level Name and ID"
+msgstr "Synchroniseer het leden niveau naam en ID"
+
+#. translators: %1$s - link to Paid Memberships Pro, %2$s - link to Mailchimp
+#: includes/settings.php:73
+msgid "If you have <a href=\"%1$s\" target=\"_blank\">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify \"Opt-in Audiences\" that members can select at membership checkout. <a href=\"%2$s\" target=\"_blank\">Get a Free Mailchimp account</a>."
+msgstr "Als je <a href=\"%1$s\" target=\"_blank\">Paid Memberships Pro</a> hebt geïnstalleerd, kun je leden abonneren op één of meer Mailchimp doelgroepen op basis van hun lidmaatschapsniveau of \"Opt-in Doelgroepen\" specificeren die leden kunnen selecteren bij het afrekenen van het lidmaatschap. <a href=\"%2$s\" target=\"_blank\">Maak een gratis Mailchimp account aan</a>."
+
+#: includes/settings.php:69
+msgid "Subscribe users to one or more Mailchimp audiences when they sign up for your site."
+msgstr "Abonneer gebruikers op een of meer MailChimp lijsten wanneer ze zich aanmelden voor je site."
+
+#: includes/settings.php:348
+msgid "Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site."
+msgstr "Aanbevolen: ja. Als je echter meerdere lijsten beheert in MailChimp en gebruikers zich buiten WordPress abonneren, kan je Nee kiezen, zodat contacten niet worden afgemeld voor andere lijsten wanneer ze zich registreren op je site."
+
+#: includes/settings.php:333 includes/settings.php:344
+#: includes/settings.php:361 includes/settings.php:377
+msgid "No"
+msgstr "Nee"
+
+#. translators: %s - link to install PMPro
+#: includes/settings.php:434
+msgid "<a href=\"%s\">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences."
+msgstr "<a href=\"%s\">Installeer Paid Memberships Pro</a> om lidmaatschapsfunctionaliteit aan je site toe te voegen en betere controle te krijgen over je MailChimp lijsten."
+
+#. translators: %s - link to activate PMPro
+#: includes/settings.php:424
+msgid "<a href=\"%s\">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences."
+msgstr "<a href=\"%s\">Activeer Paid Memberships Pro</a> om lidmaatschapsfunctionaliteit aan je site toe te voegen en betere controle te krijgen over je MailChimp lijsten."
+
+#: includes/settings.php:413
+msgid "For each level below, choose the audience(s) that a new user should be subscribed to when they register."
+msgstr "Kies voor elk niveau hieronder de lijst(en) waarop een nieuwe gebruiker moet worden geabonneerd wanneer hij/zij zich registreert."
+
+#. translators: %s - link to create levels
+#: includes/settings.php:407
+msgid "Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign Mailchimp audiences to them here."
+msgstr "Zodra je <a href='%s'>een aantal niveaus hebt gemaakt in Paid Memberships Pro</a>, kun je hier MailChimp lijsten aan hen toewijzen."
+
+#: includes/settings.php:399
+msgid "PMPro is installed."
+msgstr "PMPro is geïnstalleerd."
+
+#: includes/functions.php:209 includes/profile.php:105
+msgid "Join our mailing list."
+msgstr "Abonneer je op onze maillijst."
+
+#: includes/functions.php:207 includes/profile.php:103
+msgid "Join one or more of our mailing lists."
+msgstr "Abonneer je op één of meer van onze maillijsten."
+
+#: includes/settings.php:169
+msgid "Unsubscribe on Level Change?"
+msgstr "Afmelden bij een niveau wijziging?"
+
+#: includes/settings.php:168
+msgid "Require Double Opt-in?"
+msgstr "Vereist dubbele opt-in?"
+
+#: includes/settings.php:161
+msgid "Mailchimp API Key"
+msgstr "MailChimp API sleutel"
+
+#: includes/settings.php:160
+msgid "General Settings"
+msgstr "Algemene instellingen"
+
+#: includes/profile.php:60
+msgid "Mailing Lists"
+msgstr "Maillijsten"
+
+#: includes/export-csv.php:5
+msgid "You do not have permissions to perform this action."
+msgstr "Je hebt de machtigingen niet om deze actie uit te voeren."
+
+#: classes/class-pmpromc-mailchimp-api.php:528
+msgid "Unable to identify error message"
+msgstr "Kan de foutmelding niet vinden"
+
+#: classes/class-pmpromc-mailchimp-api.php:227
+msgid "Error: Need to specify the audience ID to receive member info"
+msgstr "Fout: Noodzaak om de lijst ID op te geven om leden informatie te ontvangen"
+
+#. translators: %s - Mailchimp API response message
+#: classes/class-pmpromc-mailchimp-api.php:129
+msgid "Error while communicating with the Mailchimp servers: <p><em>%s</em></p>"
+msgstr "Fout bij het communiceren met de Mailchimp servers: <p><em>%s</em></p>"
+
+#. translators: %s - Mailchimp API response message
+#: classes/class-pmpromc-mailchimp-api.php:120
+msgid "Sorry, but Mailchimp was unable to verify your API key. Mailchimp gave this response: <p><em>%s</em></p> Please try entering your API key again."
+msgstr "Sorry, maar MailChimp kan je API sleutel niet verifiëren. MailChimp gaf deze reactie: <p><em>%s</em></p> Probeer nogmaals je API sleutel in te voeren."
