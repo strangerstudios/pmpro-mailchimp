@@ -13,7 +13,7 @@ Add users and members to Mailchimp audiences based on their membership level and
 
 Subscribe WordPress users and members to your Mailchimp audiences.
 
-This plugin offers extended functionality for [membership websites using the Paid Memberships Pro plugin](https://wordpress.org/plugins/paid-memberships-pro/) available for free in the WordPress plugin repository. 
+This plugin offers extended functionality for [membership websites using the Paid Memberships Pro plugin](https://www.paidmembershipspro.com) available for free in the WordPress plugin repository. 
 
 With Paid Memberships Pro installed, you can specify unique audiences for each membership level, as well as opt-in audiences that a member can join as part of checkout or by editing their user profile. By default, the integration will merge the user's email address and membership level information. You can send additional user profile details to Mailchimp [using the method described here](https://www.paidmembershipspro.com/send-additional-user-information-fields-mailchimp/).
 
