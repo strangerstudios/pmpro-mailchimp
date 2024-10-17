@@ -3,10 +3,10 @@
 /**
  * Subscribe a user to any additional opt-in lists selected
  *
- * @deprecated TBD Use pmpromc_set_user_additional_list_meta() instead
+ * @deprecated 2.3.6 Use pmpromc_set_user_additional_list_meta() instead
  */
 function pmpromc_subscribeToAdditionalLists($user_id){
-	_deprecated_function( __FUNCTION__, 'TBD', 'pmpromc_set_user_additional_list_meta' );
+	_deprecated_function( __FUNCTION__, '2.3.6', 'pmpromc_set_user_additional_list_meta' );
 
 	// Nonce checks not needed as this function is not used anymore and is deprecated.
 	if (!empty($_REQUEST['additional_lists'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -28,10 +28,10 @@ function pmpromc_subscribeToAdditionalLists($user_id){
  *
  * @param WP_User|int $user - The WP_User object or user_id for the user.
  *
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_queue_smart_unsubscriptions( $user ) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	// Get the user object if user_id is passed.
 	if( ! is_object( $user ) ) {
 		$user = get_userdata($user);
@@ -47,72 +47,72 @@ function pmpromc_queue_smart_unsubscriptions( $user ) {
 /**
  * Update a user's Mailchimp information when profile is updated
  *
- * @deprecated TBD
+ * @deprecated 2.3.6
  *
  * @param WP_User $old_user - The old WP_User object being changed
  * @param WP_User $old_user - The new WP_User object being added
  * @param Array|string $audiences - The id(s) of the audience(s) to remove the user from
  */
 function pmpromc_queue_user_update( $old_user, $new_user, $audiences ) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	pmpromc_queue_unsubscription( $old_user, $audiences );
 	pmpromc_queue_subscription( $new_user, $audiences );
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_subscribe( $list, $user ) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	pmpromc_queue_subscription( $user, $list );
 	pmpromc_process_audience_member_updates_queue();
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_queueUserToSubscribeToList($user_id, $list) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	pmpromc_queue_subscription( $user_id, $list );
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_processSubscriptions($param) {
 	pmpromc_process_audience_member_updates_queue();
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_unsubscribe($list, $user) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	pmpromc_queue_unsubscription( $user, $list );
 	pmpromc_process_audience_member_updates_queue();
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_queueUserToUnsubscribeFromLists($user_id) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	pmpromc_queue_smart_unsubscriptions( $user_id );
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_processUnsubscriptions($param) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	pmpromc_process_audience_member_updates_queue();
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 2.3.6
  */
 function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	pmpromc_queue_smart_unsubscriptions( $user_id );
 	pmpromc_process_audience_member_updates_queue();
 }
@@ -120,12 +120,12 @@ function pmpromc_unsubscribeFromLists($user_id, $level_id = NULL) {
 /**
  * Get array of lists to unsubscribe a user from
  *
- * @deprecated TBD
+ * @deprecated 2.3.6
  *
  * @param $user_id (int) - User Id
  */
 function pmpromc_get_unsubscribe_audiences( $user_id ) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '2.3.6' );
 	global $wpdb;
 	$options = get_option("pmpromc_options");
 	$all_lists = get_option("pmpromc_all_lists");

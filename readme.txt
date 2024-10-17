@@ -3,7 +3,7 @@ Contributors: strangerstudios, dlparker1005, paidmembershipspro
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 5.4
 Tested up to: 6.6
-Stable tag: 2.3.7
+Stable tag: 2.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -65,6 +65,10 @@ Please visit [our support site at https://www.paidmembershipspro.com](https://ww
 2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
+= 2.4 - 2024-10-17 =
+* FEATURE: Now updating the plugin from paidmembershipspro.com.
+* ENHANCEMENT: Updated translation files bundled with the plugin.
+
 = 2.3.7 - 2024-09-24 =
 * ENHANCEMENT: Updated UI for compatibility with PMPro v3.1. #145 (@andrewlimaza, @kimcoleman)
 * BUG FIX: Fixed over-escaping in settings. #144 (@dparker1005)
