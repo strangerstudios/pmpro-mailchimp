@@ -1,21 +1,26 @@
-# Translation of Plugins - Paid Memberships Pro &#8211; Mailchimp Add On - Stable (latest release) in Dutch
-# This file is distributed under the same license as the Plugins - Paid Memberships Pro &#8211; Mailchimp Add On - Stable (latest release) package.
+# Copyright (C) 2024 Paid Memberships Pro
+# This file is distributed under the same license as the Paid Memberships Pro - Mailchimp Add On plugin.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2024-09-24 17:11:45+0000\n"
+"Project-Id-Version: Paid Memberships Pro - Mailchimp Add On 2.4\n"
+"Report-Msgid-Bugs-To: info@paidmembershipspro.com\n"
+"Last-Translator: Paid Memberships Pro <info@paidmembershipspro.com>\n"
+"Language-Team: Paid Memberships Pro <info@paidmembershipspro.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: GlotPress/4.0.1\n"
-"Language: nl\n"
-"Project-Id-Version: Plugins - Paid Memberships Pro &#8211; Mailchimp Add On - Stable (latest release)\n"
+"POT-Creation-Date: 2024-10-17T14:39:07+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: pmpro-mailchimp\n"
 
-#: includes/functions.php:197 includes/profile.php:93
+#: includes/functions.php:197
+#: includes/profile.php:93
 msgid "Opt-In Mailing List"
 msgstr "Opt-In mailinglijst"
 
-#: includes/functions.php:195 includes/profile.php:91
+#: includes/functions.php:195
+#: includes/profile.php:91
 msgid "Opt-In Mailing Lists"
 msgstr "Opt-In mailinglijsten"
 
@@ -47,7 +52,8 @@ msgstr "Log API aanroepen?"
 msgid "Choosing 'No' will still update Mailchimp when user's level is changed, email is changed, or chosen opt-in audiences are changed."
 msgstr "Als je 'nee' kiest, wordt Mailchimp nog steeds bijgewerkt wanneer het gebruikersniveau wordt gewijzigd, e-mail wordt gewijzigd of gekozen opt-in doelgroepen worden gewijzigd."
 
-#: includes/settings.php:362 includes/settings.php:378
+#: includes/settings.php:362
+#: includes/settings.php:378
 msgid "Yes"
 msgstr "Ja"
 
@@ -207,8 +213,10 @@ msgstr "Abonneer gebruikers op een of meer MailChimp lijsten wanneer ze zich aan
 msgid "Recommended: Yes. However, if you manage multiple audiences in Mailchimp and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other audiences when they register on your site."
 msgstr "Aanbevolen: ja. Als je echter meerdere lijsten beheert in MailChimp en gebruikers zich buiten WordPress abonneren, kan je Nee kiezen, zodat contacten niet worden afgemeld voor andere lijsten wanneer ze zich registreren op je site."
 
-#: includes/settings.php:333 includes/settings.php:344
-#: includes/settings.php:361 includes/settings.php:377
+#: includes/settings.php:333
+#: includes/settings.php:344
+#: includes/settings.php:361
+#: includes/settings.php:377
 msgid "No"
 msgstr "Nee"
 
@@ -235,11 +243,13 @@ msgstr "Zodra je <a href='%s'>een aantal niveaus hebt gemaakt in Paid Membership
 msgid "PMPro is installed."
 msgstr "PMPro is geïnstalleerd."
 
-#: includes/functions.php:209 includes/profile.php:105
+#: includes/functions.php:209
+#: includes/profile.php:105
 msgid "Join our mailing list."
 msgstr "Abonneer je op onze maillijst."
 
-#: includes/functions.php:207 includes/profile.php:103
+#: includes/functions.php:207
+#: includes/profile.php:103
 msgid "Join one or more of our mailing lists."
 msgstr "Abonneer je op één of meer van onze maillijsten."
 
