@@ -202,6 +202,9 @@ class PMPromc_Mailchimp_API
 		if ( 200 !== wp_remote_retrieve_response_code( $resp ) ) {
 			$this->set_error_msg($resp);
 			pmpromc_log("Mailchimp Error: Response object: " . print_r($resp, true));
+			if ( WP_DEBUG ) {
+				error_log( __( 'An error occurred while contacting Mailchimp. Please see the PMPro Mailchimp log for more information.', 'pmpro-mailchimp' ) );
+			}
 			return false;
 		}
 
@@ -210,6 +213,9 @@ class PMPromc_Mailchimp_API
 			pmpromc_log( 'Mailchimp Response: No errors detected.' );
 		} else {
 			pmpromc_log( 'Mailchimp Response: ' . $response_body->error_count . ' error(s). ' . print_r( $response_body->errors, true ) );
+			if ( WP_DEBUG ) {
+				error_log( __( 'An error occurred while contacting Mailchimp. Please see the PMPro Mailchimp log for more information.', 'pmpro-mailchimp' ) );
+			}
 		}
 		return true;
 	}
@@ -572,6 +578,9 @@ class PMPromc_Mailchimp_API
 		} else {
 			$response_body = self::decode_response( $response['body'] );
 			pmpromc_log( 'Mailchimp Response: Error status ' . $response_body->status . '. ' . print_r( $response_body->errors, true ) );
+			if ( WP_DEBUG ) {
+				error_log( __( 'An error occurred while contacting Mailchimp. Please see the PMPro Mailchimp log for more information.', 'pmpro-mailchimp' ) );
+			}
 		}
 
 		//check response
