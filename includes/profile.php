@@ -230,7 +230,7 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 			// Get membership levels for the user.
 			$user_levels = pmpro_getMembershipLevelsForUser( $user_id );
 
-			if( ! empty( $user_levels ) ) {
+			if ( ! empty( $user_levels ) ) {
 				// Get audience ids associated with the user's membership levels.
 				foreach ( $user_levels as $level ) {
 					if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) ) {
@@ -244,7 +244,7 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 				}
 			}
 
-			if( ! empty( $user_audience_ids ) ) {
+			if ( ! empty( $user_audience_ids ) ) {
 				// Filter out audiences that are not associated with the user.
 				$audiences = array_filter(
 					$audiences,
