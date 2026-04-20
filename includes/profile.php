@@ -237,6 +237,7 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 						$user_audience_ids = array_merge( $user_audience_ids, $options[ 'level_' . $level->id . '_lists' ] );
 					}
 				}
+				$user_audience_ids = array_unique( $user_audience_ids );
 			} else {
 				// Not a member of any levels, get audience ids for non-member lists.
 				if ( ! empty( $options['users_lists'] ) ) {
