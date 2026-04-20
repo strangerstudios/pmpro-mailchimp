@@ -222,8 +222,6 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 			// Execute changes that are already queued.
 			pmpromc_process_audience_member_updates_queue();
 
-			$options = get_option( 'pmpromc_options' );
-
 			// Find audience ids associated with the user.
 			$user_audience_ids = array();
 
