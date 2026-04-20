@@ -239,6 +239,13 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 			}
 		}
 
+		// Include opt-in audiences the user is subscribed to.
+		$user_additional_lists = get_user_meta( $user_id, 'pmpromc_additional_lists', true );
+		if ( ! empty( $user_additional_lists ) ) {
+			$user_audience_ids = array_merge( $user_audience_ids, $user_additional_lists );
+		}
+		$user_audience_ids = array_unique( $user_audience_ids );
+
 		// No audiences to check, bail.
 		if ( empty( $user_audience_ids ) ) {
 			return;
