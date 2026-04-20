@@ -215,89 +215,92 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 			return;
 		}
 
+		// Execute changes that are already queued.
+		pmpromc_process_audience_member_updates_queue();
+
+		// Find audience ids associated with the user.
+		$user_audience_ids = array();
+
+		// Get membership levels for the user.
+		$user_levels = pmpro_getMembershipLevelsForUser( $user_id );
+
+		if ( ! empty( $user_levels ) ) {
+			// Get audience ids associated with the user's membership levels.
+			foreach ( $user_levels as $level ) {
+				if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) ) {
+					$user_audience_ids = array_merge( $user_audience_ids, $options[ 'level_' . $level->id . '_lists' ] );
+				}
+			}
+			$user_audience_ids = array_unique( $user_audience_ids );
+		} else {
+			// Not a member of any levels, get audience ids for non-member lists.
+			if ( ! empty( $options['users_lists'] ) ) {
+				$user_audience_ids = $options['users_lists'];
+			}
+		}
+
+		// No audiences to check, bail.
+		if ( empty( $user_audience_ids ) ) {
+			return;
+		}
+
 		// Get all audiences.
 		$audiences = $api->get_all_lists();
 
 		if ( ! empty( $audiences ) ) {
-			// Execute changes that are already queued.
-			pmpromc_process_audience_member_updates_queue();
-
-			// Find audience ids associated with the user.
-			$user_audience_ids = array();
-
-			// Get membership levels for the user.
-			$user_levels = pmpro_getMembershipLevelsForUser( $user_id );
-
-			if ( ! empty( $user_levels ) ) {
-				// Get audience ids associated with the user's membership levels.
-				foreach ( $user_levels as $level ) {
-					if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) ) {
-						$user_audience_ids = array_merge( $user_audience_ids, $options[ 'level_' . $level->id . '_lists' ] );
-					}
+			// Filter out audiences that are not associated with the user.
+			$audiences = array_filter(
+				$audiences,
+				function( $audience ) use ( $user_audience_ids ) {
+					return in_array( $audience->id, $user_audience_ids );
 				}
-				$user_audience_ids = array_unique( $user_audience_ids );
-			} else {
-				// Not a member of any levels, get audience ids for non-member lists.
-				if ( ! empty( $options['users_lists'] ) ) {
-					$user_audience_ids = $options['users_lists'];
-				}
-			}
+			);
 
-			if ( ! empty( $user_audience_ids ) ) {
-				// Filter out audiences that are not associated with the user.
-				$audiences = array_filter(
-					$audiences,
-					function( $audience ) use ( $user_audience_ids ) {
-						return in_array( $audience->id, $user_audience_ids );
-					}
-				);
-
-				foreach ( $audiences as $audience ) {
-					// Check for member.
-					$member = $api->get_listinfo_for_member( $audience->id, $old_user_data );
-					if ( isset( $member->status ) ) {
-						global $pmpromc_audience_member_updates;
-						if ( $email_changed ) {
-							// Update the email.
-							$data = array(
-								'email_address' => $new_user_data->user_email,
-							);
-							if ( WP_DEBUG ) {
-								error_log( "Updating user's email address from {$old_user_data->user_email} to {$new_user_data->user_email} for audience {$audience->name} ({$audience->id})." );
-							}
-							$update_successful = $api->update_contact( $member, $data );
-							if ( ! $update_successful ) {
-								// User's new email may already existed in audience.
-								// Unsubscribe old email address to be sure that it does not recieve emails.
-								if ( WP_DEBUG ) {
-									error_log( "Handling error by unsubscribing {$old_user_data->user_email} from audience {$audience->name} ({$audience->id})." );
-								}
-								$user_data = (object) array(
-									'email_address' => $old_user_data->user_email,
-									'status'        => 'unsubscribed',
-									'merge_fields'  => apply_filters(
-										'pmpro_mailchimp_listsubscribe_fields',
-										array(
-											'FNAME' => wp_specialchars_decode( $new_user_data->first_name ),
-											'LNAME' => wp_specialchars_decode( $new_user_data->last_name ),
-										),
-										$new_user_data,
-										$audience->id
-									),
-								);
-								if ( empty( $pmpromc_audience_member_updates ) ) {
-									$pmpromc_audience_member_updates = array();
-								}
-								if ( ! array_key_exists( $audience->id, $pmpromc_audience_member_updates ) ) {
-									$pmpromc_audience_member_updates[ $audience->id ] = array();
-								}
-								// Use user_id '0' to fake a user.
-								$pmpromc_audience_member_updates[ $audience->id ][0] = $user_data;
-							}
+			foreach ( $audiences as $audience ) {
+				// Check for member.
+				$member = $api->get_listinfo_for_member( $audience->id, $old_user_data );
+				if ( isset( $member->status ) ) {
+					global $pmpromc_audience_member_updates;
+					if ( $email_changed ) {
+						// Update the email.
+						$data = array(
+							'email_address' => $new_user_data->user_email,
+						);
+						if ( WP_DEBUG ) {
+							error_log( "Updating user's email address from {$old_user_data->user_email} to {$new_user_data->user_email} for audience {$audience->name} ({$audience->id})." );
 						}
-						// Update the user's merge fields.
-						pmpromc_add_audience_member_update( $user_id, $audience->id, $member->status );
+						$update_successful = $api->update_contact( $member, $data );
+						if ( ! $update_successful ) {
+							// User's new email may already existed in audience.
+							// Unsubscribe old email address to be sure that it does not recieve emails.
+							if ( WP_DEBUG ) {
+								error_log( "Handling error by unsubscribing {$old_user_data->user_email} from audience {$audience->name} ({$audience->id})." );
+							}
+							$user_data = (object) array(
+								'email_address' => $old_user_data->user_email,
+								'status'        => 'unsubscribed',
+								'merge_fields'  => apply_filters(
+									'pmpro_mailchimp_listsubscribe_fields',
+									array(
+										'FNAME' => wp_specialchars_decode( $new_user_data->first_name ),
+										'LNAME' => wp_specialchars_decode( $new_user_data->last_name ),
+									),
+									$new_user_data,
+									$audience->id
+								),
+							);
+							if ( empty( $pmpromc_audience_member_updates ) ) {
+								$pmpromc_audience_member_updates = array();
+							}
+							if ( ! array_key_exists( $audience->id, $pmpromc_audience_member_updates ) ) {
+								$pmpromc_audience_member_updates[ $audience->id ] = array();
+							}
+							// Use user_id '0' to fake a user.
+							$pmpromc_audience_member_updates[ $audience->id ][0] = $user_data;
+						}
 					}
+					// Update the user's merge fields.
+					pmpromc_add_audience_member_update( $user_id, $audience->id, $member->status );
 				}
 			}
 		}
