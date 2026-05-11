@@ -68,13 +68,29 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 		}
 	}
 
-	// Calculate unsubscribe audiences.
+	// Calculate unsubscribe and archive audiences.
+	$archive_audiences = array();
 	if ( $options['unsubscribe'] != '0' ) {
-		// Get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes.
 		global $wpdb;
-		$levels_unsubscribing_from = $wpdb->get_col( 
+
+		// Get expired levels (involuntary) - these will be archived to allow future resubscription
+		$levels_to_archive = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ",
+				"SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ",
+				$user_id,
+				implode(',', $user_level_ids)
+			)
+		);
+		foreach ( $levels_to_archive as $archive_level_id ) {
+			if ( ! empty( $options[ 'level_' . $archive_level_id . '_lists' ] ) ) {
+				$archive_audiences = array_merge( $archive_audiences, $options[ 'level_' . $archive_level_id . '_lists' ] );
+			}
+		}
+
+		// Get cancelled levels (voluntary) - these will be unsubscribed
+		$levels_unsubscribing_from = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed') AND modified > NOW() - INTERVAL 15 MINUTE ",
 				$user_id,
 				implode(',', $user_level_ids)
 			)
@@ -107,10 +123,12 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 
 	$subscribe_audiences   = array_unique( $subscribe_audiences );
 	$unsubscribe_audiences = array_unique( $unsubscribe_audiences );
+	$archive_audiences     = array_unique( $archive_audiences );
 
-	// Subscribe/Unsubscribe user.
+	// Subscribe/Unsubscribe/Archive user.
 	pmpromc_queue_subscription( $user_id, $subscribe_audiences );
 	pmpromc_queue_unsubscription( $user_id, array_diff( $unsubscribe_audiences, $subscribe_audiences ) );
+	pmpromc_queue_archive( $user_id, array_diff( $archive_audiences, $subscribe_audiences ) );
 
 	// Update opt-in audiences and user audiences.
 	if ( empty( $user_level_ids ) && 'all' === $options['unsubscribe'] ) {

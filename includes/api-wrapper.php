@@ -65,6 +65,16 @@ function pmpromc_queue_unsubscription( $user, $audiences ) {
 }
 
 /**
+ * Archive a user from a specific list (used for expired members to allow future resubscription)
+ *
+ * @param WP_User|int  $user - The WP_User object or user_id for the user.
+ * @param Array|string $audiences - The id(s) of the audience(s) to archive the user from.
+ */
+function pmpromc_queue_archive( $user, $audiences ) {
+	pmpromc_add_audience_member_update( $user, $audiences, 'archived' );
+}
+
+/**
  * Queue an update to an audience
  *
  * @param WP_User|int  $user - The WP_User object or user_id for the user to be updated.
@@ -78,7 +88,7 @@ function pmpromc_add_audience_member_update( $user, $audiences, $status = 'subsc
 	}
 
 	// Check for valid status.
-	if ( ! in_array( $status, array( 'subscribed', 'unsubscribed', 'pending' ), true ) ) {
+	if ( ! in_array( $status, array( 'subscribed', 'unsubscribed', 'pending', 'archived' ), true ) ) {
 		return;
 	}
 
