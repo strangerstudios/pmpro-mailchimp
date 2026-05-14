@@ -1,17 +1,17 @@
-# Copyright (C) 2024 Paid Memberships Pro
+# Copyright (C) 2026 Paid Memberships Pro
 # This file is distributed under the same license as the Paid Memberships Pro - Mailchimp Add On plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Paid Memberships Pro - Mailchimp Add On 2.4\n"
+"Project-Id-Version: Paid Memberships Pro - Mailchimp Add On 2.4.1\n"
 "Report-Msgid-Bugs-To: info@paidmembershipspro.com\n"
 "Last-Translator: Paid Memberships Pro <info@paidmembershipspro.com>\n"
 "Language-Team: Paid Memberships Pro <info@paidmembershipspro.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-10-17T14:39:07+00:00\n"
+"POT-Creation-Date: 2026-05-14T15:16:29+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pmpro-mailchimp\n"
 
 #: includes/functions.php:197
@@ -41,6 +41,7 @@ msgstr "https://www.paidmembershipspro.com/add-ons/pmpro-mailchimp-integration/"
 
 #. translators: %s - path to log file
 #: includes/settings.php:383
+#, php-format
 msgid "Debug log can be found at %s"
 msgstr "Debug log is te vinden op %s"
 
@@ -102,6 +103,7 @@ msgid "Mailchimp Integration Options and Settings"
 msgstr "MailChimp integratie opties en instellingen"
 
 #: classes/class-pmpromc-mailchimp-api.php:510
+#: classes/class-pmpromc-mailchimp-api.php:516
 msgid "Detail"
 msgstr "Detail"
 
@@ -145,6 +147,7 @@ msgstr "Fout tijdens uitschrijven. Rapporteer deze fout aan de beheerder"
 
 #. translators: %s - link to documentation
 #: includes/settings.php:112
+#, php-format
 msgid "For more detailed instructions and screenshots, <a href=\"%s\" target=\"_blank\">click here to read our documentation on importing existing members into Mailchimp</a>."
 msgstr "Voor meer gedetailleerde instructies en schermafbeeldingen, <a href=\"%s\" target=\"_blank\">klik hier om onze documentatie over het importeren van bestaande leden in MailChimp</a> te lezen."
 
@@ -202,6 +205,7 @@ msgstr "Synchroniseer het leden niveau naam en ID"
 
 #. translators: %1$s - link to Paid Memberships Pro, %2$s - link to Mailchimp
 #: includes/settings.php:73
+#, php-format
 msgid "If you have <a href=\"%1$s\" target=\"_blank\">Paid Memberships Pro</a> installed, you can subscribe members to one or more Mailchimp audiences based on their membership level or specify \"Opt-in Audiences\" that members can select at membership checkout. <a href=\"%2$s\" target=\"_blank\">Get a Free Mailchimp account</a>."
 msgstr "Als je <a href=\"%1$s\" target=\"_blank\">Paid Memberships Pro</a> hebt geïnstalleerd, kun je leden abonneren op één of meer Mailchimp doelgroepen op basis van hun lidmaatschapsniveau of \"Opt-in Doelgroepen\" specificeren die leden kunnen selecteren bij het afrekenen van het lidmaatschap. <a href=\"%2$s\" target=\"_blank\">Maak een gratis Mailchimp account aan</a>."
 
@@ -222,11 +226,13 @@ msgstr "Nee"
 
 #. translators: %s - link to install PMPro
 #: includes/settings.php:434
+#, php-format
 msgid "<a href=\"%s\">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences."
 msgstr "<a href=\"%s\">Installeer Paid Memberships Pro</a> om lidmaatschapsfunctionaliteit aan je site toe te voegen en betere controle te krijgen over je MailChimp lijsten."
 
 #. translators: %s - link to activate PMPro
 #: includes/settings.php:424
+#, php-format
 msgid "<a href=\"%s\">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your Mailchimp audiences."
 msgstr "<a href=\"%s\">Activeer Paid Memberships Pro</a> om lidmaatschapsfunctionaliteit aan je site toe te voegen en betere controle te krijgen over je MailChimp lijsten."
 
@@ -236,6 +242,7 @@ msgstr "Kies voor elk niveau hieronder de lijst(en) waarop een nieuwe gebruiker 
 
 #. translators: %s - link to create levels
 #: includes/settings.php:407
+#, php-format
 msgid "Once you've <a href='%s'>created some levels in Paid Memberships Pro</a>, you will be able to assign Mailchimp audiences to them here."
 msgstr "Zodra je <a href='%s'>een aantal niveaus hebt gemaakt in Paid Memberships Pro</a>, kun je hier MailChimp lijsten aan hen toewijzen."
 
@@ -287,10 +294,18 @@ msgstr "Fout: Noodzaak om de lijst ID op te geven om leden informatie te ontvang
 
 #. translators: %s - Mailchimp API response message
 #: classes/class-pmpromc-mailchimp-api.php:129
+#, php-format
 msgid "Error while communicating with the Mailchimp servers: <p><em>%s</em></p>"
 msgstr "Fout bij het communiceren met de Mailchimp servers: <p><em>%s</em></p>"
 
 #. translators: %s - Mailchimp API response message
 #: classes/class-pmpromc-mailchimp-api.php:120
+#, php-format
 msgid "Sorry, but Mailchimp was unable to verify your API key. Mailchimp gave this response: <p><em>%s</em></p> Please try entering your API key again."
 msgstr "Sorry, maar MailChimp kan je API sleutel niet verifiëren. MailChimp gaf deze reactie: <p><em>%s</em></p> Probeer nogmaals je API sleutel in te voeren."
+
+#: classes/class-pmpromc-mailchimp-api.php:206
+#: classes/class-pmpromc-mailchimp-api.php:217
+#: classes/class-pmpromc-mailchimp-api.php:582
+msgid "An error occurred while contacting Mailchimp. Please see the PMPro Mailchimp log for more information."
+msgstr ""
