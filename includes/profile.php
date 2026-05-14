@@ -215,13 +215,54 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 			return;
 		}
 
+		// Execute changes that are already queued.
+		pmpromc_process_audience_member_updates_queue();
+
+		// Find audience ids associated with the user.
+		$user_audience_ids = array();
+
+		// Get membership levels for the user.
+		$user_levels = pmpro_getMembershipLevelsForUser( $user_id );
+
+		if ( ! empty( $user_levels ) ) {
+			// Get audience ids associated with the user's membership levels.
+			foreach ( $user_levels as $level ) {
+				if ( ! empty( $options[ 'level_' . $level->id . '_lists' ] ) ) {
+					$user_audience_ids = array_merge( $user_audience_ids, $options[ 'level_' . $level->id . '_lists' ] );
+				}
+			}
+			$user_audience_ids = array_unique( $user_audience_ids );
+		} else {
+			// Not a member of any levels, get audience ids for non-member lists.
+			if ( ! empty( $options['users_lists'] ) ) {
+				$user_audience_ids = $options['users_lists'];
+			}
+		}
+
+		// Include opt-in audiences the user is subscribed to.
+		$user_additional_lists = get_user_meta( $user_id, 'pmpromc_additional_lists', true );
+		if ( ! empty( $user_additional_lists ) ) {
+			$user_audience_ids = array_merge( $user_audience_ids, $user_additional_lists );
+		}
+		$user_audience_ids = array_unique( $user_audience_ids );
+
+		// No audiences to check, bail.
+		if ( empty( $user_audience_ids ) ) {
+			return;
+		}
+
 		// Get all audiences.
 		$audiences = $api->get_all_lists();
 
 		if ( ! empty( $audiences ) ) {
-			pmpromc_process_audience_member_updates_queue();
+			// Filter out audiences that are not associated with the user.
+			$audiences = array_filter(
+				$audiences,
+				function( $audience ) use ( $user_audience_ids ) {
+					return in_array( $audience->id, $user_audience_ids );
+				}
+			);
 
-			// Execute changes that are already queued.
 			foreach ( $audiences as $audience ) {
 				// Check for member.
 				$member = $api->get_listinfo_for_member( $audience->id, $old_user_data );
@@ -273,4 +314,3 @@ function pmpromc_profile_update( $user_id, $old_user_data ) {
 	}
 }
 add_action( 'profile_update', 'pmpromc_profile_update', 20, 2 );
-
