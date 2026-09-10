@@ -227,7 +227,7 @@ class PMPromc_Mailchimp_API
 	 *
 	 * @since 2.0.0
 	 */
-	public function get_listinfo_for_member($list_id = null, WP_User $user_data = null)
+	public function get_listinfo_for_member($list_id = null, ?WP_User $user_data = null)
 	{
 		if (empty($list_id)) {
 			$this->set_error_msg(__("Error: Need to specify the audience ID to receive member info", "pmpromc"));
@@ -595,7 +595,7 @@ class PMPromc_Mailchimp_API
 	/**
 	 * DEPRECATED FUNCTIONS BELOW
 	 */
-	public function subscribe($list = '', WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false) {
+	public function subscribe($list = '', ?WP_User $user_obj = null, $merge_fields = array(), $email_type = 'html', $dbl_opt_in = false) {
 	  if ( $list === '' || $user_obj === null ) {
 		return;
 	  }
@@ -603,7 +603,7 @@ class PMPromc_Mailchimp_API
 	  pmpromc_process_audience_member_updates_queue();
 	}
 	
-	public function unsubscribe($list = '', WP_User $user_objs = null) {
+	public function unsubscribe($list = '', ?WP_User $user_objs = null) {
 	  if ( $list === '' || $user_objs === null ) {
 		return;
 	  }
@@ -616,7 +616,7 @@ class PMPromc_Mailchimp_API
 	  pmpromc_process_audience_member_updates_queue();
 	}
 	
-	public function update_list_member($list_id = null, WP_User $old_user = null, WP_User $new_user = null) {
+	public function update_list_member($list_id = null, ?WP_User $old_user = null, ?WP_User $new_user = null) {
 	  pmpromc_queue_user_update( $old_user, $new_user, $list_id );
 	  pmpromc_process_audience_member_updates_queue();
 	}
