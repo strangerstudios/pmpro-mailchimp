@@ -2,8 +2,8 @@
 Contributors: strangerstudios, dlparker1005, paidmembershipspro
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 5.4
-Tested up to: 6.9
-Stable tag: 2.4.1
+Tested up to: 7.1
+Stable tag: 2.4.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -65,6 +65,9 @@ Please visit [our support site at https://www.paidmembershipspro.com](https://ww
 2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
+= 2.4.2 - 2026-09-11 =
+* BUG FIX: Fixed PHP 8.4 deprecation notices about implicitly nullable parameter types in the `PMPro_Mailchimp_API` class. #153 (@POBrien333)
+
 = 2.4.1 - 2026-05-14 =
 * ENHANCEMENT: Profile updates now only push changes to Mailchimp audiences associated with the user's current membership levels, opt-in lists, or non-member lists. This avoids unnecessary API calls and prevents merge fields from being overwritten on audiences configured for other sites that share the same Mailchimp account. #148 (@dwanjuki)
 * ENHANCEMENT: Added a notice to the WordPress debug log when a Mailchimp API call returns an error, pointing administrators to the PMPro Mailchimp log for details. #150 (@dwanjuki)
