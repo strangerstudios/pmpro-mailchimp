@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Set up PMPromc
  */
@@ -21,7 +25,7 @@ add_action( 'init', 'pmpromc_init', 0 );
 function pmpromc_getPMProLevels() {
 	global $pmpromc_levels, $wpdb;
 	if ( ! empty( $wpdb->pmpro_membership_levels ) ) {
-		$pmpromc_levels = $wpdb->get_results( "SELECT * FROM $wpdb->pmpro_membership_levels ORDER BY id" );
+		$pmpromc_levels = $wpdb->get_results( "SELECT * FROM $wpdb->pmpro_membership_levels ORDER BY id" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Static query on a PMPro custom table.
 	} else {
 		$pmpromc_levels = false;
 	}
@@ -72,7 +76,7 @@ function pmpromc_pmpro_after_change_membership_level( $level_id, $user_id ) {
 	if ( $options['unsubscribe'] != '0' ) {
 		// Get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes.
 		global $wpdb;
-		$levels_unsubscribing_from = $wpdb->get_col( 
+		$levels_unsubscribing_from = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared query on a PMPro custom table.
 			$wpdb->prepare(
 				"SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ",
 				$user_id,
@@ -217,9 +221,9 @@ function pmpromc_additional_lists_on_checkout() {
 						global $current_user;
 						// Nonce not needed as this is only setting the default value for the checkbox, not processing form data.
 						if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-							$additional_lists_selected = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+							$additional_lists_selected = array_map( 'sanitize_text_field', (array) wp_unslash( $_REQUEST['additional_lists'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 						} elseif ( isset( $_SESSION['additional_lists'] ) ) {
-							$additional_lists_selected = $_SESSION['additional_lists'];
+							$additional_lists_selected = array_map( 'sanitize_text_field', (array) $_SESSION['additional_lists'] );
 						} elseif ( ! empty( $current_user->ID ) ) {
 							$additional_lists_selected = get_user_meta( $current_user->ID, 'pmpromc_additional_lists', true );
 						} else {
@@ -261,7 +265,7 @@ add_action( 'pmpro_checkout_boxes', 'pmpromc_additional_lists_on_checkout' );
 function pmpromc_pmpro_paypalexpress_session_vars() {
 	// Nonce not needed as this only runs within the PMPro checkout process.
 	if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$_SESSION['additional_lists'] = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$_SESSION['additional_lists'] = array_map( 'sanitize_text_field', (array) $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Not unslashed: may be restored to the request and saved with update_user_meta(), which unslashes.
 	}
 }
 add_action( 'pmpro_paypalexpress_session_vars', 'pmpromc_pmpro_paypalexpress_session_vars' );
@@ -286,7 +290,7 @@ function pmpromc_pmpro_after_checkout( $user_id, $order ) {
 	if ( empty( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$_REQUEST['additional_lists'] = array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
-	pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	pmpromc_set_user_additional_list_meta( $user_id, array_map( 'sanitize_text_field', (array) $_REQUEST['additional_lists'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Not unslashed: saved with update_user_meta(), which unslashes.
 }
 add_action( 'pmpro_after_checkout', 'pmpromc_pmpro_after_checkout', 15, 2 );
 
