@@ -3,7 +3,7 @@ Contributors: strangerstudios, dlparker1005, paidmembershipspro
 Tags: paid memberships pro, pmpro, mailchimp, email marketing
 Requires at least: 5.4
 Tested up to: 7.1
-Stable tag: 2.4.2
+Stable tag: 2.4.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -65,6 +65,11 @@ Please visit [our support site at https://www.paidmembershipspro.com](https://ww
 2. Specific settings for Membership Levels and Audiences.
 
 == Changelog ==
+= 2.4.3 - 2026-09-29 =
+* SECURITY: Opt-in audiences submitted at checkout or on the profile page are now limited to the audiences set in the Opt-in Audiences setting. #156 (@dparker1005)
+* SECURITY: Sanitized submitted opt-in audience selections at checkout and on profile save. #155 (@dparker1005)
+* SECURITY: Added direct file access protection to plugin files. #155 (@dparker1005)
+
 = 2.4.2 - 2026-09-11 =
 * BUG FIX: Fixed PHP 8.4 deprecation notices about implicitly nullable parameter types in the `PMPro_Mailchimp_API` class. #153 (@POBrien333)
 
