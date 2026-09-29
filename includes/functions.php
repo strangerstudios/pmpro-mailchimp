@@ -265,7 +265,7 @@ add_action( 'pmpro_checkout_boxes', 'pmpromc_additional_lists_on_checkout' );
 function pmpromc_pmpro_paypalexpress_session_vars() {
 	// Nonce not needed as this only runs within the PMPro checkout process.
 	if ( isset( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$_SESSION['additional_lists'] = array_map( 'sanitize_text_field', (array) $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Not unslashed: may be restored to the request and saved with update_user_meta(), which unslashes.
+		$_SESSION['additional_lists'] = array_map( 'sanitize_text_field', (array) wp_unslash( $_REQUEST['additional_lists'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 }
 add_action( 'pmpro_paypalexpress_session_vars', 'pmpromc_pmpro_paypalexpress_session_vars' );
