@@ -261,11 +261,16 @@ function pmpromc_set_user_additional_list_meta( $user, $updated_additional_audie
 		$user = get_userdata( $user );
 	}
 
+	// Only allow audiences that are set as opt-in audiences in the settings.
+	$options = get_option( 'pmpromc_options' );
+	if ( empty( $options['additional_lists'] ) || ! is_array( $options['additional_lists'] ) || ! is_array( $updated_additional_audiences ) ) {
+		$updated_additional_audiences = array();
+	} else {
+		$updated_additional_audiences = array_values( array_intersect( $options['additional_lists'], $updated_additional_audiences ) );
+	}
+
 	$old_additional_audiences = get_user_meta( $user->ID, 'pmpromc_additional_lists', true );
 	if ( ! empty( $old_additional_audiences ) ) {
-		if ( empty( $updated_additional_audiences ) ) {
-			$updated_additional_audiences = array();
-		}
 		$audiences_to_remove = array_diff( $old_additional_audiences, $updated_additional_audiences );
 		pmpromc_queue_unsubscription( $user, $audiences_to_remove );
 	}
