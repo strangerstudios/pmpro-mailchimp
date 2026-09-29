@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /*
 	Add opt-in Lists to the user profile/edit user page.
 */
@@ -154,6 +158,7 @@ function pmpromc_save_custom_user_profile_fields( $user_id ) {
 	if ( empty( $_REQUEST['additional_lists'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$_REQUEST['additional_lists'] = array();
 	}
+	$additional_lists = array_map( 'sanitize_text_field', (array) $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Not unslashed: saved with update_user_meta(), which unslashes.
 
 	// Get user's current additional lists.
 	$current_lists = get_user_meta( $user_id, 'pmpromc_additional_lists', true );
@@ -168,11 +173,11 @@ function pmpromc_save_custom_user_profile_fields( $user_id ) {
 
 	if (
 		1 == $options['profile_update'] ||
-		! empty( array_diff( $current_lists, $_REQUEST['additional_lists'] ) ) || // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		! empty( array_diff( $_REQUEST['additional_lists'], $current_lists ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		! empty( array_diff( $current_lists, $additional_lists ) ) ||
+		! empty( array_diff( $additional_lists, $current_lists ) )
 	) {
 		// Option set to update MC on every profile save or opt-in lists have changed.
-		pmpromc_set_user_additional_list_meta( $user_id, $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		pmpromc_set_user_additional_list_meta( $user_id, $additional_lists );
 	}
 }
 add_action( 'personal_options_update', 'pmpromc_save_custom_user_profile_fields' );

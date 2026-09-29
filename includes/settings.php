@@ -1,5 +1,9 @@
 <?php 
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /*
 	Add the admin options page
 */
@@ -483,7 +487,7 @@ function pmpromc_admin_init_sync()
 				pmpro_addUpdate('pmpromc_sync_merge_fields_ajax');
 
 				//redirect to run the update
-				wp_redirect(admin_url('admin.php?page=pmpro-updates'));
+				wp_safe_redirect(admin_url('admin.php?page=pmpro-updates'));
 				exit;
 			}
 		}
@@ -510,7 +514,7 @@ function pmpromc_sync_merge_fields_ajax()
 	$options = get_option("pmpromc_options");
 
 	//get next batch of users
-	$user_ids = $wpdb->get_col(
+	$user_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared query on a PMPro custom table.
 		$wpdb->prepare(
 			"SELECT DISTINCT(user_id) FROM $wpdb->pmpro_memberships_users WHERE status = 'active' AND user_id > %d ORDER BY user_id LIMIT %d",
 			$last_user_id,
@@ -521,7 +525,7 @@ function pmpromc_sync_merge_fields_ajax()
 	//track progress
 	$first_load = get_transient('pmpro_updates_first_load');
 	if ($first_load) {
-		$total_users = $wpdb->get_var(
+		$total_users = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared query on a PMPro custom table.
 			$wpdb->prepare(
 				"SELECT COUNT(DISTINCT(user_id)) FROM $wpdb->pmpro_memberships_users WHERE status = 'active' AND user_id > %d",
 				$last_user_id

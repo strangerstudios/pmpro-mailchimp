@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Subscribe a user to any additional opt-in lists selected
  *
@@ -10,7 +14,7 @@ function pmpromc_subscribeToAdditionalLists($user_id){
 
 	// Nonce checks not needed as this function is not used anymore and is deprecated.
 	if (!empty($_REQUEST['additional_lists'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$additional_lists = $_REQUEST['additional_lists']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$additional_lists = array_map( 'sanitize_text_field', (array) $_REQUEST['additional_lists'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Not unslashed: saved with update_user_meta(), which unslashes.
 
 	if (!empty($additional_lists)) {
 		update_user_meta($user_id, 'pmpromc_additional_lists', $additional_lists);
@@ -160,7 +164,7 @@ function pmpromc_get_unsubscribe_audiences( $user_id ) {
 	$user_level_ids_string = '0';
 
 	//get levels in (admin_changed, inactive, changed) status with modified dates within the past few minutes
-	$levels_unsubscribing_from = $wpdb->get_col( $wpdb->prepare("SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string) );
+	$levels_unsubscribing_from = $wpdb->get_col( $wpdb->prepare("SELECT DISTINCT(membership_id) FROM $wpdb->pmpro_memberships_users WHERE user_id = %d AND membership_id NOT IN(%s) AND status IN('admin_changed', 'admin_cancelled', 'cancelled', 'changed', 'expired', 'inactive') AND modified > NOW() - INTERVAL 15 MINUTE ", $user_id, $user_level_ids_string) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared query on a PMPro custom table.
 
 	//figure out which lists to unsubscribe from
 	$unsubscribe_lists = array();

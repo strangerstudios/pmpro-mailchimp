@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 	if(!function_exists("current_user_can") || (!current_user_can("manage_options") && !current_user_can("pmpro_memberslistcsv")))
 	{
 		die( esc_html__( "You do not have permissions to perform this action.", "pmpro-mailchimp" ) );
@@ -37,7 +41,7 @@
 	// Nonce check not needed as we are not making changes to the website.
 	// requested a level id
 	if(isset($_REQUEST['l'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$l = sanitize_text_field($_REQUEST['l']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$l = sanitize_text_field( wp_unslash( $_REQUEST['l'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	else
 		$l = false;
 
@@ -132,7 +136,7 @@
 		$prepare_args[] = $limit;
 	}
 
-	$theusers = $wpdb->get_col(
+	$theusers = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $sqlQuery is a static string with placeholders, prepared here.
 		$wpdb->prepare(
 			$sqlQuery, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$prepare_args
@@ -217,7 +221,7 @@
 			$i_start += $max_users_per_loop;
 		}
 		
-		$usr_data = $wpdb->get_results(
+		$usr_data = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared query on PMPro custom tables.
 			$wpdb->prepare("
 				SELECT
 					DISTINCT u.ID,				

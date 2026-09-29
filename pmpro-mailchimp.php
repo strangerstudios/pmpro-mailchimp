@@ -10,6 +10,10 @@
  * Domain Path: /languages
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 define( 'PMPROMC_BASE_FILE', __FILE__ );
 define( 'PMPROMC_DIR', dirname( __FILE__ ) );
 
