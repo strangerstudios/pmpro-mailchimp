@@ -607,12 +607,7 @@ class PMPromc_Mailchimp_API
 	  if ( $list === '' || $user_objs === null ) {
 		return;
 	  }
-	  if ( ! is_array( $user_objs ) ) {
-		$user_objs = array( $user_objs );
-	  }
-	  foreach ( $user_objs as $user_obj ) {
-		pmpromc_queue_subscription( $user_obj, $list );
-	  }
+	  pmpromc_queue_unsubscription( $user_objs, $list );
 	  pmpromc_process_audience_member_updates_queue();
 	}
 	
